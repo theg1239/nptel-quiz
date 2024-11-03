@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight, Menu, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { Card, CardContent } from '@/components/ui/Card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Progress } from '@/components/ui/Progress'
@@ -24,10 +24,62 @@ interface Week {
 }
 
 interface Course {
-  title: string
-  request_count: string
+  course_code: string
+  course_name: string
+  question_count: number
   weeks: Week[]
+  request_count: string
 }
+
+interface StatCardProps {
+  icon: React.ReactNode
+  title: string
+  value: number
+}
+
+const sanitizeQuestion = (question: string): string => {
+  return question.replace(/^(?:\d+[\.\)]?\s*)+/, '').trim()
+}
+
+const ParticleBackground = () => (
+  <div className="absolute inset-0 overflow-hidden">
+    {[...Array(50)].map((_, i) => (
+      <div
+        key={i}
+        className="absolute bg-blue-500 rounded-full opacity-20 animate-float" 
+        style={{
+          top: `${Math.random() * 100}%`,
+          left: `${Math.random() * 100}%`,
+          width: `${Math.random() * 4 + 1}px`,
+          height: `${Math.random() * 4 + 1}px`,
+        }}
+      />
+    ))}
+  </div>
+)
+
+const Logo = () => (
+  <motion.div
+    className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600"
+    initial={{ scale: 0.5, opacity: 0 }}
+    animate={{ scale: 1, opacity: 1 }}
+    transition={{ duration: 0.5 }}
+  >
+    NPTEL Practice
+  </motion.div>
+)
+
+const StatCard: React.FC<StatCardProps> = ({ icon, title, value }) => (
+  <motion.div
+    className="bg-gray-800 bg-opacity-50 p-6 rounded-lg shadow-lg flex flex-col items-center justify-center"
+    whileHover={{ scale: 1.05 }}
+    transition={{ type: "spring", stiffness: 300 }}
+  >
+    {icon}
+    <h3 className="text-lg font-semibold mt-2 text-blue-300">{title}</h3>
+    <p className="text-3xl font-bold mt-1">{value.toLocaleString()}</p>
+  </motion.div>
+)
 
 export default function PracticeMode({ params }: { params: { course_code: string } }) {
   const router = useRouter()
@@ -46,9 +98,43 @@ export default function PracticeMode({ params }: { params: { course_code: string
           throw new Error('Failed to fetch course data')
         }
         const data: Course = await response.json()
-        setCourse(data)
-        if (data.weeks.length > 0) {
-          setSelectedWeek(data.weeks[0].name)
+
+        const sanitizedWeeks = data.weeks.map(week => {
+          const sanitizedQuestions = week.questions
+            .map(q => {
+              const originalQuestion = q.question
+              const sanitized = sanitizeQuestion(q.question)
+              console.log(`Original: "${originalQuestion}" | Sanitized: "${sanitized}"`) 
+              return {
+                ...q,
+                question: sanitized
+              }
+            })
+            .filter(q => {
+              const isValidQuestion = q.question.length > 0
+              const hasEnoughOptions = q.options.length >= 2
+              const hasAnswers = q.answer.length > 0
+              if (!isValidQuestion || !hasEnoughOptions || !hasAnswers) {
+                console.warn(`Invalid question found and skipped: "${q.question}"`)
+                return false
+              }
+              return true
+            })
+
+          return {
+            ...week,
+            questions: sanitizedQuestions
+          }
+        })
+
+        const sanitizedCourse = {
+          ...data,
+          weeks: sanitizedWeeks
+        }
+
+        setCourse(sanitizedCourse)
+        if (sanitizedCourse.weeks.length > 0) {
+          setSelectedWeek(sanitizedCourse.weeks[0].name)
         }
       } catch (error) {
         console.error('Error fetching course data:', error)
@@ -79,7 +165,6 @@ export default function PracticeMode({ params }: { params: { course_code: string
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 text-gray-100 flex flex-col items-center">
-      {/* Header Section */}
       <header className="w-full max-w-4xl flex flex-col items-center p-4 md:p-6 space-y-4">
         <div className="w-full flex justify-between items-center">
           <Button
@@ -121,9 +206,7 @@ export default function PracticeMode({ params }: { params: { course_code: string
         </h1>
       </header>
 
-      {/* Main Content */}
       <main className="flex-1 w-full max-w-4xl flex flex-col items-center px-4 md:px-6 pt-2">
-        {/* Week Navigation Buttons */}
         <div className="flex items-center justify-between mb-4 w-full">
           <Button
             variant="outline"
@@ -135,7 +218,7 @@ export default function PracticeMode({ params }: { params: { course_code: string
             Previous Week
           </Button>
           <span className="text-lg font-semibold text-indigo-300">
-            Week {selectedWeek}
+            {selectedWeek}
           </span>
           <Button
             variant="outline"
@@ -148,32 +231,31 @@ export default function PracticeMode({ params }: { params: { course_code: string
           </Button>
         </div>
 
-        {/* Content Area */}
         <ScrollArea className="h-[calc(100vh-22rem)] w-full overflow-y-auto">
-  <AnimatePresence mode="wait">
-    {loading ? (
-      <motion.div
-        key="loading"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.2 }}
-        className="flex items-center justify-center h-full"
-      >
-        <SpaceLoader size={100} /> 
-      </motion.div>
-    ) : error ? (
-      <motion.div
-        key="error"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.2 }}
-        className="text-pink-500 text-center p-4 bg-gray-900 bg-opacity-50 backdrop-blur-md rounded-lg"
-      >
-        {error}
-      </motion.div>
-    ) : selectedWeek && (
+          <AnimatePresence mode="wait">
+            {loading ? (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="flex items-center justify-center h-full"
+              >
+                <SpaceLoader size={100} /> 
+              </motion.div>
+            ) : error ? (
+              <motion.div
+                key="error"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="text-pink-500 text-center p-4 bg-gray-900 bg-opacity-50 backdrop-blur-md rounded-lg"
+              >
+                {error}
+              </motion.div>
+            ) : selectedWeek && (
               <motion.div
                 key={selectedWeek}
                 initial={{ opacity: 0, y: 10 }}
@@ -188,7 +270,7 @@ export default function PracticeMode({ params }: { params: { course_code: string
                       ?.questions.map((question, index) => (
                         <div key={index} className="mb-8 last:mb-0">
                           <h3 className="text-lg md:text-xl font-semibold mb-2 text-gray-100">
-                            {index + 1}. {question.question}
+                            {index + 1}. {question.question} 
                           </h3>
                           <ul className="space-y-3">
                             {question.options.map((option, optionIndex) => (
@@ -220,7 +302,6 @@ export default function PracticeMode({ params }: { params: { course_code: string
           </AnimatePresence>
         </ScrollArea>
 
-        {/* Progress Bar */}
         {!loading && !error && (
           <div className="mt-6 bg-gray-900 bg-opacity-50 backdrop-blur-md rounded-lg p-4 border border-gray-800 w-full">
             <div className="flex justify-between items-center mb-2">

@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 
 import { Input } from "@/components/ui/Input"
 import { Button } from "@/components/ui/Button"
+import SpaceLoader from "@/components/SpaceLoader"
 
 interface Stats {
   total_courses_from_json: number
@@ -34,7 +35,7 @@ const ParticleBackground = () => (
     {[...Array(50)].map((_, i) => (
       <div
         key={i}
-        className="absolute bg-blue-500 rounded-full opacity-20 animate-float" // Use Tailwind animation class
+        className="absolute bg-blue-500 rounded-full opacity-20 animate-float" 
         style={{
           top: `${Math.random() * 100}%`,
           left: `${Math.random() * 100}%`,
@@ -67,7 +68,6 @@ export default function Component() {
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const searchContainerRef = useRef<HTMLDivElement>(null)
 
-  // Fetch data on component mount
   useEffect(() => {
     Promise.all([
       fetch('https://api.examcooker.in/courses').then(res => res.json()),
@@ -85,7 +85,6 @@ export default function Component() {
     .finally(() => setIsLoading(false))
   }, [])
 
-  // Debounce search input
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       if (searchTerm.length > 0 && courses.length > 0) {
@@ -96,12 +95,11 @@ export default function Component() {
       } else {
         setSuggestions([])
       }
-    }, 300) // 300ms debounce
+    }, 300)
 
     return () => clearTimeout(delayDebounceFn)
   }, [searchTerm, courses])
 
-  // Handle click outside to close suggestions
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
@@ -116,9 +114,9 @@ export default function Component() {
   }, [])
 
   const handleCourseSelection = (course: Course) => {
-    setSearchTerm('') // Clear search term upon selection
-    setSuggestions([]) // Clear suggestions
-    setIsSearchFocused(false) // Close suggestion list
+    setSearchTerm('') 
+    setSuggestions([]) 
+    setIsSearchFocused(false) 
     router.push(`/courses/${course.course_code}`)
   }
 
@@ -137,11 +135,11 @@ export default function Component() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p className="text-xl text-blue-300">Loading...</p>
+        <SpaceLoader size={100} />
       </div>
     )
   }
-
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-gray-100 flex flex-col items-center justify-center p-4 relative overflow-hidden">
       <ParticleBackground />
