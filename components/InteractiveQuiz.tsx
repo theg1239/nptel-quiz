@@ -564,31 +564,32 @@ export default function InteractiveQuiz({
   let questionCount = parseInt(searchParams.get("questions") || "10", 10)
   const quizTime = parseInt(searchParams.get("time") || "5", 10)
 
-  const sanitizedQuestions = questions
-    .filter(
-      (q) =>
-        q.question &&
-        q.options &&
-        q.options.length >= 2 &&
-        q.answer &&
-        q.answer.length > 0
-    )
-    .map((q) => ({
-      ...q,
-      question: cleanQuestionText(q.question),
-      options: shuffleArray(q.options),
-    }))
-
-  if (quizType === "practice") {
-    questionCount = sanitizedQuestions.length
-  } else {
-    questionCount = Math.min(questionCount, sanitizedQuestions.length)
-  }
-
-  const randomizedQuestions = shuffleArray(sanitizedQuestions).slice(
-    0,
-    questionCount
+// Modify this section to shuffle only once and store fixed order
+const sanitizedQuestions = questions
+  .filter(
+    (q) =>
+      q.question &&
+      q.options &&
+      q.options.length >= 2 &&
+      q.answer &&
+      q.answer.length > 0
   )
+  .map((q) => ({
+    ...q,
+    question: cleanQuestionText(q.question),
+    options: shuffleArray(q.options), // Shuffle options once and store
+  }));
+
+if (quizType === "practice") {
+  questionCount = sanitizedQuestions.length;
+} else {
+  questionCount = Math.min(questionCount, sanitizedQuestions.length);
+}
+
+const randomizedQuestions = shuffleArray(sanitizedQuestions).slice(
+  0,
+  questionCount
+);
 
   let progressTestQuestions: Question[] = []
 
