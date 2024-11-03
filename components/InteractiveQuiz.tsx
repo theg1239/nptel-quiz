@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Heart, Zap, Clock, Shield, Award, ArrowRight, ArrowLeft, CheckCircle, XCircle } from 'lucide-react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/Button"
 import { Progress } from "@/components/ui/Progress"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/Card"
@@ -20,6 +20,7 @@ interface InteractiveQuizProps {
   quizType: QuizType
   courseName: string
   questions: Question[]
+  courseCode: string;
   onExit?: () => void
 }
 
@@ -72,15 +73,10 @@ const QuizTimer = ({ time, maxTime }: { time: number, maxTime: number }) => (
 )
 
 function stripOptionLabels(options: string[]): { cleanOptions: string[]; labels: string[] } {
-  const regex = /^Option\s[A-Z]:\s*/; // Pattern to match labels like "Option A:", "Option B:", etc.
+  const regex = /^Option\s([A-Z]):\s*/; // Pattern to match labels like "Option A:", "Option B:", etc.
   const cleanOptions = options.map((option) => option.replace(regex, ''));
-  const labels = options.map((option) => (option.match(regex) || [''])[0]); 
+  const labels = options.map((option) => (option.match(regex) ? option.match(regex)![1] : ''));
   return { cleanOptions, labels };
-}
-
-function shuffleOptionsWithLabels(options: string[], labels: string[]): string[] {
-  const shuffledOptions = shuffleArray(options);
-  return shuffledOptions.map((option, index) => `${labels[index]} ${option}`);
 }
 
 const QuizContent = ({
@@ -114,10 +110,7 @@ const QuizContent = ({
   selectedOptions: number[];
   isAnswerLocked: boolean;
 }) => {
-  const { cleanOptions, labels } = stripOptionLabels(options); // Clean the options
-
-  // Shuffle only clean options and reapply labels for display
-  const displayOptions = shuffleOptionsWithLabels(cleanOptions, labels);
+  const displayOptions = options;
 
   return (
     <Card className="bg-gray-800 bg-opacity-50 backdrop-blur-sm border-2 border-blue-500 shadow-lg">
@@ -133,7 +126,7 @@ const QuizContent = ({
         <QuizTimer time={timeLeft} maxTime={maxTime} />
       )}
       <div className="flex justify-between items-center mt-2 px-6">
-        {quizType === 'quick' && (
+      {(quizType === 'quick' || quizType === 'practice') && (
           <div className="flex space-x-2">
             {powerUps.map((powerUp, index) => (
               <PowerUp
@@ -167,10 +160,10 @@ const QuizContent = ({
                   onAnswer(newSelectedOptions);
                 }
               }}
-              variant="default"
+              variant={selectedOptions.includes(index) ? "outline" : "default"} // Highlight selected with outline
               className={`relative text-left transition-colors duration-300 p-4 h-auto ${
                 selectedOptions.includes(index)
-                  ? 'border-2 border-white bg-gray-700 text-white'
+                  ? 'ring-2 ring-white'
                   : 'bg-gray-800 text-gray-200 hover:bg-blue-700 hover:text-white'
               } ${
                 isAnswerLocked ? 'cursor-not-allowed opacity-50' : ''
@@ -200,12 +193,14 @@ const Quiz = ({
   questions,
   quizTime,
   courseName,
+  courseCode,
 }: {
   quizType: "practice" | "timed" | "quick" | "progress"
   onExit: () => void
   questions: Question[]
   quizTime: number
   courseName: string
+  courseCode: string
 }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [score, setScore] = useState(0)
@@ -224,7 +219,7 @@ const Quiz = ({
   >(questions.map(() => ({ selectedOptions: [], correct: false, locked: false })))
 
   useEffect(() => {
-    if (quizType === "quick") {
+    if (quizType === "quick" || quizType === "practice") {
       setPowerUps([
         { type: "fiftyFifty", icon: Zap, name: "50/50", active: true },
         { type: "extraTime", icon: Clock, name: "Extra Time", active: true },
@@ -241,85 +236,107 @@ const Quiz = ({
       timeLeft > 0 &&
       !quizEnded
     ) {
-      const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000)
-      return () => clearTimeout(timer)
+      const timer = setTimeout(() => setTimeLeft((prev) => prev - 1), 1000);
+      return () => clearTimeout(timer);
     } else if (timeLeft === 0 && !quizEnded && (quizType === "timed" || quizType === "quick")) {
-      endQuiz()
+      endQuiz();
     }
-  }, [timeLeft, quizEnded, quizType])
+  }, [timeLeft, quizEnded, quizType]);
 
-  const handleAnswer = useCallback((newSelectedOptions: number[]) => {
-    setSelectedOptions(newSelectedOptions)
-    setUserAnswers((prev) => {
-      const newAnswers = [...prev]
-      newAnswers[currentQuestionIndex] = { selectedOptions: newSelectedOptions, correct: false, locked: false }
-      return newAnswers
-    })
-  }, [currentQuestionIndex])
-
-  const checkAnswer = () => {
-    const currentQuestion = questions[currentQuestionIndex]
-    const correctIndexes = currentQuestion.answer.map((ans) =>
-      currentQuestion.options.findIndex((opt) => opt === ans)
-    )
-    const isCorrect =
-      selectedOptions.length === correctIndexes.length &&
-      selectedOptions.every((idx) => correctIndexes.includes(idx))
-
-    if (isCorrect) {
-      setScore((prev) => prev + 1)
-    } else if (quizType === "practice") {
-      setLives((prev) => prev - 1)
-      if (lives - 1 === 0) {
-        endQuiz()
-        return
-      }
+  useEffect(() => {
+    if (quizType === "timed" || quizType === "quick") {
+      setTimeLeft(quizTime * 60);
     }
+  }, [quizType, quizTime]);
 
-    setUserAnswers((prev) => {
-      const newAnswers = [...prev]
-      newAnswers[currentQuestionIndex] = { selectedOptions, correct: isCorrect, locked: true }
-      return newAnswers
-    })
-
-    setFeedback({ correct: isCorrect, selectedIndexes: selectedOptions })
-
-    setTimeout(() => {
-      if (currentQuestionIndex < questions.length - 1) {
-        goToNextQuestion()
-      } else {
-        endQuiz()
-      }
-    }, 1500)
+const endQuiz = useCallback(() => {
+  setQuizEnded(true);
+  let incorrectQuestions: string[] = [];
+  try {
+    const storedProgress = JSON.parse(localStorage.getItem("quizProgress") || "{}");
+    incorrectQuestions = questions
+      .filter((_, idx) => !userAnswers[idx]?.correct)
+      .map((q) => q.question);
+    storedProgress[quizType] = {
+      incorrectQuestions,
+    };
+    localStorage.setItem("quizProgress", JSON.stringify(storedProgress));
+  } catch (error) {
+    console.error("Error accessing localStorage:", error);
   }
 
-  const endQuiz = useCallback(() => {
-    setQuizEnded(true)
-    let incorrectQuestions: string[] = []
-    try {
-      const storedProgress = JSON.parse(localStorage.getItem("quizProgress") || "{}")
-      incorrectQuestions = questions
-        .filter((_, idx) => !userAnswers[idx]?.correct)
-        .map((q) => q.question)
-      storedProgress[quizType] = {
-        incorrectQuestions,
-      }
-      localStorage.setItem("quizProgress", JSON.stringify(storedProgress))
-    } catch (error) {
-      console.error("Error accessing localStorage:", error)
-    }
+  try {
+    const totalQuestions = questions.length;
+    const answeredQuestions = userAnswers.filter(ans => ans.selectedOptions.length > 0).length;
+    const completionPercentage = Math.floor((answeredQuestions / totalQuestions) * 100);
+    const courseProgress = JSON.parse(localStorage.getItem("courseProgress") || "{}");
+    courseProgress[courseName] = completionPercentage;
+    localStorage.setItem("courseProgress", JSON.stringify(courseProgress));
+  } catch (error) {
+    console.error("Error updating course completion:", error);
+  }
+}, [questions, userAnswers, quizType, courseName]);
 
-    try {
-      const totalQuestions = questions.length
-      const answeredQuestions = userAnswers.filter(ans => ans.selectedOptions.length > 0).length
-      const completionPercentage = Math.floor((answeredQuestions / totalQuestions) * 100)
-      const courseProgress = JSON.parse(localStorage.getItem("courseProgress") || "{}")
-      courseProgress[courseName] = completionPercentage
-      localStorage.setItem("courseProgress", JSON.stringify(courseProgress))
-    } catch (error) {
-      console.error("Error updating course completion:", error)
+const goToNextQuestion = useCallback(() => {
+  if (currentQuestionIndex < questions.length - 1) {
+    setCurrentQuestionIndex((prev) => prev + 1);
+    setSelectedOptions(userAnswers[currentQuestionIndex + 1]?.selectedOptions || []);
+    setAvailableOptions([0, 1, 2, 3]);
+    setFeedback(null);
+  } else {
+    endQuiz();
+  }
+}, [currentQuestionIndex, questions.length, userAnswers, endQuiz]);
+
+const handleAnswer = useCallback((newSelectedOptions: number[]) => {
+  setSelectedOptions(newSelectedOptions);
+  setUserAnswers((prev) => {
+    const newAnswers = [...prev];
+    newAnswers[currentQuestionIndex] = { selectedOptions: newSelectedOptions, correct: false, locked: false };
+    return newAnswers;
+  });
+}, [currentQuestionIndex]);
+
+const saveAnswers = useCallback(() => {
+  const currentQuestion = questions[currentQuestionIndex];
+  const correctIndexes = currentQuestion.answer.map((ans) =>
+    currentQuestion.options.findIndex((opt) => opt.includes(ans))
+  );
+
+  const isCorrect =
+    selectedOptions.length === correctIndexes.length &&
+    selectedOptions.every((idx) => correctIndexes.includes(idx));
+
+  if (isCorrect) {
+    setScore((prev) => prev + 1);
+  } else if (quizType === "practice") {
+    setLives((prev) => prev - 1);
+    if (lives - 1 === 0) {
+      endQuiz();
+      return;
     }
-  }, [questions, userAnswers, quizType, courseName])
+  }
+
+  setUserAnswers((prev) => {
+    const newAnswers = [...prev];
+    newAnswers[currentQuestionIndex] = { selectedOptions, correct: isCorrect, locked: false };
+    return newAnswers;
+  });
+
+  if (quizType === "practice") {
+    setFeedback({ correct: isCorrect, selectedIndexes: selectedOptions });
+  }
+
+  setTimeout(() => {
+    if (isCorrect || quizType !== "practice") {
+      if (currentQuestionIndex < questions.length - 1) {
+        goToNextQuestion();
+      } else {
+        endQuiz();
+      }
+    }
+  }, 1500);
+}, [questions, currentQuestionIndex, selectedOptions, quizType, lives, endQuiz, goToNextQuestion]);
 
   const restartQuiz = useCallback(() => {
     setCurrentQuestionIndex(0)
@@ -335,45 +352,28 @@ const Quiz = ({
   }, [quizTime, questions, quizType])
 
   const usePowerUp = useCallback((type: string) => {
-    switch (type) {
-      case "fiftyFifty":
-        const currentQuestion = questions[currentQuestionIndex]
-        const correctIndexes = currentQuestion.answer.map((ans) =>
-          currentQuestion.options.findIndex((opt) => opt === ans)
-        )
-        let incorrectOptions = availableOptions.filter(
-          (idx) => !correctIndexes.includes(idx)
-        )
-        if (incorrectOptions.length > 1) {
-          const shuffled = shuffleArray(incorrectOptions)
-          const optionsToRemove = shuffled.slice(0, 2)
-          setAvailableOptions((prev) => prev.filter((idx) => !optionsToRemove.includes(idx)))
-        }
-        break
-      case "extraTime":
-        setTimeLeft((prev) => prev + 30)
-        break
-      case "shield":
-        setLives((prev) => prev + 1)
-        break
-      default:
-        break
+    if (type === "fiftyFifty") {
+      const currentQuestion = questions[currentQuestionIndex];
+      const correctIndexes = currentQuestion.answer.map((ans) =>
+        currentQuestion.options.findIndex((opt) => opt.includes(ans))
+      );
+  
+      let incorrectOptions = availableOptions.filter(idx => !correctIndexes.includes(idx));
+  
+      if (availableOptions.length <= 3) {
+        setAvailableOptions(correctIndexes);
+      } else {
+        const optionsToRemove = incorrectOptions.slice(0, Math.min(2, incorrectOptions.length));
+        setAvailableOptions(prev => prev.filter(idx => !optionsToRemove.includes(idx)));
+      }
+    } else if (type === "extraTime") {
+      setTimeLeft(prev => prev + 30);
+    } else if (type === "shield") {
+      setLives(prev => prev + 1);
     }
-    setPowerUps((prev) =>
-      prev.map((p) => (p.type === type ? { ...p, active: false } : p))
-    )
-  }, [currentQuestionIndex, questions, availableOptions])
-
-  const goToNextQuestion = useCallback(() => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex((prev) => prev + 1)
-      setSelectedOptions(userAnswers[currentQuestionIndex + 1]?.selectedOptions || [])
-      setAvailableOptions([0, 1, 2, 3])
-      setFeedback(null)
-    } else {
-      endQuiz()
-    }
-  }, [currentQuestionIndex, questions.length, userAnswers, endQuiz])
+  
+    setPowerUps(prev => prev.map(p => (p.type === type ? { ...p, active: false } : p)));
+  }, [currentQuestionIndex, questions, availableOptions]);  
 
   const goToPreviousQuestion = () => {
     if (currentQuestionIndex > 0) {
@@ -384,19 +384,72 @@ const Quiz = ({
     }
   }
 
+  const [quizSettings, setQuizSettings] = useState<{ questionCount: number; quizTime: number }>({
+    questionCount: 10,
+    quizTime: 5,
+  })
+
+  useEffect(() => {
+    const storedSettings = JSON.parse(localStorage.getItem('quizSettings') || '{}')
+    if (storedSettings.questionCount) {
+      setQuizSettings((prev) => ({ ...prev, questionCount: storedSettings.questionCount }))
+    }
+    if (storedSettings.quizTime) {
+      setQuizSettings((prev) => ({ ...prev, quizTime: storedSettings.quizTime }))
+    }
+  }, [])
+
+  function initializeQuestionsWithFixedOrder(questions: Question[]): Question[] {
+    return questions.map((q) => {
+      const { cleanOptions, labels } = stripOptionLabels(q.options);
+      const labeledOptions = labels.map((label, index) => `${label}. ${cleanOptions[index]}`);
+      return {
+        ...q,
+        options: labeledOptions,
+      };
+    });
+  }
+  
+  const sanitizedQuestions = initializeQuestionsWithFixedOrder(
+    questions.filter(
+      (q) =>
+        q.question &&
+        q.options &&
+        q.options.length >= 2 &&
+        q.answer &&
+        q.answer.length > 0
+    )
+  );
+
+  let questionCount = quizSettings.questionCount
+  const quizTimeValue = quizSettings.quizTime
+
+  if (quizType === "practice") {
+    questionCount = sanitizedQuestions.length;
+  } else {
+    questionCount = Math.min(questionCount, sanitizedQuestions.length);
+  }
+
+  const displayedQuestions = useMemo(() => {
+    return quizType === "practice" || quizType === "progress" 
+      ? questions
+      : shuffleArray(questions).slice(0, questionCount)
+  }, [questions, quizType, questionCount])
+
   if (quizEnded) {
     return (
       <ResultScreen
         score={score}
         totalQuestions={questions.length}
         onRestart={restartQuiz}
+        courseCode={courseCode}
       />
     )
   }
 
-  const currentQuestion = questions[currentQuestionIndex]
-  const isAnswerLocked = userAnswers[currentQuestionIndex]?.locked
-
+  const currentQuestion = displayedQuestions[currentQuestionIndex];
+  const isAnswerLocked = userAnswers[currentQuestionIndex]?.locked;
+  
   return (
     <div className="w-full max-w-4xl mx-auto">
       <div className="flex justify-between items-center mb-6">
@@ -412,205 +465,228 @@ const Quiz = ({
         </div>
       </div>
       <AnimatePresence mode="wait">
-        <motion.div
-          key={currentQuestionIndex}
-          initial={{ opacity: 0, x: 100 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -100  }}
-          transition={{ duration: 0.5 }}
-        >
-          <QuizContent
-            question={currentQuestion.question}
-            options={currentQuestion.options.filter((_, idx) =>
-              availableOptions.includes(idx)
-            )}
-            onAnswer={handleAnswer}
-            timeLeft={timeLeft}
-            maxTime={quizTime * 60}
-            lives={lives}
-            powerUps={powerUps}
-            onUsePowerUp={usePowerUp}
-            quizType={quizType}
-            currentScore={score}
-            totalQuestions={questions.length}
-            currentQuestionIndex={currentQuestionIndex}
-            selectedOptions={selectedOptions}
-            isAnswerLocked={isAnswerLocked}
-          />
-          <div className="flex justify-between mt-6">
-            <Button
-              onClick={goToPreviousQuestion}
-              disabled={currentQuestionIndex === 0}
-              className="bg-gray-600 hover:bg-gray-700 transition-colors duration-300"
+        {currentQuestion ? ( // Only render if currentQuestion exists
+          <motion.div
+            key={currentQuestionIndex}
+            initial={{ opacity: 0, x: 100 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -100 }}
+            transition={{
+              duration: 0.3, // Increase duration for a slower transition
+              ease: [0.42, 0, 0.58, 1], // Use an ease-in-out curve for smoothness
+            }}
             >
-              Previous
-            </Button>
-            {quizType !== 'practice' && (
+            <QuizContent
+              question={currentQuestion.question}
+              options={currentQuestion.options.filter((_, idx) =>
+                availableOptions.includes(idx)
+              )}
+              onAnswer={handleAnswer}
+              timeLeft={timeLeft}
+              maxTime={quizTimeValue * 60}
+              lives={lives}
+              powerUps={powerUps}
+              onUsePowerUp={usePowerUp}
+              quizType={quizType}
+              currentScore={score}
+              totalQuestions={questions.length}
+              currentQuestionIndex={currentQuestionIndex}
+              selectedOptions={selectedOptions}
+              isAnswerLocked={isAnswerLocked}
+            />
+            <div className="flex justify-between mt-6">
               <Button
-                onClick={checkAnswer}
+                onClick={goToPreviousQuestion}
+                disabled={currentQuestionIndex === 0}
+                className="bg-gray-600 hover:bg-gray-700 transition-colors duration-300"
+              >
+                Previous
+              </Button>
+              <Button
+                onClick={saveAnswers}
                 disabled={isAnswerLocked || selectedOptions.length === 0}
                 className="bg-blue-600 hover:bg-blue-700 transition-colors duration-300"
               >
-                Submit Answer
+                Save Answers
               </Button>
-            )}
-            <Button
-              onClick={goToNextQuestion}
-              disabled={currentQuestionIndex === questions.length - 1}
-              className="bg-gray-600 hover:bg-gray-700 transition-colors duration-300"
-            >
-              Next
-            </Button>
-          </div>
-          <AnimatePresence>
-            {feedback && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className={`mt-4 text-lg font-semibold ${
-                  feedback.correct ? "text-green-500" : "text-red-500"
-                }`}
+              <Button
+                onClick={goToNextQuestion}
+                disabled={currentQuestionIndex === questions.length - 1}
+                className="bg-gray-600 hover:bg-gray-700 transition-colors duration-300"
               >
-                {feedback.correct ? (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    exit={{ scale: 0 }}
-                    className="flex items-center justify-center space-x-2"
-                  >
-                    <CheckCircle className="h-6 w-6" />
-                    <span>Correct!</span>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    exit={{ scale: 0 }}
-                    className="flex items-center justify-center space-x-2"
-                  >
-                    <XCircle className="h-6 w-6" />
-                    <span>Incorrect!</span>
-                  </motion.div>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
+                Next
+              </Button>
+            </div>
+            <AnimatePresence>
+              {feedback && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className={`mt-4 text-lg font-semibold ${
+                    feedback.correct ? "text-green-500" : "text-red-500"
+                  }`}
+                >
+                  {feedback.correct ? (
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      exit={{ scale: 0 }}
+                      className="flex items-center justify-center space-x-2"
+                    >
+                      <CheckCircle className="h-6 w-6" />
+                      <span>Correct!</span>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      exit={{ scale: 0 }}
+                      className="flex items-center justify-center space-x-2"
+                    >
+                      <XCircle className="h-6 w-6" />
+                      <span>Incorrect!</span>
+                    </motion.div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        ) : null} {/* Skip rendering if currentQuestion is undefined */}
       </AnimatePresence>
     </div>
-  )
+  );  
 }
 
 const ResultScreen = ({
   score,
   totalQuestions,
   onRestart,
+  courseCode, 
 }: {
-  score: number
-  totalQuestions: number
-  onRestart: () => void
-}) => (
-  <Card className="w-full max-w-md mx-auto bg-gray-800 bg-opacity-50 backdrop-blur-sm text-center border-2 border-blue-500 shadow-lg">
-    <CardHeader>
-      <CardTitle className="text-3xl font-bold text-blue-300">
-        Quiz Completed!
-      </CardTitle>
-    </CardHeader>
-    <CardContent>
-      <Award className="h-16 w-16 mx-auto text-yellow-400 mb-4" />
-      <p className="text-2xl font-bold text-gray-200">
-        Your Score: {score}/{totalQuestions}
-      </p>
-      <Progress value={(score / totalQuestions) * 100} className="mt-4" />
-      <p className="mt-4 text-gray-300">
-        {score === totalQuestions
-          ? "Perfect score! Excellent work!"
-          : score >= totalQuestions * 0.8
-          ? "Great job! You're doing well!"
-          : score >= totalQuestions * 0.6
-          ? "Good effort! Keep practicing!"
-          : "Don't give up! Try again to improve your score."}
-      </p>
-    </CardContent>
-    <CardFooter>
-      <Button
-        onClick={onRestart}
-        className="w-full bg-blue-600 hover:bg-blue-700 transition-colors duration-300"
+  score: number;
+  totalQuestions: number;
+  onRestart: () => void;
+  courseCode: string; 
+}) => {
+  const router = useRouter();
+
+  const handleBackToPortal = () => {
+    router.push(`/courses/${courseCode}`); 
+  };
+
+  return (
+    <Card className="w-full max-w-md mx-auto bg-gray-800 bg-opacity-50 backdrop-blur-sm text-center border-2 border-blue-500 shadow-lg relative">
+      <button
+        onClick={handleBackToPortal}
+        className="absolute top-4 left-4 text-blue-300 hover:bg-blue-900 p-2 rounded-full transition-colors duration-300"
+        aria-label="Back to Course Portal"
       >
-        Try Again
-      </Button>
-    </CardFooter>
-  </Card>
-)
+        <ArrowLeft className="h-5 w-5" />
+      </button>
+
+      <CardHeader>
+        <CardTitle className="text-3xl font-bold text-blue-300">
+          Quiz Completed!
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Award className="h-16 w-16 mx-auto text-yellow-400 mb-4" />
+        <p className="text-2xl font-bold text-gray-200">
+          Your Score: {score}/{totalQuestions}
+        </p>
+        <Progress value={(score / totalQuestions) * 100} className="mt-4" />
+        <p className="mt-4 text-gray-300">
+          {score === totalQuestions
+            ? "Perfect score! Excellent work!"
+            : score >= totalQuestions * 0.8
+            ? "Great job! You're doing well!"
+            : score >= totalQuestions * 0.6
+            ? "Good effort! Keep practicing!"
+            : "Don't give up! Try again to improve your score."}
+        </p>
+      </CardContent>
+      <CardFooter>
+        <Button
+          onClick={onRestart}
+          className="w-full bg-blue-600 hover:bg-blue-700 transition-colors duration-300"
+        >
+          Try Again
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+};
 
 export default function InteractiveQuiz({
   quizType,
   courseName,
   onExit,
   questions,
-}: InteractiveQuizProps) {
-  const router = useRouter()
-  const searchParams = useSearchParams()
+  courseCode,
+}: InteractiveQuizProps & { courseCode: string }) {
+  const router = useRouter();
+  const handleExit = onExit || (() => router.back());
 
-  const handleExit = onExit || (() => router.back())
+  const shuffledQuestions = useMemo(() => shuffleArray(questions), [questions]);
 
   const isValidQuizType =
     quizType === "practice" ||
     quizType === "timed" ||
     quizType === "quick" ||
-    quizType === "progress"
+    quizType === "progress";
 
-  let questionCount = parseInt(searchParams.get("questions") || "10", 10)
-  const quizTime = parseInt(searchParams.get("time") || "5", 10)
-
-// Modify this section to shuffle only once and store fixed order
-const sanitizedQuestions = questions
-  .filter(
-    (q) =>
-      q.question &&
-      q.options &&
-      q.options.length >= 2 &&
-      q.answer &&
-      q.answer.length > 0
-  )
-  .map((q) => ({
-    ...q,
-    question: cleanQuestionText(q.question),
-    options: shuffleArray(q.options), // Shuffle options once and store
-  }));
-
-if (quizType === "practice") {
-  questionCount = sanitizedQuestions.length;
-} else {
-  questionCount = Math.min(questionCount, sanitizedQuestions.length);
-}
-
-const randomizedQuestions = shuffleArray(sanitizedQuestions).slice(
-  0,
-  questionCount
-);
-
-  let progressTestQuestions: Question[] = []
-
-  if (quizType === "progress") {
-    try {
-      const storedProgress = JSON.parse(localStorage.getItem("quizProgress") || "{}")
-      const incorrectQuestions = storedProgress[courseName]?.incorrectQuestions || []
-      progressTestQuestions = randomizedQuestions.filter((q) => incorrectQuestions.includes(q.question))
-  
-      if (progressTestQuestions.length === 0) {
-        console.warn("No progress questions found, defaulting to all questions.")
-        progressTestQuestions = randomizedQuestions
-      }
-    } catch (error) {
-      console.error("Error accessing localStorage:", error)
-      progressTestQuestions = randomizedQuestions
-    }
-  } else {
-    progressTestQuestions = randomizedQuestions
+  function initializeQuestionsWithFixedOrder(questions: Question[]): Question[] {
+    return questions.map((q) => {
+      const { cleanOptions, labels } = stripOptionLabels(q.options);
+      const labeledOptions = labels.map((label, index) => `${label}. ${cleanOptions[index]}`);
+      return {
+        ...q,
+        options: labeledOptions,
+      };
+    });
   }
-  
+
+  const sanitizedQuestions = initializeQuestionsWithFixedOrder(
+    shuffledQuestions.filter(
+      (q) =>
+        q.question &&
+        q.options &&
+        q.options.length >= 2 &&
+        q.answer &&
+        q.answer.length > 0
+    )
+  );
+
+  const [quizSettings, setQuizSettings] = useState<{ questionCount: number; quizTime: number }>({
+    questionCount: 10,
+    quizTime: 5,
+  });
+
+  useEffect(() => {
+    const storedSettings = JSON.parse(localStorage.getItem('quizSettings') || '{}');
+    if (storedSettings.questionCount) {
+      setQuizSettings((prev) => ({ ...prev, questionCount: storedSettings.questionCount }));
+    }
+    if (storedSettings.quizTime) {
+      setQuizSettings((prev) => ({ ...prev, quizTime: storedSettings.quizTime }));
+    }
+  }, []);
+
+  let questionCount = quizSettings.questionCount;
+  const quizTimeValue = quizSettings.quizTime;
+
+  if (quizType === "practice") {
+    questionCount = sanitizedQuestions.length;
+  } else {
+    questionCount = Math.min(questionCount, sanitizedQuestions.length);
+  }
+
+  const displayedQuestions = useMemo(() => {
+    return quizType === "practice" || quizType === "progress" 
+      ? sanitizedQuestions
+      : sanitizedQuestions.slice(0, questionCount);
+  }, [sanitizedQuestions, quizType, questionCount]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-gray-100 flex flex-col items-center justify-center p-4 relative overflow-hidden">
@@ -648,9 +724,10 @@ const randomizedQuestions = shuffleArray(sanitizedQuestions).slice(
             <Quiz
               quizType={quizType as "practice" | "timed" | "quick" | "progress"}
               onExit={handleExit}
-              questions={quizType === "progress" ? progressTestQuestions : randomizedQuestions}
-              quizTime={quizTime}
+              questions={quizType === "progress" ? displayedQuestions : displayedQuestions}
+              quizTime={quizTimeValue}
               courseName={courseName}
+              courseCode={courseCode}
             />
           ) : (
             <div className="text-center text-red-500 bg-gray-800 bg-opacity-50 backdrop-blur-sm p-6 rounded-lg">
@@ -660,5 +737,5 @@ const randomizedQuestions = shuffleArray(sanitizedQuestions).slice(
         </AnimatePresence>
       </div>
     </div>
-  )
+  );
 }

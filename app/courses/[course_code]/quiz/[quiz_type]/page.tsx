@@ -44,6 +44,7 @@ export default async function QuizPage({ params }: QuizPageProps) {
       courseName={course.title}  
       questions={questions}
       quizType={quiz_type}
+      courseCode={course_code}
     />
   );
 }
