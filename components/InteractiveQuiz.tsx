@@ -257,7 +257,7 @@ const endQuiz = useCallback(() => {
     incorrectQuestions = questions
       .filter((_, idx) => !userAnswers[idx]?.correct)
       .map((q) => q.question);
-    storedProgress[quizType] = {
+    storedProgress[courseName] = {
       incorrectQuestions,
     };
     localStorage.setItem("quizProgress", JSON.stringify(storedProgress));
@@ -267,15 +267,15 @@ const endQuiz = useCallback(() => {
 
   try {
     const totalQuestions = questions.length;
-    const answeredQuestions = userAnswers.filter(ans => ans.selectedOptions.length > 0).length;
-    const completionPercentage = Math.floor((answeredQuestions / totalQuestions) * 100);
+    const correctAnswers = userAnswers.filter(ans => ans.correct).length;
+    const completionPercentage = Math.floor((correctAnswers / totalQuestions) * 100);
     const courseProgress = JSON.parse(localStorage.getItem("courseProgress") || "{}");
     courseProgress[courseName] = completionPercentage;
     localStorage.setItem("courseProgress", JSON.stringify(courseProgress));
   } catch (error) {
     console.error("Error updating course completion:", error);
   }
-}, [questions, userAnswers, quizType, courseName]);
+}, [questions, userAnswers, courseName]);
 
 const goToNextQuestion = useCallback(() => {
   if (currentQuestionIndex < questions.length - 1) {
@@ -308,7 +308,10 @@ const saveAnswers = useCallback(() => {
     selectedOptions.every((idx) => correctIndexes.includes(idx));
 
   if (isCorrect) {
-    setScore((prev) => prev + 1);
+    setScore((prev) => {
+      console.log(`Correct answer! Increasing score from ${prev} to ${prev + 1}`);
+      return prev + 1;
+    });
   } else if (quizType === "practice") {
     setLives((prev) => prev - 1);
     if (lives - 1 === 0) {
@@ -440,7 +443,7 @@ const saveAnswers = useCallback(() => {
     return (
       <ResultScreen
         score={score}
-        totalQuestions={questions.length}
+        totalQuestions={displayedQuestions.length}
         onRestart={restartQuiz}
         courseCode={courseCode}
       />
@@ -461,7 +464,7 @@ const saveAnswers = useCallback(() => {
           <ArrowLeft className="mr-2 h-4 w-4" /> Exit Quiz
         </Button>
         <div className="text-blue-300 font-semibold">
-          Question {currentQuestionIndex + 1} of {questions.length}
+          Question {currentQuestionIndex + 1} of {displayedQuestions.length}
         </div>
       </div>
       <AnimatePresence mode="wait">
@@ -489,7 +492,7 @@ const saveAnswers = useCallback(() => {
               onUsePowerUp={usePowerUp}
               quizType={quizType}
               currentScore={score}
-              totalQuestions={questions.length}
+              totalQuestions={displayedQuestions.length}
               currentQuestionIndex={currentQuestionIndex}
               selectedOptions={selectedOptions}
               isAnswerLocked={isAnswerLocked}
@@ -511,7 +514,7 @@ const saveAnswers = useCallback(() => {
               </Button>
               <Button
                 onClick={goToNextQuestion}
-                disabled={currentQuestionIndex === questions.length - 1}
+                disabled={currentQuestionIndex === displayedQuestions.length - 1}
                 className="bg-gray-600 hover:bg-gray-700 transition-colors duration-300"
               >
                 Next
@@ -562,21 +565,25 @@ const ResultScreen = ({
   score,
   totalQuestions,
   onRestart,
-  courseCode, 
+  courseCode,
 }: {
   score: number;
   totalQuestions: number;
   onRestart: () => void;
-  courseCode: string; 
+  courseCode: string;
 }) => {
   const router = useRouter();
 
   const handleBackToPortal = () => {
-    router.push(`/courses/${courseCode}`); 
+    router.push(`/courses/${courseCode}`);
   };
+
+  const progressValue = totalQuestions > 0 ? (score / totalQuestions) * 100 : 0;
+  console.log(`Progress value: ${progressValue}`);
 
   return (
     <Card className="w-full max-w-md mx-auto bg-gray-800 bg-opacity-50 backdrop-blur-sm text-center border-2 border-blue-500 shadow-lg relative">
+      {/* Back to Course Portal Button */}
       <button
         onClick={handleBackToPortal}
         className="absolute top-4 left-4 text-blue-300 hover:bg-blue-900 p-2 rounded-full transition-colors duration-300"
@@ -595,7 +602,7 @@ const ResultScreen = ({
         <p className="text-2xl font-bold text-gray-200">
           Your Score: {score}/{totalQuestions}
         </p>
-        <Progress value={(score / totalQuestions) * 100} className="mt-4" />
+        <Progress value={progressValue} className="mt-4" />
         <p className="mt-4 text-gray-300">
           {score === totalQuestions
             ? "Perfect score! Excellent work!"
@@ -628,6 +635,7 @@ export default function InteractiveQuiz({
   const router = useRouter();
   const handleExit = onExit || (() => router.back());
 
+  // Shuffle questions only once at the start
   const shuffledQuestions = useMemo(() => shuffleArray(questions), [questions]);
 
   const isValidQuizType =
@@ -688,6 +696,26 @@ export default function InteractiveQuiz({
       : sanitizedQuestions.slice(0, questionCount);
   }, [sanitizedQuestions, quizType, questionCount]);
 
+  let progressTestQuestions: Question[] = [];
+
+  if (quizType === "progress") {
+    try {
+      const storedProgress = JSON.parse(localStorage.getItem("quizProgress") || "{}");
+      const incorrectQuestions = storedProgress[courseName]?.incorrectQuestions || [];
+      progressTestQuestions = displayedQuestions.filter((q) => incorrectQuestions.includes(q.question));
+  
+      if (progressTestQuestions.length === 0) {
+        console.warn("No progress questions found, defaulting to all questions.");
+        progressTestQuestions = displayedQuestions;
+      }
+    } catch (error) {
+      console.error("Error accessing localStorage:", error);
+      progressTestQuestions = displayedQuestions;
+    }
+  } else {
+    progressTestQuestions = displayedQuestions;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-gray-100 flex flex-col items-center justify-center p-4 relative overflow-hidden">
       <div className="absolute inset-0">
@@ -724,7 +752,7 @@ export default function InteractiveQuiz({
             <Quiz
               quizType={quizType as "practice" | "timed" | "quick" | "progress"}
               onExit={handleExit}
-              questions={quizType === "progress" ? displayedQuestions : displayedQuestions}
+              questions={quizType === "progress" ? progressTestQuestions : displayedQuestions}
               quizTime={quizTimeValue}
               courseName={courseName}
               courseCode={courseCode}
