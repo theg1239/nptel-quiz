@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Search, Book, BarChart2, HelpCircle, FileText } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useRouter } from 'next/navigation'  
+import { useRouter } from 'next/navigation'
 
 import { Input } from "@/components/ui/Input"
 import { Button } from "@/components/ui/Button"
@@ -59,7 +59,7 @@ const Logo = () => (
 )
 
 export default function Component() {
-  const router = useRouter() 
+  const router = useRouter()
   const [courses, setCourses] = useState<Course[]>([])
   const [searchTerm, setSearchTerm] = useState<string>('')
   const [suggestions, setSuggestions] = useState<Course[]>([])
@@ -72,10 +72,10 @@ export default function Component() {
       fetch('https://api.examcooker.in/counts').then(res => res.json())
     ]).then(([coursesData, statsData]) => {
       if (Array.isArray(coursesData.courses)) {
-        setCourses(coursesData.courses) 
+        setCourses(coursesData.courses)
       } else {
         console.error("API response for courses is not an array")
-        setCourses([]) 
+        setCourses([])
       }
 
       setStats(statsData)
@@ -94,7 +94,7 @@ export default function Component() {
   }, [searchTerm, courses])
 
   const handleCourseSelection = (course: Course) => {
-    router.push(`/courses/${course.course_code}`) 
+    router.push(`/courses/${course.course_code}`)
   }
 
   const StatCard: React.FC<StatCardProps> = ({ icon, title, value }) => (
@@ -144,9 +144,9 @@ export default function Component() {
             onBlur={() => setIsSearchFocused(false)}
             className="w-full p-4 bg-gray-800 bg-opacity-50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
           />
-          <Button 
-          className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-md transition-colors duration-300"
-          onClick={() => {/* Implement search functionality */}}
+          <Button
+            className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-md transition-colors duration-300"
+            onClick={() => {/* Implement search functionality */}}
           >
             <Search className="h-5 w-5" />
             <span className="sr-only">Search</span>
@@ -155,7 +155,7 @@ export default function Component() {
         <AnimatePresence>
           {suggestions.length > 0 && (
             <motion.ul
-              className="mt-2 bg-gray-800 bg-opacity-75 rounded-lg overflow-hidden shadow-lg"
+              className="mt-2 bg-gray-800 bg-opacity-75 rounded-lg overflow-hidden shadow-lg max-h-48 overflow-y-auto"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
@@ -184,22 +184,22 @@ export default function Component() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6, duration: 0.5 }}
           >
-            <StatCard 
+            <StatCard
               icon={<Book className="h-10 w-10 text-blue-400" />}
               title="Total Courses"
               value={stats.total_courses_from_json}
             />
-            <StatCard 
+            <StatCard
               icon={<FileText className="h-10 w-10 text-green-400" />}
               title="Total Assignments"
               value={stats.total_assignments}
             />
-            <StatCard 
+            <StatCard
               icon={<HelpCircle className="h-10 w-10 text-yellow-400" />}
               title="Total Questions"
               value={stats.total_questions}
             />
-            <StatCard 
+            <StatCard
               icon={<BarChart2 className="h-10 w-10 text-purple-400" />}
               title="Total Options"
               value={stats.total_options}
@@ -218,12 +218,11 @@ export default function Component() {
             Choose a course, take quizzes, and enhance your learning experience
           </p>
           <Button
-  className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full text-lg font-semibold transition-colors duration-300 shadow-lg hover:shadow-blue-500/50"
-  onClick={() => router.push('/courses')}
->
-  Explore Courses
-</Button>
-
+            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full text-lg font-semibold transition-colors duration-300 shadow-lg hover:shadow-blue-500/50"
+            onClick={() => router.push('/courses')}
+          >
+            Explore Courses
+          </Button>
         </motion.div>
       </div>
     </div>

@@ -745,7 +745,7 @@ export default function InteractiveQuiz({
 
       <div className="z-10 w-full max-w-4xl">
         <h1 className="text-4xl font-bold text-center mb-8 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
-          {courseName} - {quizType.charAt(0).toUpperCase() + quizType.slice(1)} Quiz
+           {quizType.charAt(0).toUpperCase() + quizType.slice(1)} Quiz
         </h1>
         <AnimatePresence mode="wait">
           {isValidQuizType ? (

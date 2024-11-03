@@ -20,3 +20,22 @@
 .animate-float {
   animation: float 5s linear infinite;
 }
+
+.suggestion-list {
+  max-height: 200px; 
+  overflow-y: auto;
+  position: absolute;
+  width: 100%; 
+  background-color: #1f2937; 
+  z-index: 10; 
+}
+
+.search-container {
+  position: relative;
+  width: 100%;
+}
+
+.search-container:focus-within {
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease-in-out;
+}
