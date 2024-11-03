@@ -111,23 +111,25 @@ export default function Component({ course, course_code }: QuizPortalProps = { c
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 text-gray-100 flex flex-col items-center p-4 md:p-6">
-      <Button
-        variant="ghost"
-        onClick={() => router.push('/courses')}
-        className="self-start mb-4 flex items-center text-violet-300 hover:bg-violet-800"
-      >
-        <ChevronLeft className="mr-1 h-5 w-5" />
-        All Courses
-      </Button>
-
-      <header className="w-full max-w-6xl text-center mb-6">
-        <h1 className="text-3xl md:text-4xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-violet-400">
-          {course.title}
-        </h1>
-        <p className="text-lg md:text-xl text-violet-300">
-          Interactive Learning Portal
-        </p>
-      </header>
+      <div className="w-full max-w-6xl flex items-center justify-between mb-6">
+        <Button
+          variant="ghost"
+          onClick={() => router.push('/courses')}
+          className="flex items-center text-violet-300 hover:bg-violet-800"
+        >
+          <ChevronLeft className="mr-1 h-5 w-5" />
+          
+        </Button>
+  
+        <div className="text-center flex-1">
+          <h1 className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-violet-400">
+            {course.title}
+          </h1>
+          <p className="text-lg md:text-xl text-violet-300">
+            Interactive Learning Portal
+          </p>
+        </div>
+      </div>  
       
       <main className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
       <Card className="bg-gray-800 bg-opacity-40 backdrop-blur-sm border-violet-700 md:col-span-2">

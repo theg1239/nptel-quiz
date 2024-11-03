@@ -80,7 +80,6 @@ export default function CoursesList() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        Available Courses
       </motion.h1>
       <motion.div
         className="max-w-md mx-auto mb-8"
