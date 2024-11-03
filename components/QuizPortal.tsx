@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Book, Clock, Zap, BarChart, ArrowRight, BookOpen, Award } from "lucide-react"
+import { Book, Clock, Zap, BarChart, ArrowRight, BookOpen, Award, ChevronLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/Button"
@@ -111,6 +111,15 @@ export default function Component({ course, course_code }: QuizPortalProps = { c
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 text-gray-100 flex flex-col items-center p-4 md:p-6">
+      <Button
+        variant="ghost"
+        onClick={() => router.push('/courses')}
+        className="self-start mb-4 flex items-center text-violet-300 hover:bg-violet-800"
+      >
+        <ChevronLeft className="mr-1 h-5 w-5" />
+        All Courses
+      </Button>
+
       <header className="w-full max-w-6xl text-center mb-6">
         <h1 className="text-3xl md:text-4xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-violet-400">
           {course.title}
