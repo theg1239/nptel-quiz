@@ -217,9 +217,13 @@ export default function Component() {
           <p className="text-xl text-blue-300 mb-8">
             Choose a course, take quizzes, and enhance your learning experience
           </p>
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full text-lg font-semibold transition-colors duration-300 shadow-lg hover:shadow-blue-500/50">
-            Explore Courses
-          </Button>
+          <Button
+  className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full text-lg font-semibold transition-colors duration-300 shadow-lg hover:shadow-blue-500/50"
+  onClick={() => router.push('/courses')}
+>
+  Explore Courses
+</Button>
+
         </motion.div>
       </div>
     </div>

@@ -67,29 +67,35 @@ const QuizPortal = ({ course, course_code }: QuizPortalProps) => {
     setProgress(progressPercentage);
   };
 
-  const handleStartQuiz = () => {
-    if (!VALID_QUIZ_TYPES.includes(selectedQuiz || "")) {
-      console.error("Invalid quiz type selected.");
-      return;
-    }
+const handleStartQuiz = () => {
+  if (!VALID_QUIZ_TYPES.includes(selectedQuiz || "")) {
+    console.error("Invalid quiz type selected.");
+    return;
+  }
 
-    let finalQuestionCount = questionCount;
-    let finalQuizTime = quizTime;
+  let finalQuestionCount = questionCount;
+  let finalQuizTime = quizTime;
 
-    if (selectedQuiz === "quick") {
-      finalQuestionCount = 10;
-      finalQuizTime = 5; 
-    } else if (selectedQuiz === "practice") {
-      finalQuestionCount = totalQuestions;
-      finalQuizTime = 0; 
-    } else if (selectedQuiz === "progress") {
-      finalQuestionCount = Math.min(20, totalQuestions); 
-      finalQuizTime = finalQuestionCount * 1; 
-    }
+  if (selectedQuiz === "quick") {
+    finalQuestionCount = 10;
+    finalQuizTime = 5; 
+  } else if (selectedQuiz === "practice") {
+    finalQuestionCount = totalQuestions;
+    finalQuizTime = 0; 
+  } else if (selectedQuiz === "progress") {
+    finalQuestionCount = Math.min(20, totalQuestions); 
+    finalQuizTime = finalQuestionCount * 1; 
+  }
 
-    const quizPath = `/courses/${course_code}/quiz/${selectedQuiz}?questions=${finalQuestionCount}&time=${finalQuizTime}`;
-    router.push(quizPath);
+  const quizSettings = {
+    questionCount: finalQuestionCount,
+    quizTime: finalQuizTime,
   };
+  localStorage.setItem('quizSettings', JSON.stringify(quizSettings));
+
+  const quizPath = `/courses/${course_code}/quiz/${selectedQuiz}`;
+  router.push(quizPath);
+};
 
   const quizOptions = [
     {
