@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight, Menu, CheckCircle2 } from 'lucide-react'
@@ -11,12 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Progress } from '@/components/ui/Progress'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import SpaceLoader from "@/components/SpaceLoader"
-
-interface Question {
-  question: string
-  options: string[]
-  answer: string[]
-}
+import { stripOptionLabels, initializeQuestionsWithFixedOrder, Question } from '@/lib/quizUtils'
 
 interface Week {
   name: string
@@ -163,6 +158,18 @@ export default function PracticeMode({ params }: { params: { course_code: string
     }
   }
 
+  const sanitizedCourse = useMemo(() => {
+    if (!course) return null
+    const sanitizedWeeks: Week[] = course.weeks.map(week => ({
+      ...week,
+      questions: initializeQuestionsWithFixedOrder(week.questions)
+    }))
+    return {
+      ...course,
+      weeks: sanitizedWeeks
+    }
+  }, [course])
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 text-gray-100 flex flex-col items-center">
       <header className="w-full max-w-4xl flex flex-col items-center p-4 md:p-6 space-y-4">
@@ -187,7 +194,7 @@ export default function PracticeMode({ params }: { params: { course_code: string
                 <SheetTitle>Weeks</SheetTitle>
               </SheetHeader>
               <div className="py-4">
-                {course?.weeks.map((week) => (
+                {sanitizedCourse?.weeks.map((week: Week) => (
                   <Button
                     key={week.name}
                     variant="ghost"
@@ -255,7 +262,7 @@ export default function PracticeMode({ params }: { params: { course_code: string
               >
                 {error}
               </motion.div>
-            ) : selectedWeek && (
+            ) : selectedWeek && sanitizedCourse && (
               <motion.div
                 key={selectedWeek}
                 initial={{ opacity: 0, y: 10 }}
@@ -265,33 +272,40 @@ export default function PracticeMode({ params }: { params: { course_code: string
               >
                 <Card className="bg-gray-900 bg-opacity-50 backdrop-blur-md border-gray-800">
                   <CardContent className="pt-4">
-                    {course?.weeks
+                    {sanitizedCourse.weeks
                       .find((week) => week.name === selectedWeek)
-                      ?.questions.map((question, index) => (
+                      ?.questions.map((question: Question, index: number) => (
                         <div key={index} className="mb-8 last:mb-0">
                           <h3 className="text-lg md:text-xl font-semibold mb-2 text-gray-100">
                             {index + 1}. {question.question} 
                           </h3>
                           <ul className="space-y-3">
-                            {question.options.map((option, optionIndex) => (
-                              <li
-                                key={optionIndex}
-                                className={`p-3 rounded-md transition-colors ${
-                                  question.answer.includes(option)
-                                    ? 'bg-green-800 bg-opacity-30 border border-green-600 text-green-300'
-                                    : 'bg-gray-800 bg-opacity-30 border border-gray-700 hover:bg-gray-700'
-                                }`}
-                              >
-                                <div className="flex items-center">
-                                  {question.answer.includes(option) && (
-                                    <CheckCircle2 className="mr-2 h-5 w-5 text-green-400 flex-shrink-0" />
-                                  )}
-                                  <span className={question.answer.includes(option) ? 'text-green-300' : 'text-gray-300'}>
-                                    {option}
-                                  </span>
-                                </div>
-                              </li>
-                            ))}
+                            {question.options.map((option: string, optionIndex: number) => {
+                              // Extract the label from the option
+                              const labelMatch = option.match(/^([A-Z])[).:-]/i);
+                              const label = labelMatch ? labelMatch[1].toUpperCase() : '';
+                              const isCorrect = question.answer.includes(label);
+
+                              return (
+                                <li
+                                  key={optionIndex}
+                                  className={`p-3 rounded-md transition-colors ${
+                                    isCorrect
+                                      ? 'bg-green-800 bg-opacity-30 border border-green-600 text-green-300'
+                                      : 'bg-gray-800 bg-opacity-30 border border-gray-700 hover:bg-gray-700'
+                                  }`}
+                                >
+                                  <div className="flex items-center">
+                                    {isCorrect && (
+                                      <CheckCircle2 className="mr-2 h-5 w-5 text-green-400 flex-shrink-0" />
+                                    )}
+                                    <span className={isCorrect ? 'text-green-300' : 'text-gray-300'}>
+                                      {option}
+                                    </span>
+                                  </div>
+                                </li>
+                              )
+                            })}
                           </ul>
                         </div>
                       ))}
@@ -302,19 +316,19 @@ export default function PracticeMode({ params }: { params: { course_code: string
           </AnimatePresence>
         </ScrollArea>
 
-        {!loading && !error && (
+        {!loading && !error && sanitizedCourse && selectedWeek && (
           <div className="mt-6 bg-gray-900 bg-opacity-50 backdrop-blur-md rounded-lg p-4 border border-gray-800 w-full">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm text-gray-400">Progress</span>
               <span className="text-sm text-indigo-400">
-                {selectedWeek && course ? 
+                {selectedWeek && sanitizedCourse ? 
                   `${currentWeekIndex + 1} / ${totalWeeks} weeks` : 
                   '0 / 0 weeks'
                 }
               </span>
             </div>
             <Progress 
-              value={selectedWeek && course ? 
+              value={selectedWeek && sanitizedCourse ? 
                 ((currentWeekIndex + 1) / totalWeeks) * 100 : 
                 0
               } 

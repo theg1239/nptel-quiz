@@ -2,25 +2,25 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Heart, Zap, Clock, Shield, Award, ArrowRight, ArrowLeft, CheckCircle, XCircle } from 'lucide-react'
+import { Heart, Zap, Clock, Shield, Award, ArrowRight, ArrowLeft, CheckCircle, XCircle, ChevronLeft } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/Button"
 import { Progress } from "@/components/ui/Progress"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/Card"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/Tooltip"
 import { QuizType } from '@/types/quiz'
 
 interface Question {
   question: string
   options: string[]
-  answer: string[]
+  answer: string[] 
 }
 
 interface InteractiveQuizProps {
   quizType: QuizType
   courseName: string
   questions: Question[]
-  courseCode: string;
+  courseCode: string
   onExit?: () => void
 }
 
@@ -37,6 +37,34 @@ function cleanQuestionText(question: string): string {
 
 function shuffleArray<T>(array: T[]): T[] {
   return [...array].sort(() => Math.random() - 0.5)
+}
+
+function stripOptionLabels(options: string[]): { cleanOptions: string[]; labels: string[] } {
+  const regex = /^(?:Option\s)?([A-Z])[).:-]?\s*/i; 
+  const cleanOptions = options.map((option) => {
+    const match = option.match(regex);
+    const label = match ? match[1].toUpperCase() : '';
+    const cleanOption = option.replace(regex, '');
+    console.log(`Option: "${option}", Label: "${label}", Clean Option: "${cleanOption}"`);
+    return cleanOption;
+  });
+  const labels = options.map((option) => {
+    const match = option.match(regex);
+    return match ? match[1].toUpperCase() : '';
+  });
+  return { cleanOptions, labels };
+}
+
+function initializeQuestionsWithFixedOrder(questions: Question[]): Question[] {
+  return questions.map((q) => {
+    const { cleanOptions, labels } = stripOptionLabels(q.options);
+    const labeledOptions = labels.map((label, index) => `${label}. ${cleanOptions[index]}`);
+    console.log(`Question: "${q.question}", Labeled Options: ${labeledOptions}`);
+    return {
+      ...q,
+      options: labeledOptions,
+    };
+  });
 }
 
 const PowerUp = ({ icon: Icon, name, active, onClick }: { icon: React.ComponentType<React.SVGProps<SVGSVGElement>>, name: string, active: boolean, onClick: () => void }) => (
@@ -71,13 +99,6 @@ const QuizTimer = ({ time, maxTime }: { time: number, maxTime: number }) => (
     ></div>
   </div>
 )
-
-function stripOptionLabels(options: string[]): { cleanOptions: string[]; labels: string[] } {
-  const regex = /^Option\s([A-Z]):\s*/; // Pattern to match labels like "Option A:", "Option B:", etc.
-  const cleanOptions = options.map((option) => option.replace(regex, ''));
-  const labels = options.map((option) => (option.match(regex) ? option.match(regex)![1] : ''));
-  return { cleanOptions, labels };
-}
 
 const QuizContent = ({
   question,
@@ -139,7 +160,7 @@ const QuizContent = ({
             ))}
           </div>
         )}
-        {quizType === 'practice' && (
+        {quizType === "practice" && (
           <div className="flex items-center space-x-1">
             {[...Array(lives)].map((_, i) => (
               <Heart key={i} className="h-5 w-5 text-red-500 fill-current" />
@@ -202,6 +223,7 @@ const Quiz = ({
   courseName: string
   courseCode: string
 }) => {
+  const router = useRouter()
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [score, setScore] = useState(0)
   const [lives, setLives] = useState(3)
@@ -299,30 +321,45 @@ const Quiz = ({
 
   const saveAnswers = useCallback(() => {
     const currentQuestion = questions[currentQuestionIndex];
-    const correctIndexes = currentQuestion.answer.map((ans) =>
-      currentQuestion.options.findIndex((opt) => opt.includes(ans))
-    );
+    
+    const displayedOptions = currentQuestion.options.filter((_, idx) => availableOptions.includes(idx));
 
+    const correctIndexes = currentQuestion.answer.map((ans) =>
+      displayedOptions.findIndex((opt) => {
+        const labelMatch = opt.match(/^([A-Z])[).:-]/i);
+        if (labelMatch) {
+          const label = labelMatch[1].toUpperCase();
+          console.log(`Option Label: "${label}", Answer Label: "${ans.toUpperCase()}"`);
+          return label === ans.toUpperCase();
+        }
+        return false;
+      })
+    ).filter(idx => idx !== -1);
+
+    console.log(`Correct Indexes (Filtered): ${correctIndexes}`);
+    console.log(`Selected Options (Filtered): ${selectedOptions}`);
+    
     const isCorrect =
       selectedOptions.length === correctIndexes.length &&
       selectedOptions.every((idx) => correctIndexes.includes(idx));
 
+    console.log(`Is Correct: ${isCorrect}`);
+
     if (isCorrect) {
-      setScore((prev) => {
-        console.log(`Correct answer! Increasing score from ${prev} to ${prev + 1}`);
-        return prev + 1;
-      });
+      setScore((prev) => prev + 1);
     } else if (quizType === "practice") {
-      setLives((prev) => prev - 1);
-      if (lives - 1 === 0) {
-        endQuiz();
-        return;
-      }
+      setLives((prev) => {
+        const newLives = prev - 1;
+        if (newLives === 0) {
+          endQuiz();
+        }
+        return newLives;
+      });
     }
 
     setUserAnswers((prev) => {
       const newAnswers = [...prev];
-      newAnswers[currentQuestionIndex] = { selectedOptions, correct: isCorrect, locked: false };
+      newAnswers[currentQuestionIndex] = { selectedOptions, correct: isCorrect, locked: true };
       return newAnswers;
     });
 
@@ -339,7 +376,7 @@ const Quiz = ({
         }
       }
     }, 1500);
-  }, [questions, currentQuestionIndex, selectedOptions, quizType, lives, endQuiz, goToNextQuestion]);
+  }, [questions, currentQuestionIndex, selectedOptions, quizType, lives, endQuiz, goToNextQuestion, availableOptions]);
 
   const restartQuiz = useCallback(() => {
     setCurrentQuestionIndex(0)
@@ -357,13 +394,20 @@ const Quiz = ({
   const usePowerUp = useCallback((type: string) => {
     if (type === "fiftyFifty") {
       const currentQuestion = questions[currentQuestionIndex];
-      const correctIndexes = currentQuestion.answer.map((ans) =>
-        currentQuestion.options.findIndex((opt) => opt.includes(ans))
-      );
-  
+      const correctLabels = currentQuestion.answer.map(ans => ans.toUpperCase());
+      
+      const correctIndexes = currentQuestion.options.map((opt, idx) => {
+        const labelMatch = opt.match(/^([A-Z])[).:-]/i);
+        if (labelMatch) {
+          const label = labelMatch[1].toUpperCase();
+          return correctLabels.includes(label) ? idx : -1;
+        }
+        return -1;
+      }).filter(idx => idx !== -1);
+      
       let incorrectOptions = availableOptions.filter(idx => !correctIndexes.includes(idx));
-  
-      if (availableOptions.length <= 3) {
+
+      if (availableOptions.length <= correctIndexes.length + 1) {
         setAvailableOptions(correctIndexes);
       } else {
         const optionsToRemove = incorrectOptions.slice(0, Math.min(2, incorrectOptions.length));
@@ -374,9 +418,9 @@ const Quiz = ({
     } else if (type === "shield") {
       setLives(prev => prev + 1);
     }
-  
+
     setPowerUps(prev => prev.map(p => (p.type === type ? { ...p, active: false } : p)));
-  }, [currentQuestionIndex, questions, availableOptions]);  
+  }, [currentQuestionIndex, questions, availableOptions]);
 
   const goToPreviousQuestion = () => {
     if (currentQuestionIndex > 0) {
@@ -402,18 +446,7 @@ const Quiz = ({
     }
   }, [])
 
-  function initializeQuestionsWithFixedOrder(questions: Question[]): Question[] {
-    return questions.map((q) => {
-      const { cleanOptions, labels } = stripOptionLabels(q.options);
-      const labeledOptions = labels.map((label, index) => `${label}. ${cleanOptions[index]}`);
-      return {
-        ...q,
-        options: labeledOptions,
-      };
-    });
-  }
-  
-  const sanitizedQuestions = initializeQuestionsWithFixedOrder(
+  const sanitizedQuestions = useMemo(() => initializeQuestionsWithFixedOrder(
     questions.filter(
       (q) =>
         q.question &&
@@ -422,7 +455,7 @@ const Quiz = ({
         q.answer &&
         q.answer.length > 0
     )
-  );
+  ), [questions])
 
   let questionCount = quizSettings.questionCount
   const quizTimeValue = quizSettings.quizTime
@@ -435,9 +468,29 @@ const Quiz = ({
 
   const displayedQuestions = useMemo(() => {
     return quizType === "practice" || quizType === "progress" 
-      ? questions
-      : shuffleArray(questions).slice(0, questionCount)
-  }, [questions, quizType, questionCount])
+      ? sanitizedQuestions
+      : shuffleArray(sanitizedQuestions).slice(0, questionCount)
+  }, [sanitizedQuestions, quizType, questionCount])
+
+  let progressTestQuestions: Question[] = [];
+
+  if (quizType === "progress") {
+    try {
+      const storedProgress = JSON.parse(localStorage.getItem("quizProgress") || "{}");
+      const incorrectQuestions = storedProgress[courseCode]?.incorrectQuestions || [];
+      progressTestQuestions = displayedQuestions.filter((q) => incorrectQuestions.includes(q.question));
+  
+      if (progressTestQuestions.length === 0) {
+        console.warn("No progress questions found, defaulting to all questions.");
+        progressTestQuestions = displayedQuestions;
+      }
+    } catch (error) {
+      console.error("Error accessing localStorage:", error);
+      progressTestQuestions = displayedQuestions;
+    }
+  } else {
+    progressTestQuestions = displayedQuestions;
+  }
 
   if (quizEnded) {
     return (
@@ -450,16 +503,16 @@ const Quiz = ({
     )
   }
 
-  const currentQuestion = displayedQuestions[currentQuestionIndex];
+  const currentQuestion = quizType === "progress" ? progressTestQuestions[currentQuestionIndex] : displayedQuestions[currentQuestionIndex];
   const isAnswerLocked = userAnswers[currentQuestionIndex]?.locked;
-  
+
   return (
     <div className="w-full max-w-4xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <Button
           onClick={onExit}
           variant="ghost"
-          className="text-blue-300 hover:bg-blue-900 transition-colors duration-300"
+          className="text-blue-300 hover:bg-blue-900 transition-colors duration-300 flex items-center"
         >
           <ArrowLeft className="mr-2 h-4 w-4" /> Exit Quiz
         </Button>
@@ -630,11 +683,10 @@ export default function InteractiveQuiz({
   onExit,
   questions,
   courseCode,
-}: InteractiveQuizProps & { courseCode: string }) {
+}: InteractiveQuizProps) {
   const router = useRouter();
   const handleExit = onExit || (() => router.back());
 
-  // Shuffle questions only once at the start
   const shuffledQuestions = useMemo(() => shuffleArray(questions), [questions]);
 
   const isValidQuizType =
@@ -643,18 +695,7 @@ export default function InteractiveQuiz({
     quizType === "quick" ||
     quizType === "progress";
 
-  function initializeQuestionsWithFixedOrder(questions: Question[]): Question[] {
-    return questions.map((q) => {
-      const { cleanOptions, labels } = stripOptionLabels(q.options);
-      const labeledOptions = labels.map((label, index) => `${label}. ${cleanOptions[index]}`);
-      return {
-        ...q,
-        options: labeledOptions,
-      };
-    });
-  }
-
-  const sanitizedQuestions = initializeQuestionsWithFixedOrder(
+  const sanitizedQuestions = useMemo(() => initializeQuestionsWithFixedOrder(
     shuffledQuestions.filter(
       (q) =>
         q.question &&
@@ -663,7 +704,7 @@ export default function InteractiveQuiz({
         q.answer &&
         q.answer.length > 0
     )
-  );
+  ), [shuffledQuestions])
 
   const [quizSettings, setQuizSettings] = useState<{ questionCount: number; quizTime: number }>({
     questionCount: 10,
@@ -744,7 +785,6 @@ export default function InteractiveQuiz({
 
       <div className="z-10 w-full max-w-4xl">
         <h1 className="text-4xl font-bold text-center mb-8 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
-           {quizType.charAt(0).toUpperCase() + quizType.slice(1)} Quiz
         </h1>
         <AnimatePresence mode="wait">
           {isValidQuizType ? (
