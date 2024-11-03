@@ -17,8 +17,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "NPTEL Quiz",
-  description: "Interactive quizzes for NPTEL courses",
+  title: "NPTel Practice",
+  description: "Interactive questions and quizzes for all your NPTEL courses",
 };
 
 export default function RootLayout({
