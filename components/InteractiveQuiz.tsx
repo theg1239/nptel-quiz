@@ -126,7 +126,7 @@ const QuizContent = ({
         <QuizTimer time={timeLeft} maxTime={maxTime} />
       )}
       <div className="flex justify-between items-center mt-2 px-6">
-      {(quizType === 'quick' || quizType === 'practice') && (
+        {(quizType === 'quick' || quizType === 'practice') && (
           <div className="flex space-x-2">
             {powerUps.map((powerUp, index) => (
               <PowerUp
@@ -249,97 +249,97 @@ const Quiz = ({
     }
   }, [quizType, quizTime]);
 
-const endQuiz = useCallback(() => {
-  setQuizEnded(true);
-  let incorrectQuestions: string[] = [];
-  try {
-    const storedProgress = JSON.parse(localStorage.getItem("quizProgress") || "{}");
-    incorrectQuestions = questions
-      .filter((_, idx) => !userAnswers[idx]?.correct)
-      .map((q) => q.question);
-    storedProgress[courseName] = {
-      incorrectQuestions,
-    };
-    localStorage.setItem("quizProgress", JSON.stringify(storedProgress));
-  } catch (error) {
-    console.error("Error accessing localStorage:", error);
-  }
-
-  try {
-    const totalQuestions = questions.length;
-    const correctAnswers = userAnswers.filter(ans => ans.correct).length;
-    const completionPercentage = Math.floor((correctAnswers / totalQuestions) * 100);
-    const courseProgress = JSON.parse(localStorage.getItem("courseProgress") || "{}");
-    courseProgress[courseName] = completionPercentage;
-    localStorage.setItem("courseProgress", JSON.stringify(courseProgress));
-  } catch (error) {
-    console.error("Error updating course completion:", error);
-  }
-}, [questions, userAnswers, courseName]);
-
-const goToNextQuestion = useCallback(() => {
-  if (currentQuestionIndex < questions.length - 1) {
-    setCurrentQuestionIndex((prev) => prev + 1);
-    setSelectedOptions(userAnswers[currentQuestionIndex + 1]?.selectedOptions || []);
-    setAvailableOptions([0, 1, 2, 3]);
-    setFeedback(null);
-  } else {
-    endQuiz();
-  }
-}, [currentQuestionIndex, questions.length, userAnswers, endQuiz]);
-
-const handleAnswer = useCallback((newSelectedOptions: number[]) => {
-  setSelectedOptions(newSelectedOptions);
-  setUserAnswers((prev) => {
-    const newAnswers = [...prev];
-    newAnswers[currentQuestionIndex] = { selectedOptions: newSelectedOptions, correct: false, locked: false };
-    return newAnswers;
-  });
-}, [currentQuestionIndex]);
-
-const saveAnswers = useCallback(() => {
-  const currentQuestion = questions[currentQuestionIndex];
-  const correctIndexes = currentQuestion.answer.map((ans) =>
-    currentQuestion.options.findIndex((opt) => opt.includes(ans))
-  );
-
-  const isCorrect =
-    selectedOptions.length === correctIndexes.length &&
-    selectedOptions.every((idx) => correctIndexes.includes(idx));
-
-  if (isCorrect) {
-    setScore((prev) => {
-      console.log(`Correct answer! Increasing score from ${prev} to ${prev + 1}`);
-      return prev + 1;
-    });
-  } else if (quizType === "practice") {
-    setLives((prev) => prev - 1);
-    if (lives - 1 === 0) {
-      endQuiz();
-      return;
+  const endQuiz = useCallback(() => {
+    setQuizEnded(true);
+    let incorrectQuestions: string[] = [];
+    try {
+      const storedProgress = JSON.parse(localStorage.getItem("quizProgress") || "{}");
+      incorrectQuestions = questions
+        .filter((_, idx) => !userAnswers[idx]?.correct)
+        .map((q) => q.question);
+      storedProgress[courseCode] = {
+        incorrectQuestions,
+      };
+      localStorage.setItem("quizProgress", JSON.stringify(storedProgress));
+    } catch (error) {
+      console.error("Error accessing localStorage:", error);
     }
-  }
 
-  setUserAnswers((prev) => {
-    const newAnswers = [...prev];
-    newAnswers[currentQuestionIndex] = { selectedOptions, correct: isCorrect, locked: false };
-    return newAnswers;
-  });
+    try {
+      const totalQuestions = questions.length;
+      const correctAnswers = userAnswers.filter(ans => ans.correct).length;
+      const completionPercentage = Math.floor((correctAnswers / totalQuestions) * 100);
+      const courseProgress = JSON.parse(localStorage.getItem("courseProgress") || "{}");
+      courseProgress[courseCode] = completionPercentage;
+      localStorage.setItem("courseProgress", JSON.stringify(courseProgress));
+    } catch (error) {
+      console.error("Error updating course completion:", error);
+    }
+  }, [questions, userAnswers, courseCode]);
 
-  if (quizType === "practice") {
-    setFeedback({ correct: isCorrect, selectedIndexes: selectedOptions });
-  }
+  const goToNextQuestion = useCallback(() => {
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex((prev) => prev + 1);
+      setSelectedOptions(userAnswers[currentQuestionIndex + 1]?.selectedOptions || []);
+      setAvailableOptions([0, 1, 2, 3]);
+      setFeedback(null);
+    } else {
+      endQuiz();
+    }
+  }, [currentQuestionIndex, questions.length, userAnswers, endQuiz]);
 
-  setTimeout(() => {
-    if (isCorrect || quizType !== "practice") {
-      if (currentQuestionIndex < questions.length - 1) {
-        goToNextQuestion();
-      } else {
+  const handleAnswer = useCallback((newSelectedOptions: number[]) => {
+    setSelectedOptions(newSelectedOptions);
+    setUserAnswers((prev) => {
+      const newAnswers = [...prev];
+      newAnswers[currentQuestionIndex] = { selectedOptions: newSelectedOptions, correct: false, locked: false };
+      return newAnswers;
+    });
+  }, [currentQuestionIndex]);
+
+  const saveAnswers = useCallback(() => {
+    const currentQuestion = questions[currentQuestionIndex];
+    const correctIndexes = currentQuestion.answer.map((ans) =>
+      currentQuestion.options.findIndex((opt) => opt.includes(ans))
+    );
+
+    const isCorrect =
+      selectedOptions.length === correctIndexes.length &&
+      selectedOptions.every((idx) => correctIndexes.includes(idx));
+
+    if (isCorrect) {
+      setScore((prev) => {
+        console.log(`Correct answer! Increasing score from ${prev} to ${prev + 1}`);
+        return prev + 1;
+      });
+    } else if (quizType === "practice") {
+      setLives((prev) => prev - 1);
+      if (lives - 1 === 0) {
         endQuiz();
+        return;
       }
     }
-  }, 1500);
-}, [questions, currentQuestionIndex, selectedOptions, quizType, lives, endQuiz, goToNextQuestion]);
+
+    setUserAnswers((prev) => {
+      const newAnswers = [...prev];
+      newAnswers[currentQuestionIndex] = { selectedOptions, correct: isCorrect, locked: false };
+      return newAnswers;
+    });
+
+    if (quizType === "practice") {
+      setFeedback({ correct: isCorrect, selectedIndexes: selectedOptions });
+    }
+
+    setTimeout(() => {
+      if (isCorrect || quizType !== "practice") {
+        if (currentQuestionIndex < questions.length - 1) {
+          goToNextQuestion();
+        } else {
+          endQuiz();
+        }
+      }
+    }, 1500);
+  }, [questions, currentQuestionIndex, selectedOptions, quizType, lives, endQuiz, goToNextQuestion]);
 
   const restartQuiz = useCallback(() => {
     setCurrentQuestionIndex(0)
@@ -468,15 +468,15 @@ const saveAnswers = useCallback(() => {
         </div>
       </div>
       <AnimatePresence mode="wait">
-        {currentQuestion ? ( // Only render if currentQuestion exists
+        {currentQuestion ? ( 
           <motion.div
             key={currentQuestionIndex}
             initial={{ opacity: 0, x: 100 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -100 }}
             transition={{
-              duration: 0.3, // Increase duration for a slower transition
-              ease: [0.42, 0, 0.58, 1], // Use an ease-in-out curve for smoothness
+              duration: 0.3, 
+              ease: [0.42, 0, 0.58, 1], 
             }}
             >
             <QuizContent
@@ -555,7 +555,7 @@ const saveAnswers = useCallback(() => {
               )}
             </AnimatePresence>
           </motion.div>
-        ) : null} {/* Skip rendering if currentQuestion is undefined */}
+        ) : null} 
       </AnimatePresence>
     </div>
   );  
@@ -583,7 +583,6 @@ const ResultScreen = ({
 
   return (
     <Card className="w-full max-w-md mx-auto bg-gray-800 bg-opacity-50 backdrop-blur-sm text-center border-2 border-blue-500 shadow-lg relative">
-      {/* Back to Course Portal Button */}
       <button
         onClick={handleBackToPortal}
         className="absolute top-4 left-4 text-blue-300 hover:bg-blue-900 p-2 rounded-full transition-colors duration-300"
@@ -672,14 +671,14 @@ export default function InteractiveQuiz({
   });
 
   useEffect(() => {
-    const storedSettings = JSON.parse(localStorage.getItem('quizSettings') || '{}');
+    const storedSettings = JSON.parse(localStorage.getItem('quizSettings') || '{}')
     if (storedSettings.questionCount) {
-      setQuizSettings((prev) => ({ ...prev, questionCount: storedSettings.questionCount }));
+      setQuizSettings((prev) => ({ ...prev, questionCount: storedSettings.questionCount }))
     }
     if (storedSettings.quizTime) {
-      setQuizSettings((prev) => ({ ...prev, quizTime: storedSettings.quizTime }));
+      setQuizSettings((prev) => ({ ...prev, quizTime: storedSettings.quizTime }))
     }
-  }, []);
+  }, [])
 
   let questionCount = quizSettings.questionCount;
   const quizTimeValue = quizSettings.quizTime;
@@ -693,15 +692,15 @@ export default function InteractiveQuiz({
   const displayedQuestions = useMemo(() => {
     return quizType === "practice" || quizType === "progress" 
       ? sanitizedQuestions
-      : sanitizedQuestions.slice(0, questionCount);
-  }, [sanitizedQuestions, quizType, questionCount]);
+      : shuffleArray(sanitizedQuestions).slice(0, questionCount)
+  }, [sanitizedQuestions, quizType, questionCount])
 
   let progressTestQuestions: Question[] = [];
 
   if (quizType === "progress") {
     try {
       const storedProgress = JSON.parse(localStorage.getItem("quizProgress") || "{}");
-      const incorrectQuestions = storedProgress[courseName]?.incorrectQuestions || [];
+      const incorrectQuestions = storedProgress[courseCode]?.incorrectQuestions || [];
       progressTestQuestions = displayedQuestions.filter((q) => incorrectQuestions.includes(q.question));
   
       if (progressTestQuestions.length === 0) {

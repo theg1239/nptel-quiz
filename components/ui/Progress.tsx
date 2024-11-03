@@ -1,14 +1,13 @@
-'use client'
-
 import * as React from 'react'
 import { cn } from '@/lib/utils'
 
 interface ProgressProps extends React.HTMLAttributes<HTMLDivElement> {
   value: number 
+  colorClass?: string 
 }
 
 const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
-  ({ className, value, ...props }, ref) => {
+  ({ className, value, colorClass = 'bg-blue-600 dark:bg-blue-500', ...props }, ref) => {
     const clampedValue = Math.min(100, Math.max(0, value))
     return (
       <div
@@ -17,7 +16,7 @@ const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
         {...props}
       >
         <div
-          className={cn('absolute top-0 left-0 h-full bg-blue-600 dark:bg-blue-500 rounded-full transition-all duration-300')}
+          className={cn('absolute top-0 left-0 h-full rounded-full transition-all duration-300', colorClass)}
           style={{ width: `${clampedValue}%` }}
         />
       </div>
