@@ -1,10 +1,21 @@
-// components/InteractiveQuiz.tsx
-
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Heart, Zap, Clock, Shield, Award, ArrowLeft, CheckCircle, XCircle, ChevronLeft, ChevronRight, CheckCircle2, XCircle as XCircleIcon } from 'lucide-react'
+import {
+  Heart,
+  Zap,
+  Clock,
+  Shield,
+  Award,
+  ArrowLeft,
+  CheckCircle,
+  XCircle,
+  ChevronLeft,
+  ChevronRight,
+  CheckCircle2,
+  XCircle as XCircleIcon
+} from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/Button"
 import { Progress } from "@/components/ui/Progress"
@@ -13,8 +24,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
+// Define Quiz Types
 type QuizType = 'practice' | 'timed' | 'quick' | 'progress';
 
+// Define Interfaces
 interface ProcessedQuestion {
   question: string;
   shuffledOptions: string[];
@@ -27,6 +40,7 @@ interface InteractiveQuizProps {
   questions: ProcessedQuestion[];
   courseCode: string;
   onExit?: () => void;
+  quizTime?: number; // Optional prop for quiz time in seconds
 }
 
 interface ResultScreenProps {
@@ -52,8 +66,10 @@ interface UserAnswer {
   timeSpent: number;
 }
 
+// Utility: Shuffle Array
 const shuffleArray = <T,>(array: T[]): T[] => [...array].sort(() => Math.random() - 0.5);
 
+// Particle Background Component
 const ParticleBackground = () => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none">
     {[...Array(50)].map((_, i) => (
@@ -73,6 +89,7 @@ const ParticleBackground = () => (
   </div>
 )
 
+// StatCard Component
 const StatCard = ({ icon, title, value }: { icon: React.ReactNode; title: string; value: number | string }) => (
   <Card className="bg-white/10 backdrop-blur-sm border-white/20">
     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -85,7 +102,18 @@ const StatCard = ({ icon, title, value }: { icon: React.ReactNode; title: string
   </Card>
 )
 
-const PowerUp = ({ icon: Icon, name, active, onClick }: { icon: React.ComponentType<React.SVGProps<SVGSVGElement>>, name: string, active: boolean, onClick: () => void }) => (
+// PowerUp Component
+const PowerUp = ({
+  icon: Icon,
+  name,
+  active,
+  onClick
+}: {
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>,
+  name: string,
+  active: boolean,
+  onClick: () => void
+}) => (
   <TooltipProvider>
     <Tooltip>
       <TooltipTrigger asChild>
@@ -105,6 +133,7 @@ const PowerUp = ({ icon: Icon, name, active, onClick }: { icon: React.ComponentT
   </TooltipProvider>
 )
 
+// QuizTimer Component
 const QuizTimer = ({ time, maxTime }: { time: number, maxTime: number }) => (
   <div className="w-full bg-gray-700 rounded-full h-2.5 mb-4">
     <div
@@ -118,6 +147,7 @@ const QuizTimer = ({ time, maxTime }: { time: number, maxTime: number }) => (
   </div>
 )
 
+// QuizContent Component
 const QuizContent = ({
   question,
   options,
@@ -221,6 +251,7 @@ const QuizContent = ({
   </Card>
 )
 
+// ResultScreen Component
 const ResultScreen = ({
   score,
   totalQuestions,
@@ -328,7 +359,7 @@ const ResultScreen = ({
                     </Button>
                   </div>
 
-                  <ScrollArea className="h-[calc(100vh-16rem)] pr-4">
+                  <ScrollArea className="h-[calc(100vh-18rem)] pr-4"> {/* Adjusted height */}
                     <AnimatePresence mode="wait">
                       <motion.div
                         key={currentQuestionIndex}
@@ -338,7 +369,7 @@ const ResultScreen = ({
                         transition={{ duration: 0.2 }}
                       >
                         <h3 className="text-lg font-semibold mb-2 text-white">
-                          {questions[currentQuestionIndex].question}
+                          {questions[currentQuestionIndex].question.replace(/^Option [A-Z]:\s*/, '')} {/* Remove "Option X: " prefix */}
                         </h3>
                         <ul className="space-y-2">
                           {questions[currentQuestionIndex].shuffledOptions.map((option, optionIndex) => {
@@ -364,7 +395,7 @@ const ResultScreen = ({
                                     <XCircleIcon className="mr-2 h-4 w-4 text-red-300 flex-shrink-0" />
                                   )}
                                   <span className="text-sm">
-                                    {option}
+                                    {option.replace(/^Option [A-Z]:\s*/, '')} {/* Remove "Option X: " prefix */}
                                   </span>
                                 </div>
                               </li>
@@ -383,7 +414,7 @@ const ResultScreen = ({
             <TabsContent value="summary" className="flex-grow overflow-hidden">
               <Card className="bg-white/5 backdrop-blur-sm border-white/20 h-full">
                 <CardContent className="p-4 h-full">
-                  <ScrollArea className="h-[calc(100vh-16rem)] pr-4">
+                  <ScrollArea className="h-[calc(100vh-18rem)] pr-4"> {/* Adjusted height */}
                     <div className="space-y-2">
                       {questions.map((question, index) => (
                         <Card key={index} className="bg-white/5 border-white/20">
@@ -398,7 +429,7 @@ const ResultScreen = ({
                             </CardTitle>
                           </CardHeader>
                           <CardContent className="p-2">
-                            <p className="text-xs text-indigo-100 mb-1">{question.question}</p>
+                            <p className="text-xs text-indigo-100 mb-1">{question.question.replace(/^Option [A-Z]:\s*/, '')}</p> {/* Remove prefix */}
                             <p className="text-xs text-indigo-200">
                               Time: {userAnswers[index].timeSpent}s
                             </p>
@@ -417,44 +448,170 @@ const ResultScreen = ({
   )
 }
 
+// Quiz Component
 const Quiz = ({
   quizType,
   onExit,
   questions,
-  quizTime,
+  quizTime = 300, // Default to 5 minutes (300 seconds) if not provided
   courseName,
   courseCode,
 }: {
   quizType: QuizType;
   onExit: () => void;
   questions: ProcessedQuestion[];
-  quizTime: number;
+  quizTime?: number; // Time in seconds
   courseName: string;
   courseCode: string;
 }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [score, setScore] = useState(0)
   const [lives, setLives] = useState(3)
-  const [timeLeft, setTimeLeft] = useState(quizType === 'timed' || quizType === 'quick' ? quizTime * 60 : 0)
+  const [timeLeft, setTimeLeft] = useState(quizType === 'timed' || quizType === 'quick' ? quizTime : 0)
   const [powerUps, setPowerUps] = useState<PowerUpType[]>([])
   const [quizEnded, setQuizEnded] = useState(false)
   const [availableOptions, setAvailableOptions] = useState<number[]>([0, 1, 2, 3])
   const [feedback, setFeedback] = useState<{ correct: boolean; selectedIndexes: number[] } | null>(null)
   const [selectedOptions, setSelectedOptions] = useState<number[]>([])
-  const [userAnswers, setUserAnswers] = useState<UserAnswer[]>(
-    questions.map(() => ({ selectedOptions: [], correct: false, locked: false, timeSpent: 0 }))
-  )
+  const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([])
+  const [currentQuestions, setCurrentQuestions] = useState<ProcessedQuestion[]>(questions)
   const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now())
   const [restartTrigger, setRestartTrigger] = useState(false)
 
   const router = useRouter()
 
+  const localStorageKey = `quizState_${courseCode}_${quizType}`
+
+  // Load Quiz Progress or Saved State
+  useEffect(() => {
+    const loadProgress = () => {
+      if (quizType === 'progress') {
+        try {
+          const storedProgress = JSON.parse(localStorage.getItem("quizProgress") || "{}")
+          const incorrectQuestions = storedProgress[courseCode]?.incorrectQuestions || []
+          if (incorrectQuestions.length === 0) {
+            alert("You have no incorrect questions to review!")
+            onExit()
+            return
+          }
+          const filteredQuestions = questions.filter(q => incorrectQuestions.includes(q.question))
+          if (filteredQuestions.length === 0) {
+            alert("No matching incorrect questions found.")
+            onExit()
+            return
+          }
+          // Update state with filtered questions
+          setCurrentQuestions(filteredQuestions)
+          setUserAnswers(filteredQuestions.map(() => ({ selectedOptions: [], correct: false, locked: false, timeSpent: 0 })))
+          setCurrentQuestionIndex(0)
+          setScore(0)
+          setLives(3)
+          setTimeLeft(0) // No timer for 'progress' quiz type
+          setPowerUps([]) // No power-ups for 'progress' quiz type
+          setQuizEnded(false)
+          setAvailableOptions([0, 1, 2, 3])
+          setFeedback(null)
+          setSelectedOptions([])
+          setRestartTrigger(prev => !prev)
+        } catch (error) {
+          console.error("Error loading progress from localStorage:", error)
+        }
+      } else {
+        // For other quiz types, load saved state if exists
+        const savedState = localStorage.getItem(localStorageKey)
+        if (savedState) {
+          try {
+            const parsedState = JSON.parse(savedState)
+            // Use Nullish Coalescing to handle falsy values correctly
+            setCurrentQuestionIndex(parsedState.currentQuestionIndex ?? 0)
+            setScore(parsedState.score ?? 0)
+            setLives(parsedState.lives ?? 3)
+            setTimeLeft(parsedState.timeLeft ?? (quizType === 'timed' || quizType === 'quick' ? quizTime : 0))
+            setPowerUps(parsedState.powerUps ?? (quizType === "timed" || quizType === "quick" ? [
+              { type: "fiftyFifty", icon: Zap, name: "50/50", active: true },
+              { type: "extraTime", icon: Clock, name: "Extra Time", active: true },
+              { type: "shield", icon: Shield, name: "Shield", active: true },
+            ] : quizType === "practice" ? [
+              { type: "fiftyFifty", icon: Zap, name: "50/50", active: true },
+              { type: "shield", icon: Shield, name: "Shield", active: true },
+            ] : []))
+            setQuizEnded(parsedState.quizEnded ?? false)
+            setAvailableOptions(parsedState.availableOptions ?? [0, 1, 2, 3])
+            setFeedback(parsedState.feedback ?? null)
+            setSelectedOptions(parsedState.selectedOptions ?? [])
+            setUserAnswers(parsedState.userAnswers ?? questions.map(() => ({ selectedOptions: [], correct: false, locked: false, timeSpent: 0 })))
+          } catch (error) {
+            console.error("Error parsing saved quiz state:", error)
+          }
+        } else {
+          // Initialize power-ups based on quizType
+          switch (quizType) {
+            case 'timed':
+            case 'quick':
+              setPowerUps([
+                { type: "fiftyFifty", icon: Zap, name: "50/50", active: true },
+                { type: "extraTime", icon: Clock, name: "Extra Time", active: true },
+                { type: "shield", icon: Shield, name: "Shield", active: true },
+              ])
+              break
+            case 'practice':
+              setPowerUps([
+                { type: "fiftyFifty", icon: Zap, name: "50/50", active: true },
+                { type: "shield", icon: Shield, name: "Shield", active: true },
+              ])
+              break
+            default:
+              setPowerUps([])
+              break
+          }
+          // Initialize userAnswers based on initial questions
+          setUserAnswers(questions.map(() => ({ selectedOptions: [], correct: false, locked: false, timeSpent: 0 })))
+        }
+      }
+
+      loadProgress()
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Save Quiz State to Local Storage
+  useEffect(() => {
+    if (quizType !== 'progress') { // Don't save state for progress quizzes
+      const stateToSave = {
+        currentQuestionIndex,
+        score,
+        lives,
+        timeLeft,
+        powerUps,
+        quizEnded,
+        availableOptions,
+        feedback,
+        selectedOptions,
+        userAnswers,
+      }
+      localStorage.setItem(localStorageKey, JSON.stringify(stateToSave))
+    }
+  }, [
+    currentQuestionIndex,
+    score,
+    lives,
+    timeLeft,
+    powerUps,
+    quizEnded,
+    availableOptions,
+    feedback,
+    selectedOptions,
+    userAnswers,
+    quizType,
+    localStorageKey
+  ])
+
+  // End Quiz Function
   const endQuiz = useCallback(() => {
     setQuizEnded(true)
     let incorrectQuestions: string[] = []
     try {
       const storedProgress = JSON.parse(localStorage.getItem("quizProgress") || "{}")
-      incorrectQuestions = questions
+      incorrectQuestions = currentQuestions
         .filter((_, idx) => !userAnswers[idx]?.correct)
         .map((q) => q.question)
       storedProgress[courseCode] = {
@@ -466,7 +623,7 @@ const Quiz = ({
     }
 
     try {
-      const totalQuestions = questions.length
+      const totalQuestions = currentQuestions.length
       const correctAnswers = userAnswers.filter(ans => ans.correct).length
       const completionPercentage = Math.floor((correctAnswers / totalQuestions) * 100)
       const courseProgress = JSON.parse(localStorage.getItem("courseProgress") || "{}")
@@ -475,10 +632,11 @@ const Quiz = ({
     } catch (error) {
       console.error("Error updating course completion:", error)
     }
-  }, [questions, userAnswers, courseCode])
+  }, [currentQuestions, userAnswers, courseCode])
 
+  // Go To Next Question Function
   const goToNextQuestion = useCallback(() => {
-    if (currentQuestionIndex < questions.length - 1) {
+    if (currentQuestionIndex < currentQuestions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1)
       setSelectedOptions(userAnswers[currentQuestionIndex + 1]?.selectedOptions || [])
       setAvailableOptions([0, 1, 2, 3])
@@ -486,26 +644,16 @@ const Quiz = ({
     } else {
       endQuiz()
     }
-  }, [currentQuestionIndex, questions.length, userAnswers, endQuiz])
+  }, [currentQuestionIndex, currentQuestions.length, userAnswers, endQuiz])
 
+  // Handle Answer Selection
   const handleAnswer = useCallback((newSelectedOptions: number[]) => {
-    const currentTime = Date.now()
-    const timeSpent = Math.floor((currentTime - questionStartTime) / 1000)
     setSelectedOptions(newSelectedOptions)
-    setUserAnswers((prev) => {
-      const newAnswers = [...prev]
-      newAnswers[currentQuestionIndex] = { 
-        selectedOptions: newSelectedOptions, 
-        correct: false, 
-        locked: false, 
-        timeSpent 
-      }
-      return newAnswers
-    })
-  }, [currentQuestionIndex, questionStartTime])
+  }, [])
 
+  // Save Answers Function
   const saveAnswers = useCallback(() => {
-    const currentQuestion = questions[currentQuestionIndex]
+    const currentQuestion = currentQuestions[currentQuestionIndex]
     const correctIndices = currentQuestion.answerIndices.slice().sort((a, b) => a - b)
     const selectedIndices = selectedOptions.slice().sort((a, b) => a - b)
 
@@ -525,13 +673,16 @@ const Quiz = ({
       })
     }
 
+    const currentTime = Date.now()
+    const timeSpent = Math.floor((currentTime - questionStartTime) / 1000)
+
     setUserAnswers(prev => {
       const newAnswers = [...prev]
       newAnswers[currentQuestionIndex] = { 
         selectedOptions, 
         correct: isCorrect, 
         locked: true,
-        timeSpent: prev[currentQuestionIndex].timeSpent
+        timeSpent: timeSpent
       }
       return newAnswers
     })
@@ -542,32 +693,38 @@ const Quiz = ({
 
     setTimeout(() => {
       if (isCorrect || quizType !== "practice") {
-        if (currentQuestionIndex < questions.length - 1) {
+        if (currentQuestionIndex < currentQuestions.length - 1) {
           goToNextQuestion()
         } else {
           endQuiz()
         }
       }
     }, 1500)
-  }, [questions, currentQuestionIndex, selectedOptions, quizType, lives, endQuiz, goToNextQuestion])
+  }, [currentQuestions, currentQuestionIndex, selectedOptions, quizType, lives, endQuiz, goToNextQuestion, questionStartTime])
 
+  // Restart Quiz Function
   const restartQuiz = useCallback(() => {
     setCurrentQuestionIndex(0)
     setScore(0)
     setLives(3)
-    setTimeLeft(quizType === 'timed' || quizType === 'quick' ? quizTime * 60 : 0)
+    setTimeLeft(quizType === 'timed' || quizType === 'quick' ? quizTime : 0)
     setPowerUps((prev) => prev.map((p) => ({ ...p, active: true })))
     setQuizEnded(false)
     setAvailableOptions([0, 1, 2, 3])
     setFeedback(null)
     setSelectedOptions([])
-    setUserAnswers(questions.map(() => ({ selectedOptions: [], correct: false, locked: false, timeSpent: 0 })))
+    setUserAnswers(currentQuestions.map(() => ({ selectedOptions: [], correct: false, locked: false, timeSpent: 0 })))
     setRestartTrigger(prev => !prev)
-  }, [quizTime, questions, quizType])
+    // Clear saved state
+    if (quizType !== 'progress') {
+      localStorage.removeItem(localStorageKey)
+    }
+  }, [quizTime, currentQuestions, quizType, localStorageKey])
 
+  // Use Power-Up Function
   const usePowerUp = useCallback((type: string) => {
     if (type === "fiftyFifty") {
-      const currentQuestion = questions[currentQuestionIndex]
+      const currentQuestion = currentQuestions[currentQuestionIndex]
       const correctIndices = currentQuestion.answerIndices.slice().sort((a, b) => a - b)
       
       let incorrectOptions = availableOptions.filter(idx => !correctIndices.includes(idx))
@@ -585,20 +742,32 @@ const Quiz = ({
     }
 
     setPowerUps(prev => prev.map(p => (p.type === type ? { ...p, active: false } : p)))
-  }, [currentQuestionIndex, questions, availableOptions])
+  }, [currentQuestionIndex, currentQuestions, availableOptions])
 
+  // Initialize Power-Ups Based on Quiz Type
   useEffect(() => {
-    if (quizType === "timed" || quizType === "quick") {
-      setPowerUps([
-        { type: "fiftyFifty", icon: Zap, name: "50/50", active: true },
-        { type: "extraTime", icon: Clock, name: "Extra Time", active: true },
-        { type: "shield", icon: Shield, name: "Shield", active: true },
-      ])
-    } else {
-      setPowerUps([])
+    switch (quizType) {
+      case 'timed':
+      case 'quick':
+        setPowerUps([
+          { type: "fiftyFifty", icon: Zap, name: "50/50", active: true },
+          { type: "extraTime", icon: Clock, name: "Extra Time", active: true },
+          { type: "shield", icon: Shield, name: "Shield", active: true },
+        ])
+        break
+      case 'practice':
+        setPowerUps([
+          { type: "fiftyFifty", icon: Zap, name: "50/50", active: true },
+          { type: "shield", icon: Shield, name: "Shield", active: true },
+        ])
+        break
+      default:
+        setPowerUps([])
+        break
     }
   }, [quizType])
 
+  // Timer Effect
   useEffect(() => {
     if ((quizType === "timed" || quizType === "quick") && timeLeft > 0 && !quizEnded) {
       const timer = setTimeout(() => setTimeLeft((prev) => prev - 1), 1000)
@@ -608,41 +777,63 @@ const Quiz = ({
     }
   }, [timeLeft, quizEnded, quizType, endQuiz])
 
+  // Update Question Start Time on Question Change or Restart
   useEffect(() => {
     setQuestionStartTime(Date.now())
   }, [currentQuestionIndex, restartTrigger])
 
+  // Handle Reset When Questions or Quiz Type Changes
   useEffect(() => {
-    setUserAnswers(questions.map(() => ({ selectedOptions: [], correct: false, locked: false, timeSpent: 0 })))
-    setCurrentQuestionIndex(0)
-    setScore(0)
-    setLives(3)
-    setTimeLeft(quizType === 'timed' || quizType === 'quick' ? quizTime * 60 : 0)
-    setPowerUps(quizType === "timed" || quizType === "quick" ? [
-      { type: "fiftyFifty", icon: Zap, name: "50/50", active: true },
-      { type: "extraTime", icon: Clock, name: "Extra Time", active: true },
-      { type: "shield", icon: Shield, name: "Shield", active: true },
-    ] : [])
-    setQuizEnded(false)
-    setAvailableOptions([0, 1, 2, 3])
-    setFeedback(null)
-    setSelectedOptions([])
-  }, [questions, quizType, quizTime, restartTrigger])
+    // Reset only if there's no saved state and not in progress mode
+    if (quizType !== 'progress') {
+      const savedState = localStorage.getItem(localStorageKey)
+      if (!savedState) {
+        setUserAnswers(currentQuestions.map(() => ({ selectedOptions: [], correct: false, locked: false, timeSpent: 0 })))
+        setCurrentQuestionIndex(0)
+        setScore(0)
+        setLives(3)
+        setTimeLeft(quizType === 'timed' || quizType === 'quick' ? quizTime : 0)
+        setPowerUps(() => {
+          switch (quizType) {
+            case 'timed':
+            case 'quick':
+              return [
+                { type: "fiftyFifty", icon: Zap, name: "50/50", active: true },
+                { type: "extraTime", icon: Clock, name: "Extra Time", active: true },
+                { type: "shield", icon: Shield, name: "Shield", active: true },
+              ]
+            case 'practice':
+              return [
+                { type: "fiftyFifty", icon: Zap, name: "50/50", active: true },
+                { type: "shield", icon: Shield, name: "Shield", active: true },
+              ]
+            default:
+              return []
+          }
+        })
+        setQuizEnded(false)
+        setAvailableOptions([0, 1, 2, 3])
+        setFeedback(null)
+        setSelectedOptions([])
+      }
+    }
+  }, [currentQuestions, quizType, quizTime, restartTrigger, localStorageKey])
 
+  // If Quiz Ended, Show Result Screen
   if (quizEnded) {
     return (
       <ResultScreen
         score={score}
-        totalQuestions={questions.length}
+        totalQuestions={currentQuestions.length}
         handleRestart={restartQuiz}
         courseCode={courseCode}
         userAnswers={userAnswers}
-        questions={questions}
+        questions={currentQuestions}
       />
     )
   }
 
-  const currentQuestion = questions[currentQuestionIndex]
+  const currentQuestion = currentQuestions[currentQuestionIndex]
   const isAnswerLocked = userAnswers[currentQuestionIndex]?.locked
 
   return (
@@ -666,17 +857,17 @@ const Quiz = ({
             transition={{ duration: 0.3 }}
           >
             <QuizContent
-              question={currentQuestion.question}
-              options={currentQuestion.shuffledOptions}
+              question={currentQuestion.question.replace(/^Option [A-Z]:\s*/, '')} // Remove "Option X: " prefix
+              options={currentQuestion.shuffledOptions.map(option => option.replace(/^Option [A-Z]:\s*/, ''))} // Remove prefixes
               onAnswer={handleAnswer}
               timeLeft={timeLeft}
-              maxTime={quizTime * 60}
+              maxTime={quizTime}
               lives={lives}
               powerUps={powerUps}
               onUsePowerUp={usePowerUp}
               quizType={quizType}
               currentScore={score}
-              totalQuestions={questions.length}
+              totalQuestions={currentQuestions.length}
               currentQuestionIndex={currentQuestionIndex}
               selectedOptions={selectedOptions}
               isAnswerLocked={isAnswerLocked}
@@ -697,7 +888,7 @@ const Quiz = ({
               </Button>
               <Button
                 onClick={goToNextQuestion}
-                disabled={currentQuestionIndex === questions.length - 1}
+                disabled={currentQuestionIndex === currentQuestions.length - 1}
                 variant="outline"
               >
                 Next
@@ -744,12 +935,14 @@ const Quiz = ({
   )
 }
 
+// InteractiveQuiz Component
 export default function InteractiveQuiz({
   quizType,
   courseName,
   onExit,
   questions,
   courseCode,
+  quizTime = 300, // Default to 5 minutes (300 seconds) if not provided
 }: InteractiveQuizProps) {
   const router = useRouter();
   const handleExit = onExit || (() => router.back());
@@ -767,7 +960,7 @@ export default function InteractiveQuiz({
               quizType={quizType}
               onExit={handleExit}
               questions={questions}
-              quizTime={5}
+              quizTime={quizTime} // Use user-defined quiz time
               courseName={courseName}
               courseCode={courseCode}
             />
