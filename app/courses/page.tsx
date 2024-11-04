@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Book, Search, Star, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
+import { Book, Search, Star, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/Card'
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
@@ -20,12 +20,48 @@ interface Course {
 
 const ITEMS_PER_PAGE = 6
 
+// Modal Props Interface
+interface UnderConstructionModalProps {
+  isOpen: boolean
+  onClose: () => void
+}
+
+// UnderConstructionModal Component
+const UnderConstructionModal: React.FC<UnderConstructionModalProps> = ({ isOpen, onClose }) => {
+  if (!isOpen) return null
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <motion.div
+        className="bg-gray-800 bg-opacity-90 p-8 rounded-lg shadow-lg text-center max-w-md mx-auto"
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.8, opacity: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <AlertTriangle className="h-10 w-10 text-yellow-500 mx-auto mb-4" />
+        <h2 className="text-2xl font-bold text-blue-300 mb-2">Course Under Construction</h2>
+        <p className="text-gray-300 mb-4">
+          This course is currently under development.
+        </p>
+        <Button
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full"
+          onClick={onClose}
+        >
+          Close
+        </Button>
+      </motion.div>
+    </div>
+  )
+}
+
 export default function CoursesList() {
   const [courses, setCourses] = useState<Course[]>([])
   const [filteredCourses, setFilteredCourses] = useState<Course[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [isLoading, setIsLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false) // State to control modal visibility
   const router = useRouter()
 
   useEffect(() => {
@@ -72,14 +108,24 @@ export default function CoursesList() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  const handleCourseSelection = (course: Course) => {
+    if (course.question_count === 0) {
+      setShowModal(true) // Show modal if course has 0 questions
+    } else {
+      router.push(`/courses/${course.course_code}`)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-gray-100 p-6 flex flex-col">
+      <UnderConstructionModal isOpen={showModal} onClose={() => setShowModal(false)} />
       <motion.h1
         className="text-5xl font-bold text-center mb-8 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600"
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
+        Courses
       </motion.h1>
       <motion.div
         className="max-w-md mx-auto mb-8"
@@ -144,7 +190,7 @@ export default function CoursesList() {
                   <CardFooter>
                     <Button 
                       className="w-full bg-blue-600 hover:bg-blue-700 transition-colors duration-300"
-                      onClick={() => router.push(`/courses/${course.course_code}`)}
+                      onClick={() => handleCourseSelection(course)}
                     >
                       View Portal
                     </Button>

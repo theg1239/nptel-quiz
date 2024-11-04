@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Search, Book, BarChart2, HelpCircle, FileText } from 'lucide-react'
+import { Search, Book, BarChart2, HelpCircle, FileText, AlertTriangle } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 
@@ -47,6 +47,42 @@ const ParticleBackground = () => (
   </div>
 )
 
+// Define the props interface for UnderConstructionModal
+interface UnderConstructionModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+// UnderConstructionModal Component with typed props
+const UnderConstructionModal: React.FC<UnderConstructionModalProps> = ({ isOpen, onClose }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <motion.div
+        className="bg-gray-800 bg-opacity-90 p-8 rounded-lg shadow-lg text-center max-w-md mx-auto"
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.8, opacity: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <AlertTriangle className="h-10 w-10 text-yellow-500 mx-auto mb-4" />
+        <h2 className="text-2xl font-bold text-blue-300 mb-2">Course Under Construction</h2>
+        <p className="text-gray-300 mb-4">
+          This course is currently under development.
+        </p>
+        <Button
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full"
+          onClick={onClose}
+        >
+          Close
+        </Button>
+      </motion.div>
+    </div>
+  );
+};
+
+
 const Logo = () => (
   <motion.div
     className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600"
@@ -66,6 +102,7 @@ export default function Component() {
   const [stats, setStats] = useState<Stats | null>(null)
   const [isSearchFocused, setIsSearchFocused] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [showModal, setShowModal] = useState(false) // State to control modal visibility
   const searchContainerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -114,10 +151,14 @@ export default function Component() {
   }, [])
 
   const handleCourseSelection = (course: Course) => {
-    setSearchTerm('')
-    setSuggestions([])
-    setIsSearchFocused(false)
-    router.push(`/courses/${course.course_code}`)
+    if (course.question_count === 0) {
+      setShowModal(true) // Show modal if course has 0 questions
+    } else {
+      setSearchTerm('')
+      setSuggestions([])
+      setIsSearchFocused(false)
+      router.push(`/courses/${course.course_code}`)
+    }
   }
 
   const StatCard: React.FC<StatCardProps> = ({ icon, title, value }) => (
@@ -144,6 +185,7 @@ export default function Component() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-gray-100 flex flex-col items-center justify-center p-4 relative overflow-hidden">
       <ParticleBackground />
+      <UnderConstructionModal isOpen={showModal} onClose={() => setShowModal(false)} />
       <div className="w-full max-w-6xl z-10">
         <motion.div
           className="text-center mb-12"
