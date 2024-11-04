@@ -70,6 +70,14 @@ interface UserAnswer {
 // Utility: Shuffle Array
 const shuffleArray = <T,>(array: T[]): T[] => [...array].sort(() => Math.random() - 0.5);
 
+// Utility: Default User Answer
+const defaultUserAnswer = (): UserAnswer => ({
+  selectedOptions: [],
+  correct: false,
+  locked: false,
+  timeSpent: 0,
+});
+
 // Particle Background Component
 const ParticleBackground = () => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -457,6 +465,7 @@ const Quiz = ({
   quizTime = 300, 
   courseName,
   courseCode,
+  numQuestions, 
 }: {
   quizType: QuizType;
   onExit: () => void;
@@ -464,6 +473,7 @@ const Quiz = ({
   quizTime?: number; 
   courseName: string;
   courseCode: string;
+  numQuestions?: number;
 }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [score, setScore] = useState(0)
@@ -475,7 +485,6 @@ const Quiz = ({
   const [feedback, setFeedback] = useState<{ correct: boolean; selectedIndexes: number[] } | null>(null)
   const [selectedOptions, setSelectedOptions] = useState<number[]>([])
   const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([])
-  const [currentQuestions, setCurrentQuestions] = useState<ProcessedQuestion[]>(questions)
   const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now())
   const [restartTrigger, setRestartTrigger] = useState(false)
 
@@ -483,95 +492,34 @@ const Quiz = ({
 
   const localStorageKey = `quizState_${courseCode}_${quizType}`
 
-  // Load Quiz Progress or Saved State
+  // Initialize userAnswers
   useEffect(() => {
-    const loadProgress = () => {
-      if (quizType === 'progress') {
-        try {
-          const storedProgress = JSON.parse(localStorage.getItem("quizProgress") || "{}")
-          const incorrectQuestions = storedProgress[courseCode]?.incorrectQuestions || []
-          if (incorrectQuestions.length === 0) {
-            alert("You have no incorrect questions to review!")
-            onExit()
-            return
-          }
-          const filteredQuestions = questions.filter(q => incorrectQuestions.includes(q.question))
-          if (filteredQuestions.length === 0) {
-            alert("No matching incorrect questions found.")
-            onExit()
-            return
-          }
-          setCurrentQuestions(filteredQuestions)
-          setUserAnswers(filteredQuestions.map(() => ({ selectedOptions: [], correct: false, locked: false, timeSpent: 0 })))
-          setCurrentQuestionIndex(0)
-          setScore(0)
-          setLives(3)
-          setTimeLeft(0) 
-          setPowerUps([]) 
-          setQuizEnded(false)
-          setAvailableOptions([0, 1, 2, 3])
-          setFeedback(null)
-          setSelectedOptions([])
-          setRestartTrigger(prev => !prev)
-        } catch (error) {
-          console.error("Error loading progress from localStorage:", error)
-        }
-      } else {
-        const savedState = localStorage.getItem(localStorageKey)
-        if (savedState) {
-          try {
-            const parsedState = JSON.parse(savedState)
-            setCurrentQuestionIndex(parsedState.currentQuestionIndex ?? 0)
-            setScore(parsedState.score ?? 0)
-            setLives(parsedState.lives ?? 3)
-            setTimeLeft(parsedState.timeLeft ?? (quizType === 'timed' || quizType === 'quick' ? quizTime : 0))
-            setPowerUps(parsedState.powerUps ?? (quizType === "timed" || quizType === "quick" ? [
-              { type: "fiftyFifty", icon: Zap, name: "50/50", active: true },
-              { type: "extraTime", icon: Clock, name: "Extra Time", active: true },
-              { type: "shield", icon: Shield, name: "Shield", active: true },
-            ] : quizType === "practice" ? [
-              { type: "fiftyFifty", icon: Zap, name: "50/50", active: true },
-              { type: "shield", icon: Shield, name: "Shield", active: true },
-            ] : []))
-            setQuizEnded(parsedState.quizEnded ?? false)
-            setAvailableOptions(parsedState.availableOptions ?? [0, 1, 2, 3])
-            setFeedback(parsedState.feedback ?? null)
-            setSelectedOptions(parsedState.selectedOptions ?? [])
-            setUserAnswers(parsedState.userAnswers ?? questions.map(() => ({ selectedOptions: [], correct: false, locked: false, timeSpent: 0 })))
-          } catch (error) {
-            console.error("Error parsing saved quiz state:", error)
-          }
-        } else {
-          switch (quizType) {
-            case 'timed':
-            case 'quick':
-              setPowerUps([
-                { type: "fiftyFifty", icon: Zap, name: "50/50", active: true },
-                { type: "extraTime", icon: Clock, name: "Extra Time", active: true },
-                { type: "shield", icon: Shield, name: "Shield", active: true },
-              ])
-              break
-            case 'practice':
-              setPowerUps([
-                { type: "fiftyFifty", icon: Zap, name: "50/50", active: true },
-                { type: "shield", icon: Shield, name: "Shield", active: true },
-              ])
-              break
-            default:
-              setPowerUps([])
-              break
-          }
-          setUserAnswers(questions.map(() => ({ selectedOptions: [], correct: false, locked: false, timeSpent: 0 })))
-        }
-    };
+    setUserAnswers(questions.map(() => defaultUserAnswer()))
+  }, [questions])
 
-    loadProgress();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  // Initialize Power-Ups Based on Quiz Type
+  useEffect(() => {
+    setPowerUps(defaultPowerUps(quizType))
+  }, [quizType])
+
+  // Timer Effect
+  useEffect(() => {
+    if ((quizType === "timed" || quizType === "quick") && timeLeft > 0 && !quizEnded) {
+      const timer = setTimeout(() => setTimeLeft((prev) => prev - 1), 1000)
+      return () => clearTimeout(timer)
+    } else if (timeLeft === 0 && !quizEnded && (quizType === "timed" || quizType === "quick")) {
+      endQuiz()
+    }
+  }, [timeLeft, quizEnded, quizType])
+
+  // Update Question Start Time on Question Change or Restart
+  useEffect(() => {
+    setQuestionStartTime(Date.now())
+  }, [currentQuestionIndex, restartTrigger])
 
   // Save Quiz State to Local Storage
   useEffect(() => {
-    if (quizType !== 'progress') { 
+    if (quizType !== 'progress') { // Don't save state for progress quizzes
       const stateToSave = {
         currentQuestionIndex,
         score,
@@ -583,6 +531,9 @@ const Quiz = ({
         feedback,
         selectedOptions,
         userAnswers,
+        questions, // Include questions in saved state to maintain consistency
+        quizTime,
+        numQuestions,
       }
       localStorage.setItem(localStorageKey, JSON.stringify(stateToSave))
     }
@@ -597,8 +548,11 @@ const Quiz = ({
     feedback,
     selectedOptions,
     userAnswers,
+    questions,
     quizType,
-    localStorageKey
+    localStorageKey,
+    quizTime,
+    numQuestions,
   ])
 
   // End Quiz Function
@@ -607,7 +561,7 @@ const Quiz = ({
     let incorrectQuestions: string[] = []
     try {
       const storedProgress = JSON.parse(localStorage.getItem("quizProgress") || "{}")
-      incorrectQuestions = currentQuestions
+      incorrectQuestions = questions
         .filter((_, idx) => !userAnswers[idx]?.correct)
         .map((q) => q.question)
       storedProgress[courseCode] = {
@@ -619,7 +573,7 @@ const Quiz = ({
     }
 
     try {
-      const totalQuestions = currentQuestions.length
+      const totalQuestions = questions.length
       const correctAnswers = userAnswers.filter(ans => ans.correct).length
       const completionPercentage = Math.floor((correctAnswers / totalQuestions) * 100)
       const courseProgress = JSON.parse(localStorage.getItem("courseProgress") || "{}")
@@ -628,11 +582,11 @@ const Quiz = ({
     } catch (error) {
       console.error("Error updating course completion:", error)
     }
-  }, [currentQuestions, userAnswers, courseCode])
+  }, [questions, userAnswers, courseCode])
 
   // Go To Next Question Function
   const goToNextQuestion = useCallback(() => {
-    if (currentQuestionIndex < currentQuestions.length - 1) {
+    if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1)
       setSelectedOptions(userAnswers[currentQuestionIndex + 1]?.selectedOptions || [])
       setAvailableOptions([0, 1, 2, 3])
@@ -640,7 +594,7 @@ const Quiz = ({
     } else {
       endQuiz()
     }
-  }, [currentQuestionIndex, currentQuestions.length, userAnswers, endQuiz])
+  }, [currentQuestionIndex, questions.length, userAnswers, endQuiz])
 
   // Handle Answer Selection
   const handleAnswer = useCallback((newSelectedOptions: number[]) => {
@@ -649,7 +603,7 @@ const Quiz = ({
 
   // Save Answers Function
   const saveAnswers = useCallback(() => {
-    const currentQuestion = currentQuestions[currentQuestionIndex]
+    const currentQuestion = questions[currentQuestionIndex]
     const correctIndices = currentQuestion.answerIndices.slice().sort((a, b) => a - b)
     const selectedIndices = selectedOptions.slice().sort((a, b) => a - b)
 
@@ -689,14 +643,14 @@ const Quiz = ({
 
     setTimeout(() => {
       if (isCorrect || quizType !== "practice") {
-        if (currentQuestionIndex < currentQuestions.length - 1) {
+        if (currentQuestionIndex < questions.length - 1) {
           goToNextQuestion()
         } else {
           endQuiz()
         }
       }
     }, 1500)
-  }, [currentQuestions, currentQuestionIndex, selectedOptions, quizType, lives, endQuiz, goToNextQuestion, questionStartTime])
+  }, [questions, currentQuestionIndex, selectedOptions, quizType, lives, endQuiz, goToNextQuestion, questionStartTime])
 
   // Restart Quiz Function
   const restartQuiz = useCallback(() => {
@@ -704,23 +658,23 @@ const Quiz = ({
     setScore(0)
     setLives(3)
     setTimeLeft(quizType === 'timed' || quizType === 'quick' ? quizTime : 0)
-    setPowerUps((prev) => prev.map((p) => ({ ...p, active: true })))
+    setPowerUps(defaultPowerUps(quizType))
     setQuizEnded(false)
     setAvailableOptions([0, 1, 2, 3])
     setFeedback(null)
     setSelectedOptions([])
-    setUserAnswers(currentQuestions.map(() => ({ selectedOptions: [], correct: false, locked: false, timeSpent: 0 })))
+    setUserAnswers(questions.map(() => defaultUserAnswer()))
     setRestartTrigger(prev => !prev)
     // Clear saved state
     if (quizType !== 'progress') {
       localStorage.removeItem(localStorageKey)
     }
-  }, [quizTime, currentQuestions, quizType, localStorageKey])
+  }, [quizTime, questions, quizType, localStorageKey])
 
   // Use Power-Up Function
   const usePowerUp = useCallback((type: string) => {
     if (type === "fiftyFifty") {
-      const currentQuestion = currentQuestions[currentQuestionIndex]
+      const currentQuestion = questions[currentQuestionIndex]
       const correctIndices = currentQuestion.answerIndices.slice().sort((a, b) => a - b)
       
       let incorrectOptions = availableOptions.filter(idx => !correctIndices.includes(idx))
@@ -738,98 +692,43 @@ const Quiz = ({
     }
 
     setPowerUps(prev => prev.map(p => (p.type === type ? { ...p, active: false } : p)))
-  }, [currentQuestionIndex, currentQuestions, availableOptions])
+  }, [currentQuestionIndex, questions, availableOptions])
 
-  // Initialize Power-Ups Based on Quiz Type
-  useEffect(() => {
+  // Default Power-Ups based on Quiz Type
+  const defaultPowerUps = (quizType: QuizType): PowerUpType[] => {
     switch (quizType) {
       case 'timed':
       case 'quick':
-        setPowerUps([
+        return [
           { type: "fiftyFifty", icon: Zap, name: "50/50", active: true },
           { type: "extraTime", icon: Clock, name: "Extra Time", active: true },
           { type: "shield", icon: Shield, name: "Shield", active: true },
-        ])
-        break
+        ]
       case 'practice':
-        setPowerUps([
+        return [
           { type: "fiftyFifty", icon: Zap, name: "50/50", active: true },
           { type: "shield", icon: Shield, name: "Shield", active: true },
-        ])
-        break
+        ]
       default:
-        setPowerUps([])
-        break
+        return []
     }
-  }, [quizType])
-
-  // Timer Effect
-  useEffect(() => {
-    if ((quizType === "timed" || quizType === "quick") && timeLeft > 0 && !quizEnded) {
-      const timer = setTimeout(() => setTimeLeft((prev) => prev - 1), 1000)
-      return () => clearTimeout(timer)
-    } else if (timeLeft === 0 && !quizEnded && (quizType === "timed" || quizType === "quick")) {
-      endQuiz()
-    }
-  }, [timeLeft, quizEnded, quizType, endQuiz])
-
-  // Update Question Start Time on Question Change or Restart
-  useEffect(() => {
-    setQuestionStartTime(Date.now())
-  }, [currentQuestionIndex, restartTrigger])
-
-  // Handle Reset When Questions or Quiz Type Changes
-  useEffect(() => {
-    // Reset only if there's no saved state and not in progress mode
-    if (quizType !== 'progress') {
-      const savedState = localStorage.getItem(localStorageKey)
-      if (!savedState) {
-        setUserAnswers(currentQuestions.map(() => ({ selectedOptions: [], correct: false, locked: false, timeSpent: 0 })))
-        setCurrentQuestionIndex(0)
-        setScore(0)
-        setLives(3)
-        setTimeLeft(quizType === 'timed' || quizType === 'quick' ? quizTime : 0)
-        setPowerUps(() => {
-          switch (quizType) {
-            case 'timed':
-            case 'quick':
-              return [
-                { type: "fiftyFifty", icon: Zap, name: "50/50", active: true },
-                { type: "extraTime", icon: Clock, name: "Extra Time", active: true },
-                { type: "shield", icon: Shield, name: "Shield", active: true },
-              ]
-            case 'practice':
-              return [
-                { type: "fiftyFifty", icon: Zap, name: "50/50", active: true },
-                { type: "shield", icon: Shield, name: "Shield", active: true },
-              ]
-            default:
-              return []
-          }
-        })
-        setQuizEnded(false)
-        setAvailableOptions([0, 1, 2, 3])
-        setFeedback(null)
-        setSelectedOptions([])
-      }
-    }
-  }, [currentQuestions, quizType, quizTime, restartTrigger, localStorageKey])
+  }
 
   // If Quiz Ended, Show Result Screen
   if (quizEnded) {
     return (
       <ResultScreen
         score={score}
-        totalQuestions={currentQuestions.length}
+        totalQuestions={questions.length}
         handleRestart={restartQuiz}
         courseCode={courseCode}
         userAnswers={userAnswers}
-        questions={currentQuestions}
+        questions={questions}
       />
     )
   }
 
-  const currentQuestion = currentQuestions[currentQuestionIndex]
+  const currentQuestion = questions[currentQuestionIndex]
   const isAnswerLocked = userAnswers[currentQuestionIndex]?.locked
 
   return (
@@ -863,7 +762,7 @@ const Quiz = ({
               onUsePowerUp={usePowerUp}
               quizType={quizType}
               currentScore={score}
-              totalQuestions={currentQuestions.length}
+              totalQuestions={questions.length}
               currentQuestionIndex={currentQuestionIndex}
               selectedOptions={selectedOptions}
               isAnswerLocked={isAnswerLocked}
@@ -884,7 +783,7 @@ const Quiz = ({
               </Button>
               <Button
                 onClick={goToNextQuestion}
-                disabled={currentQuestionIndex === currentQuestions.length - 1}
+                disabled={currentQuestionIndex === questions.length - 1}
                 variant="outline"
               >
                 Next
@@ -938,19 +837,77 @@ export default function InteractiveQuiz({
   onExit,
   questions,
   courseCode,
-  quizTime = 300, // Default to 5 minutes (300 seconds) if not provided
-  numQuestions,    // Optional number of questions
+  quizTime = 300, // Default quiz time
+  numQuestions,   // Optional number of questions
 }: InteractiveQuizProps) {
   const router = useRouter();
   const handleExit = onExit || (() => router.back());
 
-  // Select a subset of questions if numQuestions is provided
-  const selectedQuestions: ProcessedQuestion[] = useMemo(() => {
-    if (numQuestions) {
-      return shuffleArray(questions).slice(0, Math.min(numQuestions, questions.length))
+  const [selectedQuestions, setSelectedQuestions] = useState<ProcessedQuestion[]>([])
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+
+  // Function to load incorrect questions for 'progress' quizType
+  const loadIncorrectQuestions = useCallback((): ProcessedQuestion[] => {
+    try {
+      const storedProgress = JSON.parse(localStorage.getItem("quizProgress") || "{}")
+      const incorrectQuestions = storedProgress[courseCode]?.incorrectQuestions || []
+      if (incorrectQuestions.length === 0) {
+        alert("You have no incorrect questions to review!")
+        handleExit()
+        return []
+      }
+      // Filter to only incorrect questions
+      const filteredQuestions = questions.filter(q => incorrectQuestions.includes(q.question))
+      if (filteredQuestions.length === 0) {
+        alert("No matching incorrect questions found.")
+        handleExit()
+        return []
+      }
+      return filteredQuestions
+    } catch (error) {
+      console.error("Error loading progress from localStorage:", error)
+      return []
     }
-    return questions
-  }, [questions, numQuestions])
+  }, [courseCode, handleExit, questions])
+
+  // Select questions based on quizType and numQuestions
+  useEffect(() => {
+    const selectQuestions = () => {
+      let selected: ProcessedQuestion[] = []
+
+      switch (quizType) {
+        case 'progress':
+          selected = loadIncorrectQuestions()
+          break
+        case 'quick':
+          selected = shuffleArray(questions).slice(0, numQuestions ? Math.min(numQuestions, questions.length) : 10)
+          break
+        case 'timed':
+          selected = shuffleArray(questions).slice(0, numQuestions ? Math.min(numQuestions, questions.length) : questions.length)
+          break
+        case 'practice':
+          selected = numQuestions ? shuffleArray(questions).slice(0, Math.min(numQuestions, questions.length)) : questions
+          break
+        default:
+          selected = questions
+          break
+      }
+
+      setSelectedQuestions(selected)
+      setIsLoading(false)
+    }
+
+    selectQuestions()
+  }, [quizType, numQuestions, questions, loadIncorrectQuestions])
+
+  // If loading, you can render a loading spinner or placeholder
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-white">Loading Quiz...</div>
+      </div>
+    )
+  }
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-gray-100 flex flex-col items-center justify-center p-6 lg:p-12">
@@ -960,15 +917,18 @@ export default function InteractiveQuiz({
           {courseName} Quiz
         </h1>
         <AnimatePresence mode="wait">
-          {selectedQuestions && (
+          {selectedQuestions.length > 0 ? (
             <Quiz
               quizType={quizType}
               onExit={handleExit}
               questions={selectedQuestions}
-              quizTime={quizTime} // Use user-defined quiz time or default
+              quizTime={quizType === 'timed' ? quizTime : quizType === 'quick' ? 60 : undefined} // Example: quick quiz has 60 seconds
               courseName={courseName}
               courseCode={courseCode}
+              numQuestions={numQuestions}
             />
+          ) : (
+            <div className="text-center text-white">No questions available.</div>
           )}
         </AnimatePresence>
       </div>
