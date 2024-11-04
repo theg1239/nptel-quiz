@@ -53,7 +53,6 @@ interface UnderConstructionModalProps {
   onClose: () => void;
 }
 
-// UnderConstructionModal Component with typed props
 const UnderConstructionModal: React.FC<UnderConstructionModalProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
@@ -69,7 +68,7 @@ const UnderConstructionModal: React.FC<UnderConstructionModalProps> = ({ isOpen,
         <AlertTriangle className="h-10 w-10 text-yellow-500 mx-auto mb-4" />
         <h2 className="text-2xl font-bold text-blue-300 mb-2">Course Under Construction</h2>
         <p className="text-gray-300 mb-4">
-          This course is currently under development.
+          This course is currently under development. Please check back later!
         </p>
         <Button
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full"
@@ -85,7 +84,7 @@ const UnderConstructionModal: React.FC<UnderConstructionModalProps> = ({ isOpen,
 
 const Logo = () => (
   <motion.div
-    className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600"
+    className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600"
     initial={{ scale: 0.5, opacity: 0 }}
     animate={{ scale: 1, opacity: 1 }}
     transition={{ duration: 0.5 }}
@@ -102,7 +101,7 @@ export default function Component() {
   const [stats, setStats] = useState<Stats | null>(null)
   const [isSearchFocused, setIsSearchFocused] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(true)
-  const [showModal, setShowModal] = useState(false) // State to control modal visibility
+  const [showModal, setShowModal] = useState(false) 
   const searchContainerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
