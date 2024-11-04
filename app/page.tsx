@@ -83,7 +83,10 @@ const Logo = () => (
   <div className="flex justify-center items-center min-h-[100px] text-4xl font-bold">
     <LogoIcon width={64} height={64} className="mr-2" />
     <span>
-      Exam<span className="text-blue-500">Cooker</span>
+      <span>Exam</span>
+      <span className="text-transparent bg-clip-text bg-gradient-to-tr from-[#253EE0] to-[#27BAEC]">
+        Cooker
+      </span>
     </span>
   </div>
 );
