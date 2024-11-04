@@ -13,7 +13,6 @@ interface Stats {
   total_courses_from_json: number
   total_assignments: number
   total_questions: number
-  total_options: number
 }
 
 interface Course {
@@ -47,7 +46,6 @@ const ParticleBackground = () => (
   </div>
 )
 
-// Define the props interface for UnderConstructionModal
 interface UnderConstructionModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -81,7 +79,6 @@ const UnderConstructionModal: React.FC<UnderConstructionModalProps> = ({ isOpen,
   );
 };
 
-
 const Logo = () => (
   <motion.div
     className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600"
@@ -101,7 +98,7 @@ export default function Component() {
   const [stats, setStats] = useState<Stats | null>(null)
   const [isSearchFocused, setIsSearchFocused] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(true)
-  const [showModal, setShowModal] = useState(false) 
+  const [showModal, setShowModal] = useState(false)
   const searchContainerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -151,7 +148,7 @@ export default function Component() {
 
   const handleCourseSelection = (course: Course) => {
     if (course.question_count === 0) {
-      setShowModal(true) // Show modal if course has 0 questions
+      setShowModal(true) 
     } else {
       setSearchTerm('')
       setSuggestions([])
@@ -172,7 +169,6 @@ export default function Component() {
     </motion.div>
   )
 
-  // Display loader with a consistent background color
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-gray-100">
@@ -199,11 +195,9 @@ export default function Component() {
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
           >
-            Master Your NPTEL Course with Interactive Learning
           </motion.p>
         </motion.div>
 
-        {/* Search Component */}
         <motion.div
           ref={searchContainerRef}
           className={`relative ${isSearchFocused ? 'shadow-lg shadow-blue-500/30' : ''}`}
@@ -222,8 +216,6 @@ export default function Component() {
           <Button
             className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-md transition-colors duration-300"
             onClick={() => {
-              // Implement search functionality or navigate to a search results page
-              // For example: router.push(`/search?query=${encodeURIComponent(searchTerm)}`)
             }}
           >
             <Search className="h-5 w-5" />
@@ -256,10 +248,9 @@ export default function Component() {
           </AnimatePresence>
         </motion.div>
 
-        {/* Statistics Section */}
         {stats && (
           <motion.div
-            className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+            className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6, duration: 0.5 }}
@@ -279,15 +270,9 @@ export default function Component() {
               title="Total Questions"
               value={stats.total_questions}
             />
-            <StatCard
-              icon={<BarChart2 className="h-10 w-10 text-purple-400" />}
-              title="Total Options"
-              value={stats.total_options}
-            />
           </motion.div>
         )}
 
-        {/* Explore Courses Section */}
         <motion.div
           className="mt-16 text-center"
           initial={{ opacity: 0, y: 20 }}
