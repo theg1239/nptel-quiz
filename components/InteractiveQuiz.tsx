@@ -87,42 +87,46 @@ const defaultPowerUps = (quizType: QuizType): PowerUpType[] => {
 const ParticleBackground = () => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none">
     {[...Array(50)].map((_, i) => (
-      <div
+      <motion.div
         key={i}
-        className="absolute bg-white rounded-full opacity-10 animate-float"
+        className="absolute bg-white rounded-full opacity-10"
         style={{
           top: `${Math.random() * 100}%`,
           left: `${Math.random() * 100}%`,
           width: `${Math.random() * 4 + 1}px`,
           height: `${Math.random() * 4 + 1}px`,
-          animationDuration: `${Math.random() * 10 + 5}s`,
-          animationDelay: `${Math.random() * 5}s`,
+        }}
+        animate={{
+          y: [0, Math.random() * 100 - 50],
+          x: [0, Math.random() * 100 - 50],
+        }}
+        transition={{
+          duration: Math.random() * 10 + 5,
+          repeat: Infinity,
+          repeatType: "reverse",
         }}
       />
     ))}
   </div>
 );
 
-// StatCard Component
-const StatCard = ({
-  icon,
-  title,
-  value,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  value: number | string;
-}) => (
-  <Card className="bg-white/10 backdrop-blur-sm border-white/20">
-    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-      <CardTitle className="text-sm font-medium text-indigo-200">{title}</CardTitle>
-      {icon}
-    </CardHeader>
-    <CardContent>
-      <div className="text-2xl font-bold text-white">{value}</div>
-    </CardContent>
-  </Card>
-);
+const StatCard = ({ icon, title, value }: { icon: React.ReactNode; title: string; value: number | string }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5 }}
+  >
+    <Card className="bg-white/10 backdrop-blur-sm border-white/20">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium text-indigo-200">{title}</CardTitle>
+        {icon}
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold text-white">{value}</div>
+      </CardContent>
+    </Card>
+  </motion.div>
+)
 
 const cleanQuestionText = (question: string): string => {
   return question.replace(/^\s*\d+[\).]\s*/, ''); // Removes patterns like "1)", "2.", "3)"
@@ -190,6 +194,7 @@ const QuizContent = ({
   currentQuestionIndex,
   selectedOptions,
   isAnswerLocked,
+  shake, // Boolean indicating whether to shake
 }: {
   question: string;
   options: string[];
@@ -205,112 +210,122 @@ const QuizContent = ({
   currentQuestionIndex: number;
   selectedOptions: number[];
   isAnswerLocked: boolean;
+  shake: boolean; // Receive shake boolean
 }) => (
-  <Card className="w-full bg-gray-800 bg-opacity-50 backdrop-blur-sm border-2 border-blue-500 shadow-lg">
-    <CardHeader className="flex justify-between items-center">
-      <CardTitle className="text-xl font-bold text-blue-300">
-        {cleanQuestionText(question)}
-      </CardTitle>
-      <div className="text-blue-300 font-semibold">
-        Score: {currentScore} / {totalQuestions}
-      </div>
-    </CardHeader>
-    {(quizType === 'timed' || quizType === 'quick') && <QuizTimer time={timeLeft} maxTime={maxTime} />}
-    <CardContent>
-      <div className="flex justify-between items-center mb-4">
-        {(quizType === 'quick' || quizType === 'practice') && (
-          <div className="flex space-x-2">
-            {powerUps.map((powerUp, index) => (
-              <PowerUp
+  <motion.div
+    animate={shake ? 'shake' : 'rest'}
+    variants={{
+      shake: {
+        x: [0, -10, 10, -10, 10, 0],
+        transition: { duration: 0.4 },
+      },
+      rest: { x: 0 },
+    }}
+  >
+    <Card className="w-full bg-gray-800 bg-opacity-50 backdrop-blur-sm border-2 border-blue-500 shadow-lg">
+      <CardHeader className="flex justify-between items-center">
+        <CardTitle className="text-xl font-bold text-blue-300">
+          {cleanQuestionText(question)}
+        </CardTitle>
+        <div className="text-blue-300 font-semibold">
+          Score: {currentScore} / {totalQuestions}
+        </div>
+      </CardHeader>
+      {(quizType === 'timed' || quizType === 'quick') && <QuizTimer time={timeLeft} maxTime={maxTime} />}
+      <CardContent>
+        <div className="flex justify-between items-center mb-4">
+          {(quizType === 'quick' || quizType === 'practice') && (
+            <div className="flex space-x-2">
+              {powerUps.map((powerUp, index) => (
+                <PowerUp
+                  key={index}
+                  icon={powerUp.icon}
+                  name={powerUp.name}
+                  active={powerUp.active}
+                  onClick={() => onUsePowerUp(powerUp.type)}
+                />
+              ))}
+            </div>
+          )}
+          {quizType === 'practice' && (
+            <div className="flex items-center space-x-1">
+              {[...Array(lives)].map((_, i) => (
+                <Heart key={i} className="h-5 w-5 text-red-500 fill-current" />
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="grid grid-cols-1 gap-4">
+          {options.map((option, index) => {
+            const isSelected = selectedOptions.includes(index);
+            return (
+              <Button
                 key={index}
-                icon={powerUp.icon}
-                name={powerUp.name}
-                active={powerUp.active}
-                onClick={() => onUsePowerUp(powerUp.type)}
-              />
-            ))}
-          </div>
-        )}
-        {quizType === 'practice' && (
-          <div className="flex items-center space-x-1">
-            {[...Array(lives)].map((_, i) => (
-              <Heart key={i} className="h-5 w-5 text-red-500 fill-current" />
-            ))}
-          </div>
-        )}
-      </div>
-      <div className="grid grid-cols-1 gap-4">
-        {options.map((option, index) => {
-          const isSelected = selectedOptions.includes(index);
-          return (
-            <Button
-              key={index}
-              onClick={() => {
-                if (!isAnswerLocked) {
-                  const newSelectedOptions = isSelected
-                    ? selectedOptions.filter((i) => i !== index)
-                    : [...selectedOptions, index];
-                  onAnswer(newSelectedOptions);
-                }
-              }}
-              variant={isSelected ? 'secondary' : 'outline'}
-              className={`justify-start text-left h-auto py-3 px-4 ${
-                isAnswerLocked ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-              disabled={isAnswerLocked}
-            >
-              {option}
-            </Button>
-          );
-        })}
-      </div>
-    </CardContent>
-    <CardFooter className="justify-between">
-      <div className="text-sm text-gray-400">
-        Question {currentQuestionIndex + 1} of {totalQuestions}
-      </div>
-      {(quizType === 'timed' || quizType === 'quick') && <div className="text-sm text-gray-400">Time left: {timeLeft}s</div>}
-    </CardFooter>
-  </Card>
+                onClick={() => {
+                  if (!isAnswerLocked) {
+                    const newSelectedOptions = isSelected
+                      ? selectedOptions.filter((i) => i !== index)
+                      : [...selectedOptions, index];
+                    onAnswer(newSelectedOptions);
+                  }
+                }}
+                variant="outline"
+                className={`justify-start text-left h-auto py-3 px-4 border ${
+                  isSelected ? 'border-blue-500' : 'border-transparent'
+                } ${isAnswerLocked ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-outline-blue'}`}
+                disabled={isAnswerLocked}
+              >
+                {option}
+              </Button>
+            );
+          })}
+        </div>
+      </CardContent>
+      <CardFooter className="justify-between">
+        <div className="text-sm text-gray-400">
+          Question {currentQuestionIndex + 1} of {totalQuestions}
+        </div>
+        {(quizType === 'timed' || quizType === 'quick') && <div className="text-sm text-gray-400">Time left: {timeLeft}s</div>}
+      </CardFooter>
+    </Card>
+  </motion.div>
 );
 
 // ResultScreen Component
-const ResultScreen = ({
-  score,
-  totalQuestions,
-  handleRestart,
-  courseCode,
-  userAnswers,
-  questions,
-}: ResultScreenProps) => {
-  const router = useRouter();
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+const ResultScreen = ({ score, totalQuestions, handleRestart, courseCode, userAnswers, questions }: ResultScreenProps) => {
+  const router = useRouter()
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
 
   const handleBackToPortal = () => {
-    router.push(`/courses/${courseCode}`);
-  };
+    router.push(`/courses/${courseCode}`)
+  }
 
-  const progressValue = totalQuestions > 0 ? (score / totalQuestions) * 100 : 0;
+  const progressValue = totalQuestions > 0 ? (score / totalQuestions) * 100 : 0
 
   const navigateQuestion = (direction: 'prev' | 'next') => {
-    const newIndex = direction === 'prev' ? currentQuestionIndex - 1 : currentQuestionIndex + 1;
+    const newIndex = direction === 'prev' ? currentQuestionIndex - 1 : currentQuestionIndex + 1
     if (newIndex >= 0 && newIndex < totalQuestions) {
-      setCurrentQuestionIndex(newIndex);
+      setCurrentQuestionIndex(newIndex)
     }
-  };
+  }
 
   const getScoreMessage = () => {
-    if (score === totalQuestions) return 'Perfect score! Excellent work!';
-    if (score >= totalQuestions * 0.8) return "Great job! You're doing well!";
-    if (score >= totalQuestions * 0.6) return 'Good effort! Keep practicing!';
-    return "Don't give up! Try again to improve your score.";
-  };
+    if (score === totalQuestions) return 'Perfect score! Excellent work!'
+    if (score >= totalQuestions * 0.8) return "Great job! You're doing well!"
+    if (score >= totalQuestions * 0.6) return 'Good effort! Keep practicing!'
+    return "Don't give up! Try again to improve your score."
+  }
 
-  const totalTimeSpent = userAnswers.reduce((total, answer) => total + answer.timeSpent, 0);
-  const averageTimePerQuestion = totalQuestions > 0 ? totalTimeSpent / totalQuestions : 0;
+  const totalTimeSpent = userAnswers.reduce((total, answer) => total + answer.timeSpent, 0)
+  const averageTimePerQuestion = totalQuestions > 0 ? totalTimeSpent / totalQuestions : 0
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-6 h-screen flex flex-col">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="w-full max-w-7xl mx-auto px-4 py-6 h-screen flex flex-col"
+    >
       <header className="flex justify-between items-center mb-4">
         <Button
           variant="ghost"
@@ -320,9 +335,14 @@ const ResultScreen = ({
           <ChevronLeft className="mr-2 h-4 w-4" />
           Back to Course
         </Button>
-        <h1 className="text-3xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-indigo-200 to-pink-200">
+        <motion.h1
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="text-3xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-indigo-200 to-pink-200"
+        >
           Quiz Results
-        </h1>
+        </motion.h1>
         <Button onClick={handleRestart} variant="outline" className="text-indigo-200 border-indigo-200 hover:bg-white/10">
           Try Again
         </Button>
@@ -330,16 +350,35 @@ const ResultScreen = ({
 
       <main className="flex-grow flex flex-col lg:flex-row gap-4 overflow-hidden">
         <div className="lg:w-1/3 space-y-4">
-          <Card className="bg-white/10 backdrop-blur-sm border-white/20">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xl font-bold text-indigo-200">Overall Performance</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-4xl font-bold text-center mb-2 text-white">{Math.round(progressValue)}%</div>
-              <Progress value={progressValue} className="h-2 mb-2" />
-              <p className="text-sm text-indigo-100 text-center">{getScoreMessage()}</p>
-            </CardContent>
-          </Card>
+          <motion.div
+            initial={{ x: -50, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
+            <Card className="bg-white/10 backdrop-blur-sm border-white/20">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xl font-bold text-indigo-200">Overall Performance</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.5 }}
+                  className="text-4xl font-bold text-center mb-2 text-white"
+                >
+                  {Math.round(progressValue)}%
+                </motion.div>
+                <motion.div
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ delay: 0.7 }}
+                >
+                  <Progress value={progressValue} className="h-2 mb-2" />
+                </motion.div>
+                <p className="text-sm text-indigo-100 text-center">{getScoreMessage()}</p>
+              </CardContent>
+            </Card>
+          </motion.div>
 
           <div className="grid grid-cols-2 gap-2">
             <StatCard icon={<Award className="h-4 w-4 text-yellow-300" />} title="Score" value={`${score}/${totalQuestions}`} />
@@ -349,7 +388,12 @@ const ResultScreen = ({
           </div>
         </div>
 
-        <div className="lg:w-2/3">
+        <motion.div
+          initial={{ x: 50, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="lg:w-2/3"
+        >
           <Tabs defaultValue="review" className="w-full h-full flex flex-col">
             <TabsList className="grid w-full grid-cols-2 bg-white/5 text-indigo-200 mb-2">
               <TabsTrigger value="review" className="data-[state=active]:bg-white/10 data-[state=active]:text-white">
@@ -386,7 +430,7 @@ const ResultScreen = ({
                     </Button>
                   </div>
 
-                  <ScrollArea className="h-[calc(100vh-18rem)] pr-4"> {/* Adjusted height */}
+                  <ScrollArea className="h-[calc(100vh-18rem)] pr-4">
                     <AnimatePresence mode="wait">
                       <motion.div
                         key={currentQuestionIndex}
@@ -401,11 +445,14 @@ const ResultScreen = ({
                         <ul className="space-y-2">
                           {questions[currentQuestionIndex].shuffledOptions!.map((option, optionIndex) => {
                             const isCorrect = questions[currentQuestionIndex].answerIndices!.includes(optionIndex);
-                            const isSelected = userAnswers[currentQuestionIndex]?.selectedOptions.includes(optionIndex) ?? false;
+                            const isSelected = userAnswers[currentQuestionIndex]?.selectedOptions.includes(optionIndex) ?? false
 
                             return (
-                              <li
+                              <motion.li
                                 key={optionIndex}
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: optionIndex * 0.1 }}
                                 className={`p-2 rounded-md transition-colors ${
                                   isCorrect
                                     ? 'bg-green-800/30 border border-green-500/50 text-green-200'
@@ -419,8 +466,8 @@ const ResultScreen = ({
                                   {isSelected && !isCorrect && <XCircleIcon className="mr-2 h-4 w-4 text-red-300 flex-shrink-0" />}
                                   <span className="text-sm">{option}</span>
                                 </div>
-                              </li>
-                            );
+                              </motion.li>
+                            )
                           })}
                         </ul>
                         <div className="mt-2 text-xs text-indigo-200">
@@ -435,25 +482,32 @@ const ResultScreen = ({
             <TabsContent value="summary" className="flex-grow overflow-hidden">
               <Card className="bg-white/5 backdrop-blur-sm border-white/20 h-full">
                 <CardContent className="p-4 h-full">
-                  <ScrollArea className="h-[calc(100vh-18rem)] pr-4"> {/* Adjusted height */}
+                  <ScrollArea className="h-[calc(100vh-18rem)] pr-4">
                     <div className="space-y-2">
                       {questions.map((question, index) => (
-                        <Card key={index} className="bg-white/5 border-white/20">
-                          <CardHeader className="p-2">
-                            <CardTitle className="text-xs font-medium flex items-center text-indigo-200">
-                              <span className="mr-2">Q{index + 1}:</span>
-                              {userAnswers[index]?.correct ? (
-                                <CheckCircle2 className="h-4 w-4 text-green-300" />
-                              ) : (
-                                <XCircleIcon className="h-4 w-4 text-red-300" />
-                              )}
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent className="p-2">
-                            <p className="text-xs text-indigo-100 mb-1">{question.question}</p>
-                            <p className="text-xs text-indigo-200">Time: {userAnswers[index]?.timeSpent ?? 0}s</p>
-                          </CardContent>
-                        </Card>
+                        <motion.div
+                          key={index}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                        >
+                          <Card className="bg-white/5 border-white/20">
+                            <CardHeader className="p-2">
+                              <CardTitle className="text-xs font-medium flex items-center text-indigo-200">
+                                <span className="mr-2">Q{index + 1}:</span>
+                                {userAnswers[index]?.correct ? (
+                                  <CheckCircle2 className="h-4 w-4 text-green-300" />
+                                ) : (
+                                  <XCircleIcon className="h-4 w-4 text-red-300" />
+                                )}
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-2">
+                              <p className="text-xs text-indigo-100 mb-1">{question.question}</p>
+                              <p className="text-xs text-indigo-200">Time: {userAnswers[index]?.timeSpent ?? 0}s</p>
+                            </CardContent>
+                          </Card>
+                        </motion.div>
                       ))}
                     </div>
                   </ScrollArea>
@@ -461,11 +515,11 @@ const ResultScreen = ({
               </Card>
             </TabsContent>
           </Tabs>
-        </div>
+        </motion.div>
       </main>
-    </div>
-  );
-};
+    </motion.div>
+  )
+}
 
 // Quiz Component (Internal to InteractiveQuiz)
 const Quiz = ({
@@ -499,6 +553,7 @@ const Quiz = ({
   const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([]);
   const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now());
   const [restartTrigger, setRestartTrigger] = useState(false);
+  const [shake, setShake] = useState(false); // State for shake animation
 
   const router = useRouter();
 
@@ -506,7 +561,9 @@ const Quiz = ({
     () => `quizState_${courseCode}_${quizType}_time${quizTime ?? 'default'}_num${numQuestions ?? 'default'}`,
     [courseCode, quizType, quizTime, numQuestions]
   );
-
+  
+  const currentQuestion = questions[currentQuestionIndex];
+  const isAnswerLocked = userAnswers[currentQuestionIndex]?.locked ?? false;
   // Initialize userAnswers when questions change
   useEffect(() => {
     setUserAnswers(questions.map(() => defaultUserAnswer()));
@@ -649,6 +706,15 @@ const Quiz = ({
 
   // Save Answers Function
   const saveAnswers = useCallback(() => {
+    if (selectedOptions.length === 0) {
+      // Trigger shake animation
+      setShake(true);
+      setTimeout(() => setShake(false), 400); // Duration should match the shake animation
+      return;
+    }
+
+    if (isAnswerLocked) return;
+
     const currentQuestion = questions[currentQuestionIndex];
     const correctIndices = currentQuestion.answerIndices?.slice().sort((a, b) => a - b) || [];
     const selectedIndices = selectedOptions.slice().sort((a, b) => a - b);
@@ -705,6 +771,7 @@ const Quiz = ({
     endQuiz,
     goToNextQuestion,
     questionStartTime,
+    isAnswerLocked,
   ]);
 
   // Handle Timer Expiry
@@ -815,9 +882,6 @@ const Quiz = ({
     );
   }
 
-  const currentQuestion = questions[currentQuestionIndex];
-  const isAnswerLocked = userAnswers[currentQuestionIndex]?.locked ?? false;
-
   return (
     <div className="w-full max-w-2xl mx-auto">
       <div className="flex justify-between items-center mb-6">
@@ -853,6 +917,7 @@ const Quiz = ({
               currentQuestionIndex={currentQuestionIndex}
               selectedOptions={selectedOptions}
               isAnswerLocked={isAnswerLocked}
+              shake={shake} // Pass the shake boolean
             />
             <div className="flex justify-between mt-6">
               <Button
@@ -862,7 +927,7 @@ const Quiz = ({
               >
                 Previous
               </Button>
-              <Button onClick={saveAnswers} disabled={isAnswerLocked || selectedOptions.length === 0}>
+              <Button onClick={saveAnswers}>
                 Save Answer
               </Button>
               <Button
@@ -978,11 +1043,29 @@ export default function InteractiveQuiz({
         break;
     }
 
-    selected = selected.map((question) => ({
-      ...question,
-      shuffledOptions: shuffleArray(question.options),
-      answerIndices: question.answer.map((answer) => question.options.indexOf(answer)),
-    }));
+    selected = selected.map((question) => {
+      // Strip "Option X: " from options
+      const strippedOptions = question.options.map(opt => opt.replace(/^Option [A-D]:\s*/, ''));
+
+      // Map answer letters to option texts
+      const answerLetters = question.answer;
+      const correctOptionTexts = answerLetters.map(letter => {
+        const index = letter.toUpperCase().charCodeAt(0) - 'A'.charCodeAt(0);
+        return strippedOptions[index];
+      });
+
+      // Shuffle options
+      const shuffled = shuffleArray(strippedOptions);
+
+      // Find indices of correct options in shuffled
+      const answerIndices = correctOptionTexts.map(text => shuffled.indexOf(text));
+
+      return {
+        ...question,
+        shuffledOptions: shuffled,
+        answerIndices: answerIndices,
+      };
+    });
 
     return selected;
   }, [quizType, numQuestions, questions, courseCode, handleExit]);
@@ -1001,9 +1084,14 @@ export default function InteractiveQuiz({
     <div className="relative min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-gray-100 flex flex-col items-center justify-center p-6 lg:p-12">
       <ParticleBackground />
       <div className="w-full max-w-screen-xl mx-auto">
-        <h1 className="text-2xl font-bold text-center mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
+        <motion.h1
+          initial={{ y: -50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="text-2xl font-bold text-center mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600"
+        >
           {courseName} Quiz
-        </h1>
+        </motion.h1>
         <AnimatePresence mode="wait">
           <Quiz
             key={`quiz-${quizType}-${quizTime ?? 'default'}-${numQuestions ?? 'default'}`} 
@@ -1018,5 +1106,5 @@ export default function InteractiveQuiz({
         </AnimatePresence>
       </div>
     </div>
-  );
+  )
 }
