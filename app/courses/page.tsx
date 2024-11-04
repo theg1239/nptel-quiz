@@ -20,13 +20,11 @@ interface Course {
 
 const ITEMS_PER_PAGE = 6
 
-// Modal Props Interface
 interface UnderConstructionModalProps {
   isOpen: boolean
   onClose: () => void
 }
 
-// UnderConstructionModal Component
 const UnderConstructionModal: React.FC<UnderConstructionModalProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null
 
@@ -61,7 +59,7 @@ export default function CoursesList() {
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [isLoading, setIsLoading] = useState(true)
-  const [showModal, setShowModal] = useState(false) // State to control modal visibility
+  const [showModal, setShowModal] = useState(false) 
   const router = useRouter()
 
   useEffect(() => {
@@ -110,7 +108,7 @@ export default function CoursesList() {
 
   const handleCourseSelection = (course: Course) => {
     if (course.question_count === 0) {
-      setShowModal(true) // Show modal if course has 0 questions
+      setShowModal(true) 
     } else {
       router.push(`/courses/${course.course_code}`)
     }

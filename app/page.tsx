@@ -4,10 +4,10 @@ import { useState, useEffect, useRef } from 'react'
 import { Search, Book, BarChart2, HelpCircle, FileText, AlertTriangle } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
-
 import { Input } from "@/components/ui/Input"
 import { Button } from "@/components/ui/Button"
 import SpaceLoader from "@/components/SpaceLoader"
+import LogoIcon from '../public/LogoIcon.svg';
 
 interface Stats {
   total_courses_from_json: number
@@ -80,15 +80,14 @@ const UnderConstructionModal: React.FC<UnderConstructionModalProps> = ({ isOpen,
 };
 
 const Logo = () => (
-  <motion.div
-    className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600"
-    initial={{ scale: 0.5, opacity: 0 }}
-    animate={{ scale: 1, opacity: 1 }}
-    transition={{ duration: 0.5 }}
-  >
-    NPTEL Practice
-  </motion.div>
-)
+  <div className="flex justify-center items-center min-h-[100px] text-4xl font-bold">
+    <LogoIcon width={64} height={64} className="mr-2" />
+    <span>
+      Exam<span className="text-blue-500">Cooker</span>
+    </span>
+  </div>
+);
+
 
 export default function Component() {
   const router = useRouter()
