@@ -124,6 +124,10 @@ const StatCard = ({
   </Card>
 );
 
+const cleanQuestionText = (question: string): string => {
+  return question.replace(/^\s*\d+[\).]\s*/, ''); // Removes patterns like "1)", "2.", "3)"
+};
+
 // PowerUp Component
 const PowerUp = ({
   icon: Icon,
@@ -171,7 +175,6 @@ const QuizTimer = ({ time, maxTime }: { time: number; maxTime: number }) => (
   </div>
 );
 
-// QuizContent Component
 const QuizContent = ({
   question,
   options,
@@ -205,7 +208,9 @@ const QuizContent = ({
 }) => (
   <Card className="w-full bg-gray-800 bg-opacity-50 backdrop-blur-sm border-2 border-blue-500 shadow-lg">
     <CardHeader className="flex justify-between items-center">
-      <CardTitle className="text-xl font-bold text-blue-300">{question}</CardTitle>
+      <CardTitle className="text-xl font-bold text-blue-300">
+        {cleanQuestionText(question)}
+      </CardTitle>
       <div className="text-blue-300 font-semibold">
         Score: {currentScore} / {totalQuestions}
       </div>
