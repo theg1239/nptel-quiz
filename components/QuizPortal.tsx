@@ -50,33 +50,34 @@ export default function Component({ course, course_code }: QuizPortalProps = { c
 
   const handleStartQuiz = () => {
     if (!VALID_QUIZ_TYPES.includes(selectedQuiz || "")) {
-      console.error("Invalid quiz type selected.")
-      return
+      console.error("Invalid quiz type selected.");
+      return;
     }
-
-    let finalQuestionCount = questionCount
-    let finalQuizTime = quizTime
-
+  
+    let finalQuestionCount = questionCount;
+    let finalQuizTime = quizTime;
+  
     if (selectedQuiz === "quick") {
-      finalQuestionCount = 10
-      finalQuizTime = 5
+      finalQuestionCount = 10;
+      finalQuizTime = 5;
     } else if (selectedQuiz === "practice") {
-      finalQuestionCount = totalQuestions
-      finalQuizTime = 0
+      finalQuestionCount = totalQuestions;
+      finalQuizTime = 0;
     } else if (selectedQuiz === "progress") {
-      finalQuestionCount = Math.min(20, totalQuestions)
-      finalQuizTime = finalQuestionCount * 1
+      finalQuestionCount = Math.min(20, totalQuestions);
+      finalQuizTime = finalQuestionCount * 1;
     }
-
-    const quizSettings = {
-      questionCount: finalQuestionCount,
-      quizTime: finalQuizTime,
-    }
-    localStorage.setItem('quizSettings', JSON.stringify(quizSettings))
-
-    const quizPath = `/courses/${course_code}/quiz/${selectedQuiz}`
-    router.push(quizPath)
-  }
+  
+    // Convert quiz time from minutes to seconds for URL query parameter
+    const queryParams = new URLSearchParams({
+      quiz_time: (finalQuizTime * 60).toString(),
+      num_questions: finalQuestionCount.toString(),
+    });
+  
+    const quizPath = `/courses/${course_code}/quiz/${selectedQuiz}?${queryParams.toString()}`;
+    router.push(quizPath);
+  };
+  
 
   const handleStartPracticeMode = () => {
     router.push(`/courses/${course_code}/practice`)

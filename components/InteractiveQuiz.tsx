@@ -1,7 +1,9 @@
-'use client'
+// components/InteractiveQuiz.tsx
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+'use client';
+
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Heart,
   Zap,
@@ -14,36 +16,19 @@ import {
   ChevronLeft,
   ChevronRight,
   CheckCircle2,
-  XCircle as XCircleIcon
-} from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import { Button } from "@/components/ui/Button"
-import { Progress } from "@/components/ui/Progress"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/Card"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/Tooltip"
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+  XCircle as XCircleIcon,
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/Button';
+import { Progress } from '@/components/ui/Progress';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/Tooltip';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-// Define Quiz Types
-type QuizType = 'practice' | 'timed' | 'quick' | 'progress';
+import { InteractiveQuizProps, QuizType, ProcessedQuestion } from '@/types/quiz'; // Ensure correct import
 
-// Define Interfaces
-interface ProcessedQuestion {
-  question: string;
-  shuffledOptions: string[];
-  answerIndices: number[];
-}
-
-interface InteractiveQuizProps {
-  quizType: QuizType;
-  courseName: string;
-  questions: ProcessedQuestion[];
-  courseCode: string;
-  onExit?: () => void;
-  quizTime?: number; // Optional prop for quiz time in seconds
-  numQuestions?: number; // Optional prop for the number of questions
-}
-
+// Define other interfaces if not imported
 interface ResultScreenProps {
   score: number;
   totalQuestions: number;
@@ -78,6 +63,26 @@ const defaultUserAnswer = (): UserAnswer => ({
   timeSpent: 0,
 });
 
+// Utility: Default Power-Ups
+const defaultPowerUps = (quizType: QuizType): PowerUpType[] => {
+  switch (quizType) {
+    case 'timed':
+    case 'quick':
+      return [
+        { type: 'fiftyFifty', icon: Zap, name: '50/50', active: true },
+        { type: 'extraTime', icon: Clock, name: 'Extra Time', active: true },
+        { type: 'shield', icon: Shield, name: 'Shield', active: true },
+      ];
+    case 'practice':
+      return [
+        { type: 'fiftyFifty', icon: Zap, name: '50/50', active: true },
+        { type: 'shield', icon: Shield, name: 'Shield', active: true },
+      ];
+    default:
+      return [];
+  }
+};
+
 // Particle Background Component
 const ParticleBackground = () => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -96,10 +101,18 @@ const ParticleBackground = () => (
       />
     ))}
   </div>
-)
+);
 
 // StatCard Component
-const StatCard = ({ icon, title, value }: { icon: React.ReactNode; title: string; value: number | string }) => (
+const StatCard = ({
+  icon,
+  title,
+  value,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  value: number | string;
+}) => (
   <Card className="bg-white/10 backdrop-blur-sm border-white/20">
     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
       <CardTitle className="text-sm font-medium text-indigo-200">{title}</CardTitle>
@@ -109,26 +122,28 @@ const StatCard = ({ icon, title, value }: { icon: React.ReactNode; title: string
       <div className="text-2xl font-bold text-white">{value}</div>
     </CardContent>
   </Card>
-)
+);
 
 // PowerUp Component
 const PowerUp = ({
   icon: Icon,
   name,
   active,
-  onClick
+  onClick,
 }: {
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>,
-  name: string,
-  active: boolean,
-  onClick: () => void
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  name: string;
+  active: boolean;
+  onClick: () => void;
 }) => (
   <TooltipProvider>
     <Tooltip>
       <TooltipTrigger asChild>
         <button
           onClick={onClick}
-          className={`p-2 rounded-full ${active ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-700 cursor-not-allowed'} transition-colors duration-300`}
+          className={`p-2 rounded-full ${
+            active ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-700 cursor-not-allowed'
+          } transition-colors duration-300`}
           disabled={!active}
           aria-label={`Use ${name} power-up`}
         >
@@ -140,10 +155,10 @@ const PowerUp = ({
       </TooltipContent>
     </Tooltip>
   </TooltipProvider>
-)
+);
 
 // QuizTimer Component
-const QuizTimer = ({ time, maxTime }: { time: number, maxTime: number }) => (
+const QuizTimer = ({ time, maxTime }: { time: number; maxTime: number }) => (
   <div className="w-full bg-gray-700 rounded-full h-2.5 mb-4">
     <div
       className="bg-blue-600 h-2.5 rounded-full transition-all duration-1000 ease-linear"
@@ -154,7 +169,7 @@ const QuizTimer = ({ time, maxTime }: { time: number, maxTime: number }) => (
       aria-valuemax={maxTime}
     ></div>
   </div>
-)
+);
 
 // QuizContent Component
 const QuizContent = ({
@@ -190,16 +205,12 @@ const QuizContent = ({
 }) => (
   <Card className="w-full bg-gray-800 bg-opacity-50 backdrop-blur-sm border-2 border-blue-500 shadow-lg">
     <CardHeader className="flex justify-between items-center">
-      <CardTitle className="text-xl font-bold text-blue-300">
-        {question}
-      </CardTitle>
+      <CardTitle className="text-xl font-bold text-blue-300">{question}</CardTitle>
       <div className="text-blue-300 font-semibold">
         Score: {currentScore} / {totalQuestions}
       </div>
     </CardHeader>
-    {(quizType === 'timed' || quizType === 'quick') && (
-      <QuizTimer time={timeLeft} maxTime={maxTime} />
-    )}
+    {(quizType === 'timed' || quizType === 'quick') && <QuizTimer time={timeLeft} maxTime={maxTime} />}
     <CardContent>
       <div className="flex justify-between items-center mb-4">
         {(quizType === 'quick' || quizType === 'practice') && (
@@ -215,7 +226,7 @@ const QuizContent = ({
             ))}
           </div>
         )}
-        {quizType === "practice" && (
+        {quizType === 'practice' && (
           <div className="flex items-center space-x-1">
             {[...Array(lives)].map((_, i) => (
               <Heart key={i} className="h-5 w-5 text-red-500 fill-current" />
@@ -237,7 +248,7 @@ const QuizContent = ({
                   onAnswer(newSelectedOptions);
                 }
               }}
-              variant={isSelected ? "secondary" : "outline"}
+              variant={isSelected ? 'secondary' : 'outline'}
               className={`justify-start text-left h-auto py-3 px-4 ${
                 isAnswerLocked ? 'opacity-50 cursor-not-allowed' : ''
               }`}
@@ -245,7 +256,7 @@ const QuizContent = ({
             >
               {option}
             </Button>
-          )
+          );
         })}
       </div>
     </CardContent>
@@ -253,12 +264,10 @@ const QuizContent = ({
       <div className="text-sm text-gray-400">
         Question {currentQuestionIndex + 1} of {totalQuestions}
       </div>
-      {(quizType === 'timed' || quizType === 'quick') && (
-        <div className="text-sm text-gray-400">Time left: {timeLeft}s</div>
-      )}
+      {(quizType === 'timed' || quizType === 'quick') && <div className="text-sm text-gray-400">Time left: {timeLeft}s</div>}
     </CardFooter>
   </Card>
-)
+);
 
 // ResultScreen Component
 const ResultScreen = ({
@@ -269,31 +278,31 @@ const ResultScreen = ({
   userAnswers,
   questions,
 }: ResultScreenProps) => {
-  const router = useRouter()
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
+  const router = useRouter();
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
   const handleBackToPortal = () => {
-    router.push(`/courses/${courseCode}`)
-  }
+    router.push(`/courses/${courseCode}`);
+  };
 
-  const progressValue = totalQuestions > 0 ? (score / totalQuestions) * 100 : 0
+  const progressValue = totalQuestions > 0 ? (score / totalQuestions) * 100 : 0;
 
   const navigateQuestion = (direction: 'prev' | 'next') => {
-    const newIndex = direction === 'prev' ? currentQuestionIndex - 1 : currentQuestionIndex + 1
+    const newIndex = direction === 'prev' ? currentQuestionIndex - 1 : currentQuestionIndex + 1;
     if (newIndex >= 0 && newIndex < totalQuestions) {
-      setCurrentQuestionIndex(newIndex)
+      setCurrentQuestionIndex(newIndex);
     }
-  }
+  };
 
   const getScoreMessage = () => {
-    if (score === totalQuestions) return "Perfect score! Excellent work!"
-    if (score >= totalQuestions * 0.8) return "Great job! You're doing well!"
-    if (score >= totalQuestions * 0.6) return "Good effort! Keep practicing!"
-    return "Don't give up! Try again to improve your score."
-  }
+    if (score === totalQuestions) return 'Perfect score! Excellent work!';
+    if (score >= totalQuestions * 0.8) return "Great job! You're doing well!";
+    if (score >= totalQuestions * 0.6) return 'Good effort! Keep practicing!';
+    return "Don't give up! Try again to improve your score.";
+  };
 
-  const totalTimeSpent = userAnswers.reduce((total, answer) => total + answer.timeSpent, 0)
-  const averageTimePerQuestion = totalQuestions > 0 ? totalTimeSpent / totalQuestions : 0
+  const totalTimeSpent = userAnswers.reduce((total, answer) => total + answer.timeSpent, 0);
+  const averageTimePerQuestion = totalQuestions > 0 ? totalTimeSpent / totalQuestions : 0;
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-6 h-screen flex flex-col">
@@ -338,8 +347,12 @@ const ResultScreen = ({
         <div className="lg:w-2/3">
           <Tabs defaultValue="review" className="w-full h-full flex flex-col">
             <TabsList className="grid w-full grid-cols-2 bg-white/5 text-indigo-200 mb-2">
-              <TabsTrigger value="review" className="data-[state=active]:bg-white/10 data-[state=active]:text-white">Question Review</TabsTrigger>
-              <TabsTrigger value="summary" className="data-[state=active]:bg-white/10 data-[state=active]:text-white">Summary</TabsTrigger>
+              <TabsTrigger value="review" className="data-[state=active]:bg-white/10 data-[state=active]:text-white">
+                Question Review
+              </TabsTrigger>
+              <TabsTrigger value="summary" className="data-[state=active]:bg-white/10 data-[state=active]:text-white">
+                Summary
+              </TabsTrigger>
             </TabsList>
             <TabsContent value="review" className="flex-grow overflow-hidden">
               <Card className="bg-white/5 backdrop-blur-sm border-white/20 h-full flex flex-col">
@@ -378,12 +391,12 @@ const ResultScreen = ({
                         transition={{ duration: 0.2 }}
                       >
                         <h3 className="text-lg font-semibold mb-2 text-white">
-                          {questions[currentQuestionIndex].question.replace(/^Option [A-Z]:\s*/, '')} {/* Remove "Option X: " prefix */}
+                          {questions[currentQuestionIndex].question}
                         </h3>
                         <ul className="space-y-2">
-                          {questions[currentQuestionIndex].shuffledOptions.map((option, optionIndex) => {
-                            const isCorrect = questions[currentQuestionIndex].answerIndices.includes(optionIndex)
-                            const isSelected = userAnswers[currentQuestionIndex].selectedOptions.includes(optionIndex)
+                          {questions[currentQuestionIndex].shuffledOptions!.map((option, optionIndex) => {
+                            const isCorrect = questions[currentQuestionIndex].answerIndices!.includes(optionIndex);
+                            const isSelected = userAnswers[currentQuestionIndex]?.selectedOptions.includes(optionIndex) ?? false;
 
                             return (
                               <li
@@ -397,22 +410,16 @@ const ResultScreen = ({
                                 }`}
                               >
                                 <div className="flex items-center">
-                                  {isCorrect && (
-                                    <CheckCircle2 className="mr-2 h-4 w-4 text-green-300 flex-shrink-0" />
-                                  )}
-                                  {isSelected && !isCorrect && (
-                                    <XCircleIcon className="mr-2 h-4 w-4 text-red-300 flex-shrink-0" />
-                                  )}
-                                  <span className="text-sm">
-                                    {option.replace(/^Option [A-Z]:\s*/, '')} {/* Remove "Option X: " prefix */}
-                                  </span>
+                                  {isCorrect && <CheckCircle2 className="mr-2 h-4 w-4 text-green-300 flex-shrink-0" />}
+                                  {isSelected && !isCorrect && <XCircleIcon className="mr-2 h-4 w-4 text-red-300 flex-shrink-0" />}
+                                  <span className="text-sm">{option}</span>
                                 </div>
                               </li>
-                            )
+                            );
                           })}
                         </ul>
                         <div className="mt-2 text-xs text-indigo-200">
-                          Time spent: {userAnswers[currentQuestionIndex].timeSpent} seconds
+                          Time spent: {userAnswers[currentQuestionIndex]?.timeSpent ?? 0} seconds
                         </div>
                       </motion.div>
                     </AnimatePresence>
@@ -430,7 +437,7 @@ const ResultScreen = ({
                           <CardHeader className="p-2">
                             <CardTitle className="text-xs font-medium flex items-center text-indigo-200">
                               <span className="mr-2">Q{index + 1}:</span>
-                              {userAnswers[index].correct ? (
+                              {userAnswers[index]?.correct ? (
                                 <CheckCircle2 className="h-4 w-4 text-green-300" />
                               ) : (
                                 <XCircleIcon className="h-4 w-4 text-red-300" />
@@ -438,10 +445,8 @@ const ResultScreen = ({
                             </CardTitle>
                           </CardHeader>
                           <CardContent className="p-2">
-                            <p className="text-xs text-indigo-100 mb-1">{question.question.replace(/^Option [A-Z]:\s*/, '')}</p> {/* Remove prefix */}
-                            <p className="text-xs text-indigo-200">
-                              Time: {userAnswers[index].timeSpent}s
-                            </p>
+                            <p className="text-xs text-indigo-100 mb-1">{question.question}</p>
+                            <p className="text-xs text-indigo-200">Time: {userAnswers[index]?.timeSpent ?? 0}s</p>
                           </CardContent>
                         </Card>
                       ))}
@@ -454,72 +459,108 @@ const ResultScreen = ({
         </div>
       </main>
     </div>
-  )
-}
+  );
+};
 
-// Quiz Component
+// Quiz Component (Internal to InteractiveQuiz)
 const Quiz = ({
   quizType,
   onExit,
   questions,
-  quizTime = 300, 
+  quizTime = 300, // Default quiz time in seconds
   courseName,
   courseCode,
-  numQuestions, 
+  numQuestions,
 }: {
   quizType: QuizType;
   onExit: () => void;
   questions: ProcessedQuestion[];
-  quizTime?: number; 
+  quizTime?: number;
   courseName: string;
   courseCode: string;
   numQuestions?: number;
 }) => {
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
-  const [score, setScore] = useState(0)
-  const [lives, setLives] = useState(3)
-  const [timeLeft, setTimeLeft] = useState(quizType === 'timed' || quizType === 'quick' ? quizTime : 0)
-  const [powerUps, setPowerUps] = useState<PowerUpType[]>([])
-  const [quizEnded, setQuizEnded] = useState(false)
-  const [availableOptions, setAvailableOptions] = useState<number[]>([0, 1, 2, 3])
-  const [feedback, setFeedback] = useState<{ correct: boolean; selectedIndexes: number[] } | null>(null)
-  const [selectedOptions, setSelectedOptions] = useState<number[]>([])
-  const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([])
-  const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now())
-  const [restartTrigger, setRestartTrigger] = useState(false)
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [lives, setLives] = useState(3);
+  const [timeLeft, setTimeLeft] = useState(
+    quizType === 'timed' || quizType === 'quick' ? quizTime : 0
+  );
+  const [powerUps, setPowerUpsState] = useState<PowerUpType[]>([]);
+  const [quizEnded, setQuizEnded] = useState(false);
+  const [availableOptions, setAvailableOptions] = useState<number[]>([0, 1, 2, 3]);
+  const [feedback, setFeedback] = useState<{ correct: boolean; selectedIndexes: number[] } | null>(null);
+  const [selectedOptions, setSelectedOptions] = useState<number[]>([]);
+  const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([]);
+  const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now());
+  const [restartTrigger, setRestartTrigger] = useState(false);
 
-  const router = useRouter()
+  const router = useRouter();
 
-  const localStorageKey = `quizState_${courseCode}_${quizType}`
+  const localStorageKey = useMemo(
+    () => `quizState_${courseCode}_${quizType}_time${quizTime ?? 'default'}_num${numQuestions ?? 'default'}`,
+    [courseCode, quizType, quizTime, numQuestions]
+  );
 
-  // Initialize userAnswers
+  // Initialize userAnswers when questions change
   useEffect(() => {
-    setUserAnswers(questions.map(() => defaultUserAnswer()))
-  }, [questions])
+    setUserAnswers(questions.map(() => defaultUserAnswer()));
+  }, [questions]);
 
-  // Initialize Power-Ups Based on Quiz Type
+  // Initialize power-ups based on quizType
   useEffect(() => {
-    setPowerUps(defaultPowerUps(quizType))
-  }, [quizType])
+    setPowerUpsState(defaultPowerUps(quizType));
+  }, [quizType]);
 
-  // Timer Effect
+  // Initialize state if no saved state exists
   useEffect(() => {
-    if ((quizType === "timed" || quizType === "quick") && timeLeft > 0 && !quizEnded) {
-      const timer = setTimeout(() => setTimeLeft((prev) => prev - 1), 1000)
-      return () => clearTimeout(timer)
-    } else if (timeLeft === 0 && !quizEnded && (quizType === "timed" || quizType === "quick")) {
-      endQuiz()
+    if (quizType !== 'progress') {
+      const savedState = localStorage.getItem(localStorageKey);
+      if (!savedState) {
+        // Initialize default states
+        setCurrentQuestionIndex(0);
+        setScore(0);
+        setLives(3);
+        setTimeLeft(quizType === 'timed' || quizType === 'quick' ? quizTime : 0);
+        setPowerUpsState(defaultPowerUps(quizType));
+        setQuizEnded(false);
+        setAvailableOptions([0, 1, 2, 3]);
+        setFeedback(null);
+        setSelectedOptions([]);
+        setUserAnswers(questions.map(() => defaultUserAnswer()));
+      }
     }
-  }, [timeLeft, quizEnded, quizType])
+  }, [quizType, localStorageKey, quizTime, questions]);
 
-  // Update Question Start Time on Question Change or Restart
+  // Load saved state from localStorage if exists
   useEffect(() => {
-    setQuestionStartTime(Date.now())
-  }, [currentQuestionIndex, restartTrigger])
+    if (quizType !== 'progress') {
+      const savedState = localStorage.getItem(localStorageKey);
+      if (savedState) {
+        try {
+          const parsedState = JSON.parse(savedState);
+          setCurrentQuestionIndex(parsedState.currentQuestionIndex ?? 0);
+          setScore(parsedState.score ?? 0);
+          setLives(parsedState.lives ?? 3);
+          setTimeLeft(
+            parsedState.timeLeft ?? (quizType === 'timed' || quizType === 'quick' ? quizTime : 0)
+          );
+          setPowerUpsState(parsedState.powerUps ?? defaultPowerUps(quizType));
+          setQuizEnded(parsedState.quizEnded ?? false);
+          setAvailableOptions(parsedState.availableOptions ?? [0, 1, 2, 3]);
+          setFeedback(parsedState.feedback ?? null);
+          setSelectedOptions(parsedState.selectedOptions ?? []);
+          setUserAnswers(parsedState.userAnswers ?? questions.map(() => defaultUserAnswer()));
+        } catch (error) {
+          console.error('Error parsing saved quiz state:', error);
+        }
+      }
+    }
+  }, [quizType, localStorageKey, quizTime, questions]);
 
   // Save Quiz State to Local Storage
   useEffect(() => {
-    if (quizType !== 'progress') { // Don't save state for progress quizzes
+    if (quizType !== 'progress') {
       const stateToSave = {
         currentQuestionIndex,
         score,
@@ -534,8 +575,8 @@ const Quiz = ({
         questions, // Include questions in saved state to maintain consistency
         quizTime,
         numQuestions,
-      }
-      localStorage.setItem(localStorageKey, JSON.stringify(stateToSave))
+      };
+      localStorage.setItem(localStorageKey, JSON.stringify(stateToSave));
     }
   }, [
     currentQuestionIndex,
@@ -553,166 +594,207 @@ const Quiz = ({
     localStorageKey,
     quizTime,
     numQuestions,
-  ])
+  ]);
 
   // End Quiz Function
   const endQuiz = useCallback(() => {
-    setQuizEnded(true)
-    let incorrectQuestions: string[] = []
+    setQuizEnded(true);
+    let incorrectQuestions: string[] = [];
     try {
-      const storedProgress = JSON.parse(localStorage.getItem("quizProgress") || "{}")
+      const storedProgress = JSON.parse(localStorage.getItem('quizProgress') || '{}');
       incorrectQuestions = questions
         .filter((_, idx) => !userAnswers[idx]?.correct)
-        .map((q) => q.question)
+        .map((q) => q.question);
       storedProgress[courseCode] = {
         incorrectQuestions,
-      }
-      localStorage.setItem("quizProgress", JSON.stringify(storedProgress))
+      };
+      localStorage.setItem('quizProgress', JSON.stringify(storedProgress));
     } catch (error) {
-      console.error("Error accessing localStorage:", error)
+      console.error('Error accessing localStorage:', error);
     }
 
     try {
-      const totalQuestions = questions.length
-      const correctAnswers = userAnswers.filter(ans => ans.correct).length
-      const completionPercentage = Math.floor((correctAnswers / totalQuestions) * 100)
-      const courseProgress = JSON.parse(localStorage.getItem("courseProgress") || "{}")
-      courseProgress[courseCode] = completionPercentage
-      localStorage.setItem("courseProgress", JSON.stringify(courseProgress))
+      const totalQuestions = questions.length;
+      const correctAnswers = userAnswers.filter((ans) => ans.correct).length;
+      const completionPercentage = Math.floor((correctAnswers / totalQuestions) * 100);
+      const courseProgress = JSON.parse(localStorage.getItem('courseProgress') || '{}');
+      courseProgress[courseCode] = completionPercentage;
+      localStorage.setItem('courseProgress', JSON.stringify(courseProgress));
     } catch (error) {
-      console.error("Error updating course completion:", error)
+      console.error('Error updating course completion:', error);
     }
-  }, [questions, userAnswers, courseCode])
+  }, [questions, userAnswers, courseCode]);
 
   // Go To Next Question Function
   const goToNextQuestion = useCallback(() => {
     if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex((prev) => prev + 1)
-      setSelectedOptions(userAnswers[currentQuestionIndex + 1]?.selectedOptions || [])
-      setAvailableOptions([0, 1, 2, 3])
-      setFeedback(null)
+      setCurrentQuestionIndex((prev) => prev + 1);
+      setSelectedOptions(userAnswers[currentQuestionIndex + 1]?.selectedOptions || []);
+      setAvailableOptions([0, 1, 2, 3]);
+      setFeedback(null);
     } else {
-      endQuiz()
+      endQuiz();
     }
-  }, [currentQuestionIndex, questions.length, userAnswers, endQuiz])
+  }, [currentQuestionIndex, questions.length, userAnswers, endQuiz]);
 
   // Handle Answer Selection
   const handleAnswer = useCallback((newSelectedOptions: number[]) => {
-    setSelectedOptions(newSelectedOptions)
-  }, [])
+    setSelectedOptions(newSelectedOptions);
+  }, []);
 
   // Save Answers Function
   const saveAnswers = useCallback(() => {
-    const currentQuestion = questions[currentQuestionIndex]
-    const correctIndices = currentQuestion.answerIndices.slice().sort((a, b) => a - b)
-    const selectedIndices = selectedOptions.slice().sort((a, b) => a - b)
+    const currentQuestion = questions[currentQuestionIndex];
+    const correctIndices = currentQuestion.answerIndices?.slice().sort((a, b) => a - b) || [];
+    const selectedIndices = selectedOptions.slice().sort((a, b) => a - b);
 
     const isCorrect =
       selectedIndices.length === correctIndices.length &&
-      selectedIndices.every((val, index) => val === correctIndices[index])
+      selectedIndices.every((val, index) => val === correctIndices[index]);
 
     if (isCorrect) {
-      setScore(prev => prev + 1)
-    } else if (quizType === "practice") {
-      setLives(prev => {
-        const newLives = prev - 1
+      setScore((prev) => prev + 1);
+    } else if (quizType === 'practice') {
+      setLives((prev) => {
+        const newLives = prev - 1;
         if (newLives === 0) {
-          endQuiz()
+          endQuiz();
         }
-        return newLives
-      })
+        return newLives;
+      });
     }
 
-    const currentTime = Date.now()
-    const timeSpent = Math.floor((currentTime - questionStartTime) / 1000)
+    const currentTime = Date.now();
+    const timeSpent = Math.floor((currentTime - questionStartTime) / 1000);
 
-    setUserAnswers(prev => {
-      const newAnswers = [...prev]
-      newAnswers[currentQuestionIndex] = { 
-        selectedOptions, 
-        correct: isCorrect, 
+    setUserAnswers((prev) => {
+      const newAnswers = [...prev];
+      newAnswers[currentQuestionIndex] = {
+        selectedOptions,
+        correct: isCorrect,
         locked: true,
-        timeSpent: timeSpent
-      }
-      return newAnswers
-    })
+        timeSpent: timeSpent,
+      };
+      return newAnswers;
+    });
 
-    if (quizType === "practice") {
-      setFeedback({ correct: isCorrect, selectedIndexes: selectedOptions })
+    if (quizType === 'practice') {
+      setFeedback({ correct: isCorrect, selectedIndexes: selectedOptions });
     }
 
     setTimeout(() => {
-      if (isCorrect || quizType !== "practice") {
+      if (isCorrect || quizType !== 'practice') {
         if (currentQuestionIndex < questions.length - 1) {
-          goToNextQuestion()
+          goToNextQuestion();
         } else {
-          endQuiz()
+          endQuiz();
         }
       }
-    }, 1500)
-  }, [questions, currentQuestionIndex, selectedOptions, quizType, lives, endQuiz, goToNextQuestion, questionStartTime])
+    }, 1500);
+  }, [
+    questions,
+    currentQuestionIndex,
+    selectedOptions,
+    quizType,
+    lives,
+    endQuiz,
+    goToNextQuestion,
+    questionStartTime,
+  ]);
+
+  // Handle Timer Expiry
+  useEffect(() => {
+    if (timeLeft === 0 && !quizEnded) {
+      // Automatically save as incorrect if not answered
+      if (!userAnswers[currentQuestionIndex]?.locked) {
+        setUserAnswers((prev) => {
+          const newAnswers = [...prev];
+          newAnswers[currentQuestionIndex] = {
+            selectedOptions: [],
+            correct: false,
+            locked: true,
+            timeSpent: Math.floor((Date.now() - questionStartTime) / 1000),
+          };
+          return newAnswers;
+        });
+        if (quizType === 'practice') {
+          setLives((prev) => {
+            const newLives = prev - 1;
+            if (newLives === 0) {
+              endQuiz();
+            }
+            return newLives;
+          });
+        }
+      }
+      endQuiz();
+    }
+  }, [
+    timeLeft,
+    quizEnded,
+    quizType,
+    endQuiz,
+    userAnswers,
+    currentQuestionIndex,
+    questionStartTime,
+  ]);
 
   // Restart Quiz Function
   const restartQuiz = useCallback(() => {
-    setCurrentQuestionIndex(0)
-    setScore(0)
-    setLives(3)
-    setTimeLeft(quizType === 'timed' || quizType === 'quick' ? quizTime : 0)
-    setPowerUps(defaultPowerUps(quizType))
-    setQuizEnded(false)
-    setAvailableOptions([0, 1, 2, 3])
-    setFeedback(null)
-    setSelectedOptions([])
-    setUserAnswers(questions.map(() => defaultUserAnswer()))
-    setRestartTrigger(prev => !prev)
-    // Clear saved state
-    if (quizType !== 'progress') {
-      localStorage.removeItem(localStorageKey)
-    }
-  }, [quizTime, questions, quizType, localStorageKey])
+    setCurrentQuestionIndex(0);
+    setScore(0);
+    setLives(3);
+    setTimeLeft(quizType === 'timed' || quizType === 'quick' ? quizTime : 0);
+    setPowerUpsState(defaultPowerUps(quizType));
+    setQuizEnded(false);
+    setAvailableOptions([0, 1, 2, 3]);
+    setFeedback(null);
+    setSelectedOptions([]);
+    setUserAnswers(questions.map(() => defaultUserAnswer()));
+    setRestartTrigger((prev) => !prev);
+    localStorage.removeItem(localStorageKey);
+  }, [quizTime, questions, quizType, localStorageKey]);
 
   // Use Power-Up Function
-  const usePowerUp = useCallback((type: string) => {
-    if (type === "fiftyFifty") {
-      const currentQuestion = questions[currentQuestionIndex]
-      const correctIndices = currentQuestion.answerIndices.slice().sort((a, b) => a - b)
-      
-      let incorrectOptions = availableOptions.filter(idx => !correctIndices.includes(idx))
+  const usePowerUp = useCallback(
+    (type: string) => {
+      if (!powerUps.some((p) => p.type === type && p.active)) return; // Prevent using inactive power-ups
 
-      if (availableOptions.length <= correctIndices.length + 1) {
-        setAvailableOptions(correctIndices)
-      } else {
-        const optionsToRemove = shuffleArray(incorrectOptions).slice(0, Math.min(2, incorrectOptions.length))
-        setAvailableOptions(prev => prev.filter(idx => !optionsToRemove.includes(idx)))
+      if (type === 'fiftyFifty') {
+        const currentQuestion = questions[currentQuestionIndex];
+        const correctIndices = currentQuestion.answerIndices?.slice().sort((a, b) => a - b) || [];
+
+        let incorrectOptions = availableOptions.filter((idx) => !correctIndices.includes(idx));
+
+        if (availableOptions.length <= correctIndices.length + 1) {
+          setAvailableOptions(correctIndices);
+        } else {
+          const optionsToRemove = shuffleArray(incorrectOptions).slice(0, Math.min(2, incorrectOptions.length));
+          setAvailableOptions((prev) => prev.filter((idx) => !optionsToRemove.includes(idx)));
+        }
+      } else if (type === 'extraTime') {
+        setTimeLeft((prev) => prev + 30);
+      } else if (type === 'shield') {
+        setLives((prev) => prev + 1);
       }
-    } else if (type === "extraTime") {
-      setTimeLeft(prev => prev + 30)
-    } else if (type === "shield") {
-      setLives(prev => prev + 1)
-    }
 
-    setPowerUps(prev => prev.map(p => (p.type === type ? { ...p, active: false } : p)))
-  }, [currentQuestionIndex, questions, availableOptions])
+      setPowerUpsState((prev) => prev.map((p) => (p.type === type ? { ...p, active: false } : p)));
+    },
+    [powerUps, questions, currentQuestionIndex, availableOptions]
+  );
 
-  // Default Power-Ups based on Quiz Type
-  const defaultPowerUps = (quizType: QuizType): PowerUpType[] => {
-    switch (quizType) {
-      case 'timed':
-      case 'quick':
-        return [
-          { type: "fiftyFifty", icon: Zap, name: "50/50", active: true },
-          { type: "extraTime", icon: Clock, name: "Extra Time", active: true },
-          { type: "shield", icon: Shield, name: "Shield", active: true },
-        ]
-      case 'practice':
-        return [
-          { type: "fiftyFifty", icon: Zap, name: "50/50", active: true },
-          { type: "shield", icon: Shield, name: "Shield", active: true },
-        ]
-      default:
-        return []
+  // Timer Effect
+  useEffect(() => {
+    if ((quizType === 'timed' || quizType === 'quick') && timeLeft > 0 && !quizEnded) {
+      const timer = setTimeout(() => setTimeLeft((prev) => prev - 1), 1000);
+      return () => clearTimeout(timer);
     }
-  }
+  }, [timeLeft, quizEnded, quizType]);
+
+  // Update Question Start Time on Question Change or Restart
+  useEffect(() => {
+    setQuestionStartTime(Date.now());
+  }, [currentQuestionIndex, restartTrigger]);
 
   // If Quiz Ended, Show Result Screen
   if (quizEnded) {
@@ -725,11 +807,11 @@ const Quiz = ({
         userAnswers={userAnswers}
         questions={questions}
       />
-    )
+    );
   }
 
-  const currentQuestion = questions[currentQuestionIndex]
-  const isAnswerLocked = userAnswers[currentQuestionIndex]?.locked
+  const currentQuestion = questions[currentQuestionIndex];
+  const isAnswerLocked = userAnswers[currentQuestionIndex]?.locked ?? false;
 
   return (
     <div className="w-full max-w-2xl mx-auto">
@@ -745,15 +827,15 @@ const Quiz = ({
       <AnimatePresence mode="wait">
         {currentQuestion && (
           <motion.div
-            key={currentQuestionIndex}
+            key={`quiz-${quizType}-${quizTime ?? 'default'}-${numQuestions ?? 'default'}`} // Unique key
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
           >
             <QuizContent
-              question={currentQuestion.question.replace(/^Option [A-Z]:\s*/, '')} // Remove "Option X: " prefix
-              options={currentQuestion.shuffledOptions.map(option => option.replace(/^Option [A-Z]:\s*/, ''))} // Remove prefixes
+              question={currentQuestion.question}
+              options={currentQuestion.shuffledOptions!} // Non-null assertion since shuffledOptions is set
               onAnswer={handleAnswer}
               timeLeft={timeLeft}
               maxTime={quizTime}
@@ -775,10 +857,7 @@ const Quiz = ({
               >
                 Previous
               </Button>
-              <Button
-                onClick={saveAnswers}
-                disabled={isAnswerLocked || selectedOptions.length === 0}
-              >
+              <Button onClick={saveAnswers} disabled={isAnswerLocked || selectedOptions.length === 0}>
                 Save Answer
               </Button>
               <Button
@@ -799,7 +878,7 @@ const Quiz = ({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             className={`mt-4 text-lg font-semibold ${
-              feedback.correct ? "text-green-500" : "text-red-500"
+              feedback.correct ? 'text-green-500' : 'text-red-500'
             }`}
           >
             {feedback.correct ? (
@@ -827,111 +906,112 @@ const Quiz = ({
         )}
       </AnimatePresence>
     </div>
-  )
-}
+  );
+};
 
-// InteractiveQuiz Component
+// InteractiveQuiz Component (Default Export)
 export default function InteractiveQuiz({
   quizType,
   courseName,
   onExit,
   questions,
   courseCode,
-  quizTime = 300, // Default quiz time
-  numQuestions,   // Optional number of questions
+  quizTime = 300, // Default quiz time in seconds
+  numQuestions, // Optional number of questions
 }: InteractiveQuizProps) {
   const router = useRouter();
   const handleExit = onExit || (() => router.back());
 
-  const [selectedQuestions, setSelectedQuestions] = useState<ProcessedQuestion[]>([])
-  const [isLoading, setIsLoading] = useState<boolean>(true)
+  // Select a subset of questions based on quizType and numQuestions
+  const selectedQuestions: ProcessedQuestion[] = useMemo(() => {
+    let selected: ProcessedQuestion[] = [];
 
-  // Function to load incorrect questions for 'progress' quizType
-  const loadIncorrectQuestions = useCallback((): ProcessedQuestion[] => {
-    try {
-      const storedProgress = JSON.parse(localStorage.getItem("quizProgress") || "{}")
-      const incorrectQuestions = storedProgress[courseCode]?.incorrectQuestions || []
-      if (incorrectQuestions.length === 0) {
-        alert("You have no incorrect questions to review!")
-        handleExit()
-        return []
-      }
-      // Filter to only incorrect questions
-      const filteredQuestions = questions.filter(q => incorrectQuestions.includes(q.question))
-      if (filteredQuestions.length === 0) {
-        alert("No matching incorrect questions found.")
-        handleExit()
-        return []
-      }
-      return filteredQuestions
-    } catch (error) {
-      console.error("Error loading progress from localStorage:", error)
-      return []
-    }
-  }, [courseCode, handleExit, questions])
-
-  // Select questions based on quizType and numQuestions
-  useEffect(() => {
-    const selectQuestions = () => {
-      let selected: ProcessedQuestion[] = []
-
-      switch (quizType) {
-        case 'progress':
-          selected = loadIncorrectQuestions()
-          break
-        case 'quick':
-          selected = shuffleArray(questions).slice(0, numQuestions ? Math.min(numQuestions, questions.length) : 10)
-          break
-        case 'timed':
-          selected = shuffleArray(questions).slice(0, numQuestions ? Math.min(numQuestions, questions.length) : questions.length)
-          break
-        case 'practice':
-          selected = numQuestions ? shuffleArray(questions).slice(0, Math.min(numQuestions, questions.length)) : questions
-          break
-        default:
-          selected = questions
-          break
-      }
-
-      setSelectedQuestions(selected)
-      setIsLoading(false)
+    switch (quizType) {
+      case 'progress':
+        try {
+          const storedProgress = JSON.parse(localStorage.getItem('quizProgress') || '{}');
+          const incorrectQuestions = storedProgress[courseCode]?.incorrectQuestions || [];
+          if (incorrectQuestions.length === 0) {
+            alert('You have no incorrect questions to review!');
+            handleExit();
+            return [];
+          }
+          // Filter to only incorrect questions
+          const filteredQuestions = questions.filter((q) => incorrectQuestions.includes(q.question));
+          if (filteredQuestions.length === 0) {
+            alert('No matching incorrect questions found.');
+            handleExit();
+            return [];
+          }
+          // Limit based on numQuestions if provided
+          if (numQuestions) {
+            selected = shuffleArray(filteredQuestions).slice(0, Math.min(numQuestions, filteredQuestions.length));
+          } else {
+            selected = filteredQuestions;
+          }
+        } catch (error) {
+          console.error('Error loading progress from localStorage:', error);
+          alert('Failed to load progress.');
+          handleExit();
+          return [];
+        }
+        break;
+      case 'quick':
+        selected = shuffleArray(questions).slice(0, numQuestions ? Math.min(numQuestions, questions.length) : 10);
+        break;
+      case 'timed':
+        selected = shuffleArray(questions).slice(
+          0,
+          numQuestions ? Math.min(numQuestions, questions.length) : questions.length
+        );
+        break;
+      case 'practice':
+        selected = numQuestions ? shuffleArray(questions).slice(0, Math.min(numQuestions, questions.length)) : questions;
+        break;
+      default:
+        selected = questions;
+        break;
     }
 
-    selectQuestions()
-  }, [quizType, numQuestions, questions, loadIncorrectQuestions])
+    selected = selected.map((question) => ({
+      ...question,
+      shuffledOptions: shuffleArray(question.options),
+      answerIndices: question.answer.map((answer) => question.options.indexOf(answer)),
+    }));
 
-  // If loading, you can render a loading spinner or placeholder
-  if (isLoading) {
+    return selected;
+  }, [quizType, numQuestions, questions, courseCode, handleExit]);
+
+  if (quizType === 'progress' && selectedQuestions.length === 0) {
+    return null;
+  }
+
+  if (selectedQuestions.length === 0) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-white">Loading Quiz...</div>
-      </div>
-    )
+      <div className="flex items-center justify-center h-screen text-white">No questions available.</div>
+    );
   }
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-gray-100 flex flex-col items-center justify-center p-6 lg:p-12">
       <ParticleBackground />
       <div className="w-full max-w-screen-xl mx-auto">
-        <h1 className="text-5xl font-bold text-center mb-12 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
+        <h1 className="text-2xl font-bold text-center mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
           {courseName} Quiz
         </h1>
         <AnimatePresence mode="wait">
-          {selectedQuestions.length > 0 ? (
-            <Quiz
-              quizType={quizType}
-              onExit={handleExit}
-              questions={selectedQuestions}
-              quizTime={quizType === 'timed' ? quizTime : quizType === 'quick' ? 60 : undefined} // Example: quick quiz has 60 seconds
-              courseName={courseName}
-              courseCode={courseCode}
-              numQuestions={numQuestions}
-            />
-          ) : (
-            <div className="text-center text-white">No questions available.</div>
-          )}
+          <Quiz
+            key={`quiz-${quizType}-${quizTime ?? 'default'}-${numQuestions ?? 'default'}`} 
+            quizType={quizType}
+            onExit={handleExit}
+            questions={selectedQuestions}
+            quizTime={quizType === 'timed' ? quizTime : quizType === 'quick' ? 300 : quizTime} 
+            courseName={courseName}
+            courseCode={courseCode}
+            numQuestions={numQuestions}
+          />
         </AnimatePresence>
       </div>
     </div>
-  )
+  );
 }

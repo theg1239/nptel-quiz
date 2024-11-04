@@ -1,7 +1,7 @@
 // app/courses/[course_code]/quiz/[quiz_type]/page.tsx
 
-import InteractiveQuiz from '@/components/InteractiveQuiz';
-import { QuizType } from '@/types/quiz';
+import InteractiveQuizWrapper from '@/components/InteractiveQuizWrapper';
+import { QuizType, ProcessedQuestion } from '@/types/quiz';
 
 interface Course {
   title: string;
@@ -11,21 +11,9 @@ interface Course {
     questions: {
       question: string;
       options: string[];
-      answer: string[]; 
+      answer: string[];
     }[];
   }[];
-}
-
-interface APIQuestion {
-  question: string;
-  options: string[];
-  answer: string[];
-}
-
-interface ProcessedQuestion {
-  question: string;
-  shuffledOptions: string[];
-  answerIndices: number[];
 }
 
 interface QuizPageProps {
@@ -48,35 +36,48 @@ export default async function QuizPage({ params }: QuizPageProps) {
   const course: Course = await res.json();
 
   const processedQuestions: ProcessedQuestion[] = shuffleArray(
-    course.weeks.flatMap(week => 
+    course.weeks.flatMap(week =>
       week.questions.map(question => {
+        // Calculate the original indices of the answers in the options array
         const answerIndices = question.answer.map(ans => {
           const label = ans.toUpperCase();
           const index = question.options.findIndex(opt => opt.startsWith(`Option ${label}`));
           return index !== -1 ? index : -1;
         }).filter(idx => idx !== -1);
 
-        const shuffledOptions = shuffleArray(question.options);
-        const shuffledAnswerIndices = answerIndices.map(originalIndex => {
-          const option = question.options[originalIndex];
-          return shuffledOptions.findIndex(opt => opt === option);
-        }).filter(idx => idx !== -1);
+        // Shuffle the options
+        const shuffledOptions = shuffleArray([...question.options]);
+
+        // Map the answer indices to the shuffled options
+        const shuffledAnswerIndices = answerIndices
+          .map(originalIndex => {
+            if (originalIndex === -1 || originalIndex >= question.options.length) return -1;
+            const option = question.options[originalIndex];
+            return shuffledOptions.findIndex(opt => opt === option);
+          })
+          .filter(idx => idx !== -1);
+
+        // Optional: Clean up the question and options text
+        const cleanedQuestion = question.question.replace(/^Option [A-Z]:\s*/, '');
+        const cleanedShuffledOptions = shuffledOptions.map(opt => opt.replace(/^Option [A-Z]:\s*/, ''));
 
         return {
-          question: question.question,
-          shuffledOptions,
-          answerIndices: shuffledAnswerIndices
+          question: cleanedQuestion,
+          options: question.options, // Original options as required by ProcessedQuestion
+          answer: question.answer, // Original answer as required by ProcessedQuestion
+          shuffledOptions: cleanedShuffledOptions,
+          answerIndices: shuffledAnswerIndices,
         };
       })
     )
   );
 
   return (
-    <InteractiveQuiz
-      courseName={course.title}  
-      questions={processedQuestions}
-      quizType={quiz_type}
-      courseCode={course_code}
+    <InteractiveQuizWrapper
+      courseName={course.title}
+      course_code={course_code}
+      quiz_type={quiz_type}
+      processedQuestions={processedQuestions}
     />
   );
 }
