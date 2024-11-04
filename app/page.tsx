@@ -35,7 +35,7 @@ const ParticleBackground = () => (
     {[...Array(50)].map((_, i) => (
       <div
         key={i}
-        className="absolute bg-blue-500 rounded-full opacity-20 animate-float" 
+        className="absolute bg-blue-500 rounded-full opacity-20 animate-float"
         style={{
           top: `${Math.random() * 100}%`,
           left: `${Math.random() * 100}%`,
@@ -114,9 +114,9 @@ export default function Component() {
   }, [])
 
   const handleCourseSelection = (course: Course) => {
-    setSearchTerm('') 
-    setSuggestions([]) 
-    setIsSearchFocused(false) 
+    setSearchTerm('')
+    setSuggestions([])
+    setIsSearchFocused(false)
     router.push(`/courses/${course.course_code}`)
   }
 
@@ -132,14 +132,15 @@ export default function Component() {
     </motion.div>
   )
 
+  // Display loader with a consistent background color
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-gray-100">
         <SpaceLoader size={100} />
       </div>
     )
   }
-  
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-gray-100 flex flex-col items-center justify-center p-4 relative overflow-hidden">
       <ParticleBackground />
@@ -198,7 +199,7 @@ export default function Component() {
               >
                 {suggestions.map((course) => (
                   <motion.li
-                    key={course.course_code} // Use a unique key
+                    key={course.course_code}
                     className="p-3 hover:bg-blue-600 cursor-pointer transition-colors duration-150 flex items-center"
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
