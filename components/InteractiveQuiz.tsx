@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Heart,
@@ -41,6 +41,7 @@ interface InteractiveQuizProps {
   courseCode: string;
   onExit?: () => void;
   quizTime?: number; // Optional prop for quiz time in seconds
+  numQuestions?: number; // Optional prop for the number of questions
 }
 
 interface ResultScreenProps {
@@ -453,14 +454,14 @@ const Quiz = ({
   quizType,
   onExit,
   questions,
-  quizTime = 300, // Default to 5 minutes (300 seconds) if not provided
+  quizTime = 300, 
   courseName,
   courseCode,
 }: {
   quizType: QuizType;
   onExit: () => void;
   questions: ProcessedQuestion[];
-  quizTime?: number; // Time in seconds
+  quizTime?: number; 
   courseName: string;
   courseCode: string;
 }) => {
@@ -500,14 +501,13 @@ const Quiz = ({
             onExit()
             return
           }
-          // Update state with filtered questions
           setCurrentQuestions(filteredQuestions)
           setUserAnswers(filteredQuestions.map(() => ({ selectedOptions: [], correct: false, locked: false, timeSpent: 0 })))
           setCurrentQuestionIndex(0)
           setScore(0)
           setLives(3)
-          setTimeLeft(0) // No timer for 'progress' quiz type
-          setPowerUps([]) // No power-ups for 'progress' quiz type
+          setTimeLeft(0) 
+          setPowerUps([]) 
           setQuizEnded(false)
           setAvailableOptions([0, 1, 2, 3])
           setFeedback(null)
@@ -517,12 +517,10 @@ const Quiz = ({
           console.error("Error loading progress from localStorage:", error)
         }
       } else {
-        // For other quiz types, load saved state if exists
         const savedState = localStorage.getItem(localStorageKey)
         if (savedState) {
           try {
             const parsedState = JSON.parse(savedState)
-            // Use Nullish Coalescing to handle falsy values correctly
             setCurrentQuestionIndex(parsedState.currentQuestionIndex ?? 0)
             setScore(parsedState.score ?? 0)
             setLives(parsedState.lives ?? 3)
@@ -544,7 +542,6 @@ const Quiz = ({
             console.error("Error parsing saved quiz state:", error)
           }
         } else {
-          // Initialize power-ups based on quizType
           switch (quizType) {
             case 'timed':
             case 'quick':
@@ -564,18 +561,17 @@ const Quiz = ({
               setPowerUps([])
               break
           }
-          // Initialize userAnswers based on initial questions
           setUserAnswers(questions.map(() => ({ selectedOptions: [], correct: false, locked: false, timeSpent: 0 })))
         }
-      }
+    };
 
-      loadProgress()
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+    loadProgress();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Save Quiz State to Local Storage
   useEffect(() => {
-    if (quizType !== 'progress') { // Don't save state for progress quizzes
+    if (quizType !== 'progress') { 
       const stateToSave = {
         currentQuestionIndex,
         score,
@@ -943,9 +939,18 @@ export default function InteractiveQuiz({
   questions,
   courseCode,
   quizTime = 300, // Default to 5 minutes (300 seconds) if not provided
+  numQuestions,    // Optional number of questions
 }: InteractiveQuizProps) {
   const router = useRouter();
   const handleExit = onExit || (() => router.back());
+
+  // Select a subset of questions if numQuestions is provided
+  const selectedQuestions: ProcessedQuestion[] = useMemo(() => {
+    if (numQuestions) {
+      return shuffleArray(questions).slice(0, Math.min(numQuestions, questions.length))
+    }
+    return questions
+  }, [questions, numQuestions])
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-gray-100 flex flex-col items-center justify-center p-6 lg:p-12">
@@ -955,12 +960,12 @@ export default function InteractiveQuiz({
           {courseName} Quiz
         </h1>
         <AnimatePresence mode="wait">
-          {questions && (
+          {selectedQuestions && (
             <Quiz
               quizType={quizType}
               onExit={handleExit}
-              questions={questions}
-              quizTime={quizTime} // Use user-defined quiz time
+              questions={selectedQuestions}
+              quizTime={quizTime} // Use user-defined quiz time or default
               courseName={courseName}
               courseCode={courseCode}
             />
