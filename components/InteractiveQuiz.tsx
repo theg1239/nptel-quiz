@@ -532,41 +532,46 @@ const Quiz = ({
 
   const router = useRouter();
 
-  const localStorageKey = useMemo(
-    () => `quizState_${courseCode}_${quizType}_time${quizTime ?? 'default'}_num${numQuestions ?? 'default'}`,
-    [courseCode, quizType, quizTime, numQuestions]
-  );
+  const localStorageKey = useMemo(() => {
+  if (typeof window === 'undefined') return ''; // Ensure `localStorage` key is only created client-side
+  return `quizState_${courseCode}_${quizType}_time${quizTime ?? 'default'}_num${numQuestions ?? 'default'}`;
+}, [courseCode, quizType, quizTime, numQuestions]);
 
-  // Initialize userAnswers when questions change
   useEffect(() => {
-    setUserAnswers(questions.map(() => defaultUserAnswer()));
-  }, [questions]);
+  if (typeof window === 'undefined') return; // Client-side check
 
-  // Initialize power-ups based on quizType
-  useEffect(() => {
-    setPowerUpsState(defaultPowerUps(quizType));
-  }, [quizType]);
-
-  // Initialize state if no saved state exists
-  useEffect(() => {
-    if (quizType !== 'progress') {
-      const savedState = localStorage.getItem(localStorageKey);
-      if (!savedState) {
-        // Initialize default states
-        setCurrentQuestionIndex(0);
-        setScore(0);
-        setLives(3);
-        setTimeLeft(quizType === 'timed' || quizType === 'quick' ? quizTime : 0);
-        setPowerUpsState(defaultPowerUps(quizType));
-        setQuizEnded(false);
-        setAvailableOptions([0, 1, 2, 3]);
-        setFeedback(null);
-        setSelectedOptions([]);
-        setUserAnswers(questions.map(() => defaultUserAnswer()));
-        setIsAnswerLocked(false); // Reset the lock
-      }
+  const savedState = localStorage.getItem(localStorageKey);
+  if (savedState) {
+    try {
+      const parsedState = JSON.parse(savedState);
+      setCurrentQuestionIndex(parsedState.currentQuestionIndex ?? 0);
+      setScore(parsedState.score ?? 0);
+      setLives(parsedState.lives ?? 3);
+      setTimeLeft(parsedState.timeLeft ?? (quizType === 'timed' || quizType === 'quick' ? quizTime : 0));
+      setPowerUpsState(parsedState.powerUps ?? defaultPowerUps(quizType));
+      setQuizEnded(parsedState.quizEnded ?? false);
+      setAvailableOptions(parsedState.availableOptions ?? [0, 1, 2, 3]);
+      setFeedback(parsedState.feedback ?? null);
+      setSelectedOptions(parsedState.selectedOptions ?? []);
+      setUserAnswers(parsedState.userAnswers ?? questions.map(() => defaultUserAnswer()));
+      setIsAnswerLocked(parsedState.isAnswerLocked ?? false);
+    } catch (error) {
+      console.error("Failed to parse saved state:", error);
     }
-  }, [quizType, localStorageKey, quizTime, questions]);
+  } else {
+    setCurrentQuestionIndex(0);
+    setScore(0);
+    setLives(3);
+    setTimeLeft(quizType === 'timed' || quizType === 'quick' ? quizTime : null);
+    setPowerUpsState(defaultPowerUps(quizType));
+    setQuizEnded(false);
+    setAvailableOptions([0, 1, 2, 3]);
+    setFeedback(null);
+    setSelectedOptions([]);
+    setUserAnswers(questions.map(() => defaultUserAnswer()));
+    setIsAnswerLocked(false);
+  }
+}, [localStorageKey, questions, quizType, quizTime]);
 
   // Load saved state from localStorage if exists
   useEffect(() => {
@@ -595,45 +600,50 @@ const Quiz = ({
     }
   }, [quizType, localStorageKey, quizTime, questions]);
 
-  // Save Quiz State to Local Storage
   useEffect(() => {
-    if (quizType !== 'progress') {
-      const stateToSave = {
-        currentQuestionIndex,
-        score,
-        lives,
-        timeLeft,
-        powerUps,
-        quizEnded,
-        availableOptions,
-        feedback,
-        selectedOptions,
-        userAnswers,
-        questions, // Include questions in saved state to maintain consistency
-        quizTime,
-        numQuestions,
-        isAnswerLocked, // Save Lock State
-      };
-      localStorage.setItem(localStorageKey, JSON.stringify(stateToSave));
-    }
-  }, [
-    currentQuestionIndex,
-    score,
-    lives,
-    timeLeft,
-    powerUps,
-    quizEnded,
-    availableOptions,
-    feedback,
-    selectedOptions,
-    userAnswers,
-    questions,
-    quizType,
-    localStorageKey,
-    quizTime,
-    numQuestions,
-    isAnswerLocked, // Include in Dependencies
-  ]);
+  if (typeof window !== 'undefined' && quizType !== 'progress') {
+    const stateToSave = {
+      currentQuestionIndex,
+      score,
+      lives,
+      timeLeft,
+      powerUps,
+      quizEnded,
+      availableOptions,
+      feedback,
+      selectedOptions,
+      userAnswers,
+      questions,
+      quizTime,
+      numQuestions,
+      isAnswerLocked,
+    };
+    localStorage.setItem(localStorageKey, JSON.stringify(stateToSave));
+  }
+}, [
+  currentQuestionIndex,
+  score,
+  lives,
+  timeLeft,
+  powerUps,
+  quizEnded,
+  availableOptions,
+  feedback,
+  selectedOptions,
+  userAnswers,
+  questions,
+  quizType,
+  localStorageKey,
+  quizTime,
+  numQuestions,
+  isAnswerLocked,
+]);
+
+useEffect(() => {
+  if (quizType === 'practice') {
+    setIsAnswerLocked(false);
+  }
+}, [quizType]);
 
 // Separate effect to initialize `isAnswerLocked` for practice mode
 useEffect(() => {
