@@ -1,5 +1,6 @@
 'use client'
 
+import { useSearchParams } from 'next/navigation';
 import React, { useEffect, useCallback, useMemo, Fragment, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -24,6 +25,7 @@ import {
   setScore,
   setLives,
   setTimeLeft,
+  decrementTimeLeft,
   setPowerUps,
   setQuizEnded,
   setAvailableOptions,
@@ -32,8 +34,6 @@ import {
   addUserAnswer, // Changed from setUserAnswers to addUserAnswer
   setShake,
   resetQuiz,
-  openModal,
-  closeModal,
 } from './slices/quizSlice';
 import { Button } from '@/components/ui/Button';
 import { Progress } from '@/components/ui/Progress';
@@ -165,6 +165,34 @@ const Modal: React.FC<ModalProps> = ({ isOpen, title, message, onClose }) => {
     </Transition>
   );
 };
+const QuizTimer = ({ maxTime }: { maxTime: number }) => {
+  const searchParams = useSearchParams();
+  const initialTimeLeft = parseInt(searchParams.get('quizTime') || '0', 10);
+  
+  const [timeLeft, setTimeLeft] = useState(initialTimeLeft);
+
+  useEffect(() => {
+    // Countdown effect
+    if (timeLeft > 0) {
+      const timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
+      return () => clearInterval(timer);
+    }
+  }, [timeLeft]);
+
+  return (
+    <div className="w-full bg-gray-700 rounded-full h-2.5 mb-4">
+      <div
+        className="bg-blue-600 h-2.5 rounded-full transition-all duration-1000 ease-linear"
+        style={{ width: `${(timeLeft / maxTime) * 100}%` }}
+        role="progressbar"
+        aria-valuenow={timeLeft}
+        aria-valuemin={0}
+        aria-valuemax={maxTime}
+      ></div>
+      <p>Time left: {timeLeft}s</p>
+    </div>
+  );
+};
 
 const StatCard = ({ icon, title, value }: { icon: React.ReactNode; title: string; value: number | string }) => (
   <motion.div
@@ -216,19 +244,6 @@ const PowerUp = ({
       </TooltipContent>
     </Tooltip>
   </TooltipProvider>
-);
-
-const QuizTimer = ({ time, maxTime }: { time: number; maxTime: number }) => (
-  <div className="w-full bg-gray-700 rounded-full h-2.5 mb-4">
-    <div
-      className="bg-blue-600 h-2.5 rounded-full transition-all duration-1000 ease-linear"
-      style={{ width: `${(time / maxTime) * 100}%` }}
-      role="progressbar"
-      aria-valuenow={time}
-      aria-valuemin={0}
-      aria-valuemax={maxTime}
-    ></div>
-  </div>
 );
 
 const QuizContent = ({
@@ -283,7 +298,7 @@ const QuizContent = ({
           Score: {currentScore} / {totalQuestions}
         </div>
       </CardHeader>
-      {typeof timeLeft === 'number' && <QuizTimer time={timeLeft} maxTime={maxTime} />}
+      {typeof timeLeft === 'number' && <QuizTimer maxTime={maxTime} />}
       <CardContent>
         <div className="flex justify-between items-center mb-4">
           {(quizType === 'quick' || quizType === 'practice' || quizType === 'progress') && (
@@ -555,25 +570,25 @@ const ResultScreen = ({
       </main>
     </motion.div>
   );
-};
+};  
 
 const Quiz = ({
   quizType,
   questions,
-  quizTime = 300,
+  quizTime = null,
   courseName,
   courseCode,
-  numQuestions,
+  numQuestions = null,
   isModalOpen,
   modalContent,
   handleCloseModal,
 }: {
   quizType: QuizType;
   questions: ProcessedQuestion[];
-  quizTime?: number;
+  quizTime?: number | null;
   courseName: string;
   courseCode: string;
-  numQuestions?: number;
+  numQuestions?: number | null;
   isModalOpen: boolean;
   modalContent: { title: string; message: string };
   handleCloseModal: () => void;
@@ -584,7 +599,7 @@ const Quiz = ({
     currentQuestionIndex,
     score,
     lives,
-    timeLeft,
+    timeLeft, 
     powerUps,
     quizEnded,
     availableOptions,
@@ -592,13 +607,14 @@ const Quiz = ({
     selectedOptions,
     userAnswers,
     shake,
-    isAnswerLocked, // Destructure isAnswerLocked
+    isAnswerLocked,
   } = useSelector((state: RootState) => state.quiz);
 
-  const handleExit = () => {
-    dispatch(resetQuiz());
-    router.push(`/courses/${courseCode}`);
-  };
+  useEffect(() => {
+    dispatch(setTimeLeft(quizTime));
+    console.log('Initial timeLeft set to:', quizTime); // Debugging log
+  }, [dispatch, quizTime]);
+
   const endQuiz = useCallback(() => {
     dispatch(setQuizEnded(true));
     let incorrectQuestions: string[] = [];
@@ -619,6 +635,30 @@ const Quiz = ({
       console.error('Error accessing localStorage:', error);
     }
   }, [dispatch, questions, userAnswers, courseCode, quizType]);
+  
+  useEffect(() => {
+    if (
+      (quizType === 'timed' || quizType === 'quick') &&
+      timeLeft !== null &&
+      timeLeft > 0 &&
+      !quizEnded
+    ) {
+      const timer = setInterval(() => {
+        dispatch(decrementTimeLeft());
+        console.log('Interval timeLeft value:', timeLeft); // Check value consistency in the interval
+      }, 1000);
+  
+      return () => clearInterval(timer);
+    } else if (timeLeft !== null && timeLeft <= 0 && !quizEnded) {
+      endQuiz();
+    }
+  }, [dispatch, timeLeft, quizEnded, quizType, endQuiz]);
+  
+  
+  const handleExit = () => {
+    dispatch(resetQuiz());
+    router.push(`/courses/${courseCode}`);
+  };
 
   const handleFinishQuiz = useCallback(() => {
     endQuiz();
@@ -740,26 +780,27 @@ const Quiz = ({
       if (!powerUps.some((p) => p.type === type && p.active)) return;
   
       if (type === 'extraTime') {
-        dispatch(setTimeLeft((timeLeft ?? 0) + 30));
+        if (timeLeft !== null) {
+          dispatch(setTimeLeft(timeLeft + 30));
+          dispatch(setPowerUps(powerUps.map((p) => (p.type === type ? { ...p, active: false } : p))));
+        } else {
+          console.warn('Cannot use extra time power-up when there is no timer.');
+        }
       } else if (type === 'shield') {
         dispatch(setLives(lives + 1));
+        dispatch(setPowerUps(powerUps.map((p) => (p.type === type ? { ...p, active: false } : p))));
       }
-  
-      dispatch(setPowerUps(powerUps.map(p => p.type === type ? {...p, active: false} : p)));
     },
     [dispatch, powerUps, timeLeft, lives]
   );
   
-
   useEffect(() => {
-    
-    if ((quizType === 'timed' || quizType === 'quick') && typeof timeLeft === 'number' && timeLeft > 0 && !quizEnded) {
-      const timer = setTimeout(() => dispatch(setTimeLeft(timeLeft - 1)), 1000);
-      return () => clearTimeout(timer);
-    } else if (typeof timeLeft === 'number' && timeLeft <= 0 && !quizEnded) {
-      endQuiz();
+    if ((quizType === 'timed' || quizType === 'quick') && quizTime !== null) {
+      dispatch(setTimeLeft(quizTime));
+    } else {
+      dispatch(setTimeLeft(null)); // Set timeLeft to null for other quiz types
     }
-  }, [timeLeft, quizEnded, quizType, dispatch, endQuiz]);
+  }, [dispatch, quizTime, quizType]);
 
   if (quizEnded) {
     return (
@@ -801,7 +842,7 @@ const Quiz = ({
               options={availableOptions.map(idx => questions[currentQuestionIndex].shuffledOptions![idx])}
               onAnswer={handleAnswer}
               timeLeft={timeLeft ?? 0}
-              maxTime={quizTime}
+              maxTime={quizTime ?? 0}
               lives={lives}
               powerUps={powerUps}
               onUsePowerUp={usePowerUp}
@@ -885,8 +926,8 @@ export default function InteractiveQuiz({
   courseName,
   questions,
   courseCode,
-  quizTime = 300,
-  numQuestions,
+  quizTime = null,
+  numQuestions = null,
 }: InteractiveQuizProps) {
   const dispatch = useDispatch();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -897,72 +938,20 @@ export default function InteractiveQuiz({
   }, [dispatch]);
 
   const selectedQuestions: ProcessedQuestion[] = useMemo(() => {
-    let selected: ProcessedQuestion[] = [];
-
-    if (quizType === 'progress') {
-      try {
-        const storedProgress = JSON.parse(localStorage.getItem('quizProgress') || '{}');
-        const incorrectQuestions = storedProgress[courseCode]?.incorrectQuestions || [];
-        
-        if (incorrectQuestions.length === 0) {
-          setIsModalOpen(true);
-          setModalContent({
-            title: 'No Incorrect Questions',
-            message: 'You have no incorrect questions to review!',
-          });
-          return []; // Prevent any question selection if there are no incorrect questions
-        }
-
-        selected = questions.filter((q) => incorrectQuestions.includes(q.question));
-        
-        // If the filtered list is empty, show the modal
-        if (selected.length === 0) {
-          setIsModalOpen(true);
-          setModalContent({
-            title: 'No Incorrect Questions',
-            message: 'You have no incorrect questions to review!',
-          });
-          return [];
-        }
-
-        selected = numQuestions
-          ? shuffleArray(selected).slice(0, Math.min(numQuestions, selected.length))
-          : selected;
-      } catch (error) {
-        console.error('Error loading progress from localStorage:', error);
-        alert('Failed to load progress.');
-        return [];
-      }
-    } else {
-      selected = shuffleArray(questions).slice(0, numQuestions || questions.length);
-    }
-
-    return selected.map((question) => {
+    const totalQuestions = numQuestions ?? questions.length;
+    return shuffleArray(questions).slice(0, totalQuestions).map((question) => {
       const strippedOptions = question.options.map((opt) => opt.replace(/^Option [A-D]:\s*/, ''));
-      const answerLetters = question.answer;
-      const correctOptionTexts = answerLetters.map((letter) => {
-        const index = letter.toUpperCase().charCodeAt(0) - 'A'.charCodeAt(0);
-        return strippedOptions[index];
-      });
+      const correctOptionTexts = question.answer.map((letter) => strippedOptions[letter.charCodeAt(0) - 65]);
       const shuffled = shuffleArray(strippedOptions);
-      const answerIndices = correctOptionTexts
-        .map((text) => shuffled.indexOf(text))
-        .filter((idx) => idx !== -1);
-
-      return {
-        ...question,
-        shuffledOptions: shuffled,
-        answerIndices,
-      };
+      const answerIndices = correctOptionTexts.map((text) => shuffled.indexOf(text)).filter((idx) => idx !== -1);
+      return { ...question, shuffledOptions: shuffled, answerIndices };
     });
-  }, [quizType, numQuestions, questions, courseCode]);
+  }, [numQuestions, questions]);
 
-  // Function to close the modal
   const handleCloseModal = () => {
     setIsModalOpen(false);
   };
 
-  // If the modal is open, return only the modal component
   if (isModalOpen) {
     return (
       <Modal
@@ -974,7 +963,6 @@ export default function InteractiveQuiz({
     );
   }
 
-  // Render the quiz if there are selected questions
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-gray-100 flex flex-col items-center justify-center p-6 lg:p-12">
       <div className="w-full max-w-screen-xl mx-auto">
@@ -987,18 +975,18 @@ export default function InteractiveQuiz({
           {courseName} Quiz
         </motion.h1>
         <AnimatePresence mode="wait">
-        <Quiz
-  key={`quiz-${quizType}-${quizTime ?? 'default'}-${numQuestions ?? 'default'}`}
-  quizType={quizType}
-  questions={selectedQuestions}
-  quizTime={quizTime}
-  courseName={courseName}
-  courseCode={courseCode}
-  numQuestions={numQuestions}
-  isModalOpen={isModalOpen} // Pass modal-related props
-  modalContent={modalContent} // Pass modal-related props
-  handleCloseModal={handleCloseModal} // Pass modal-related props
-/>
+          <Quiz
+            key={`quiz-${quizType}-${quizTime ?? 'default'}-${numQuestions ?? 'default'}`}
+            quizType={quizType}
+            questions={selectedQuestions}
+            quizTime={quizTime}
+            courseName={courseName}
+            courseCode={courseCode}
+            numQuestions={numQuestions}
+            isModalOpen={isModalOpen}
+            modalContent={modalContent}
+            handleCloseModal={handleCloseModal}
+          />
         </AnimatePresence>
       </div>
     </div>

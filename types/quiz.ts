@@ -13,8 +13,8 @@ export interface ProcessedQuestion {
     questions: ProcessedQuestion[];
     courseCode: string;
     onExit?: () => void;
-    quizTime?: number; // Optional prop for quiz time in seconds
-    numQuestions?: number; // Optional prop for the number of questions
+    quizTime?: number | null; // Allow null
+    numQuestions?: number | null;
   }
   export interface UserAnswer {
     selectedOptions: number[];

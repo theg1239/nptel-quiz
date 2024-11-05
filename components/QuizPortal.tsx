@@ -50,50 +50,37 @@ export default function Component({ course, course_code }: QuizPortalProps = { c
 
   const handleStartQuiz = () => {
     if (!VALID_QUIZ_TYPES.includes(selectedQuiz || "")) {
-      console.error("Invalid quiz type selected.")
-      return
+      console.error("Invalid quiz type selected.");
+      return;
     }
-
-    if (selectedQuiz === "progress") {
-      // Check for any incorrect questions
-      const storedProgress = JSON.parse(localStorage.getItem("courseProgress") || "{}")
-      const incorrectQuestions = storedProgress[course_code]?.incorrectQuestions || []
-      
-      if (incorrectQuestions.length === 0) {
-        // If there are no incorrect questions, open the modal
-        setModalMessage("You have no incorrect questions to review!")
-        setIsModalOpen(true)
-        return
-      }
-    }
-
-    // Set up quiz parameters
-    let finalQuestionCount = questionCount
-    let finalQuizTime = quizTime
-
+  
+    let finalQuestionCount = questionCount;
+    let finalQuizTime = quizTime;
+  
     if (selectedQuiz === "quick") {
-      finalQuestionCount = 10
-      finalQuizTime = 5
+      finalQuestionCount = 10;
+      finalQuizTime = 5;
     } else if (selectedQuiz === "practice") {
-      finalQuestionCount = totalQuestions
-      finalQuizTime = 0
+      finalQuestionCount = totalQuestions;
+      finalQuizTime = 0;
     } else if (selectedQuiz === "progress") {
-      finalQuestionCount = Math.min(20, totalQuestions)
-      finalQuizTime = finalQuestionCount * 1
+      finalQuestionCount = Math.min(20, totalQuestions);
+      finalQuizTime = finalQuestionCount * 1;
     }
-
-    let queryParams = ""
+  
+    const params = new URLSearchParams();
+  
     if (selectedQuiz === "timed" || selectedQuiz === "quick") {
-      const params = new URLSearchParams({
-        quiz_time: (finalQuizTime * 60).toString(),
-        num_questions: finalQuestionCount.toString(),
-      })
-      queryParams = `?${params.toString()}`
+      params.append('quizTime', (finalQuizTime * 60).toString());
+      params.append('numQuestions', finalQuestionCount.toString());
+    } else if (selectedQuiz === "progress" || selectedQuiz === "practice") {
+      params.append('numQuestions', finalQuestionCount.toString());
     }
-
-    const quizPath = `/courses/${course_code}/quiz/${selectedQuiz}${queryParams}`
-    router.push(quizPath)
-  }
+  
+    const queryParams = params.toString() ? `?${params.toString()}` : '';
+    const quizPath = `/courses/${course_code}/quiz/${selectedQuiz}${queryParams}`;
+    router.push(quizPath);
+  };
 
   const handleStartPracticeMode = () => {
     router.push(`/courses/${course_code}/practice`)
@@ -255,7 +242,6 @@ export default function Component({ course, course_code }: QuizPortalProps = { c
           </CardContent>
         </Card>
         
-        {/* Selected Quiz Confirmation */}
         <AnimatePresence mode="wait">
           {selectedQuiz && (
             <motion.div key="selected-quiz" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }} className="md:col-span-3">

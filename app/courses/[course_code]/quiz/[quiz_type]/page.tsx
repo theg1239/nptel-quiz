@@ -1,5 +1,6 @@
 import QuizClientProvider from '@/components/QuizClientProvider';
 import { QuizType, ProcessedQuestion } from '@/types/quiz';
+import { useSearchParams } from 'next/navigation';
 
 interface Course {
   title: string;
@@ -19,12 +20,17 @@ interface QuizPageProps {
     course_code: string;
     quiz_type: QuizType;
   };
+  searchParams: {
+    quizTime?: string;
+    numQuestions?: string;
+  };
 }
 
 const shuffleArray = <T,>(array: T[]): T[] => [...array].sort(() => Math.random() - 0.5);
 
-export default async function QuizPage({ params }: QuizPageProps) {
+export default async function QuizPage({ params, searchParams }: QuizPageProps) {
   const { course_code, quiz_type } = params;
+  const { quizTime, numQuestions } = searchParams;
 
   const res = await fetch(`https://api.examcooker.in/courses/${course_code}`, { cache: 'no-store' });
   if (!res.ok) {
@@ -72,6 +78,8 @@ export default async function QuizPage({ params }: QuizPageProps) {
       course_code={course_code}
       quiz_type={quiz_type}
       processedQuestions={processedQuestions}
+      quizTime={quizTime ? parseInt(quizTime, 10) : null}
+      numQuestions={numQuestions ? parseInt(numQuestions, 10) : null}
     />
   );
-} 
+}

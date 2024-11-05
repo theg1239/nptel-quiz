@@ -3,16 +3,16 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { ProcessedQuestion, UserAnswer, QuizType, PowerUpType } from '@/types/quiz';
 
 interface ModalContent {
-    title: string;
-    message: string;
-  }
-  
+  title: string;
+  message: string;
+}
+
 interface QuizState {
   currentQuestionIndex: number;
   isAnswerLocked: boolean;
   score: number;
   lives: number;
-  timeLeft: number | null;
+  timeLeft: number | null,
   powerUps: PowerUpType[];
   quizEnded: boolean;
   availableOptions: number[];
@@ -60,12 +60,20 @@ const quizSlice = createSlice({
     setTimeLeft(state, action: PayloadAction<number | null>) {
       state.timeLeft = action.payload;
     },
+    decrementTimeLeft(state) {
+        if (state.timeLeft && state.timeLeft > 0) {
+          state.timeLeft -= 1;
+          console.log('Decrementing state.timeLeft:', state.timeLeft); // Track decrement logic
+        } else {
+          console.log('Attempted decrement when timeLeft is null or <= 0'); // Ensure no reset to 0
+        }
+      },
     setPowerUps(state, action: PayloadAction<PowerUpType[]>) {
       state.powerUps = action.payload;
     },
     addUserAnswer(state, action: PayloadAction<UserAnswer>) {
-        state.userAnswers.push(action.payload);
-      },
+      state.userAnswers.push(action.payload);
+    },
     setQuizEnded(state, action: PayloadAction<boolean>) {
       state.quizEnded = action.payload;
     },
@@ -87,14 +95,15 @@ const quizSlice = createSlice({
     resetQuiz(state) {
       Object.assign(state, initialState);
     },
-    openModal: (state, action: PayloadAction<ModalContent>) => {
-        state.isModalOpen = true;
-        state.modalContent = action.payload;
+    openModal(state, action: PayloadAction<ModalContent>) {
+      state.isModalOpen = true;
+      state.modalContent = action.payload;
     },
-      closeModal: (state) => {
-        state.isModalOpen = false;
-        state.modalContent = { title: '', message: '' };
-  },}
+    closeModal(state) {
+      state.isModalOpen = false;
+      state.modalContent = { title: '', message: '' };
+    },
+  },
 });
 
 export const {
@@ -103,6 +112,7 @@ export const {
   setScore,
   setLives,
   setTimeLeft,
+  decrementTimeLeft,
   setPowerUps,
   setQuizEnded,
   setAvailableOptions,
@@ -113,7 +123,7 @@ export const {
   addUserAnswer,
   resetQuiz,
   openModal,
-  closeModal
+  closeModal,
 } = quizSlice.actions;
 
 export default quizSlice.reducer;
