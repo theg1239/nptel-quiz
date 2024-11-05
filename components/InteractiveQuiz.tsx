@@ -31,7 +31,7 @@ import {
   setAvailableOptions,
   setFeedback,
   setSelectedOptions,
-  addUserAnswer, // Changed from setUserAnswers to addUserAnswer
+  addUserAnswer,
   setShake,
   resetQuiz,
 } from './slices/quizSlice';
@@ -165,6 +165,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, title, message, onClose }) => {
     </Transition>
   );
 };
+
 const QuizTimer = ({ maxTime }: { maxTime: number }) => {
   const searchParams = useSearchParams();
   const initialTimeLeft = parseInt(searchParams.get('quizTime') || '0', 10);
@@ -298,7 +299,7 @@ const QuizContent = ({
           Score: {currentScore} / {totalQuestions}
         </div>
       </CardHeader>
-      {typeof timeLeft === 'number' && <QuizTimer maxTime={maxTime} />}
+      {(quizType === 'timed' || quizType === 'quick') && <QuizTimer maxTime={maxTime} />}
       <CardContent>
         <div className="flex justify-between items-center mb-4">
           {(quizType === 'quick' || quizType === 'practice' || quizType === 'progress') && (
@@ -570,7 +571,7 @@ const ResultScreen = ({
       </main>
     </motion.div>
   );
-};  
+};
 
 const Quiz = ({
   quizType,
@@ -607,12 +608,10 @@ const Quiz = ({
     selectedOptions,
     userAnswers,
     shake,
-    isAnswerLocked,
   } = useSelector((state: RootState) => state.quiz);
 
   useEffect(() => {
     dispatch(setTimeLeft(quizTime));
-    console.log('Initial timeLeft set to:', quizTime); // Debugging log
   }, [dispatch, quizTime]);
 
   const endQuiz = useCallback(() => {
@@ -635,7 +634,7 @@ const Quiz = ({
       console.error('Error accessing localStorage:', error);
     }
   }, [dispatch, questions, userAnswers, courseCode, quizType]);
-  
+
   useEffect(() => {
     if (
       (quizType === 'timed' || quizType === 'quick') &&
@@ -645,7 +644,6 @@ const Quiz = ({
     ) {
       const timer = setInterval(() => {
         dispatch(decrementTimeLeft());
-        console.log('Interval timeLeft value:', timeLeft); // Check value consistency in the interval
       }, 1000);
   
       return () => clearInterval(timer);
@@ -653,30 +651,6 @@ const Quiz = ({
       endQuiz();
     }
   }, [dispatch, timeLeft, quizEnded, quizType, endQuiz]);
-  
-  
-  const handleExit = () => {
-    dispatch(resetQuiz());
-    router.push(`/courses/${courseCode}`);
-  };
-
-  const handleFinishQuiz = useCallback(() => {
-    endQuiz();
-    router.push(`/courses/${courseCode}`);
-  }, [endQuiz, router, courseCode]);
-
-  const handleRestart = useCallback(() => {
-    dispatch(resetQuiz());
-    if (quizType === 'progress') {
-      try {
-        const storedProgress = JSON.parse(localStorage.getItem('quizProgress') || '{}');
-        delete storedProgress[courseCode];
-        localStorage.setItem('quizProgress', JSON.stringify(storedProgress));
-      } catch (error) {
-        console.error('Error resetting quiz progress:', error);
-      }
-    }
-  }, [dispatch, quizType, courseCode]);
 
   const goToNextQuestion = useCallback(() => {
     if (currentQuestionIndex < questions.length - 1) {
@@ -687,10 +661,10 @@ const Quiz = ({
         locked: false,
         timeSpent: 0,
       };
-      dispatch(setSelectedOptions([]));
+      dispatch(setSelectedOptions(nextAnswer.selectedOptions));
       dispatch(setAvailableOptions([0, 1, 2, 3]));
       dispatch(setFeedback(null));
-      dispatch(setIsAnswerLocked(false));
+      dispatch(setIsAnswerLocked(nextAnswer.locked));
     } else {
       endQuiz();
     }
@@ -698,11 +672,9 @@ const Quiz = ({
 
   const handleAnswer = useCallback(
     (newSelectedOptions: number[]) => {
-      if (quizType === 'practice' || !selectedOptions.length) {
-        dispatch(setSelectedOptions(newSelectedOptions));
-      }
+      dispatch(setSelectedOptions(newSelectedOptions));
     },
-    [dispatch, quizType, selectedOptions.length]
+    [dispatch]
   );
 
   const saveAnswers = useCallback(() => {
@@ -710,10 +682,6 @@ const Quiz = ({
       dispatch(setShake(true));
       setTimeout(() => dispatch(setShake(false)), 600);
       return;
-    }
-
-    if (quizType !== 'practice') {
-      dispatch(setIsAnswerLocked(true));
     }
 
     const currentQuestion = questions[currentQuestionIndex];
@@ -736,7 +704,7 @@ const Quiz = ({
     const timeSpent = userAnswers[currentQuestionIndex]?.timeSpent ?? 0; // Implement time tracking as needed
 
     dispatch(
-      addUserAnswer({ // Changed from setUserAnswers to addUserAnswer
+      addUserAnswer({
         selectedOptions,
         correct: isCorrect,
         locked: quizType !== 'practice',
@@ -772,9 +740,6 @@ const Quiz = ({
     userAnswers,
   ]);
 
-  const powerUpsTimeLeft = useSelector((state: RootState) => state.quiz.powerUps);
-  const powerUpsLivesLeft = useSelector((state: RootState) => state.quiz.powerUps);
-
   const usePowerUp = useCallback(
     (type: string) => {
       if (!powerUps.some((p) => p.type === type && p.active)) return;
@@ -793,7 +758,7 @@ const Quiz = ({
     },
     [dispatch, powerUps, timeLeft, lives]
   );
-  
+
   useEffect(() => {
     if ((quizType === 'timed' || quizType === 'quick') && quizTime !== null) {
       dispatch(setTimeLeft(quizTime));
@@ -801,6 +766,23 @@ const Quiz = ({
       dispatch(setTimeLeft(null)); // Set timeLeft to null for other quiz types
     }
   }, [dispatch, quizTime, quizType]);
+
+  const isCurrentQuestionLocked = useMemo(() => {
+    return userAnswers[currentQuestionIndex]?.locked || false;
+  }, [userAnswers, currentQuestionIndex]);
+
+  const handleExit = () => {
+    router.push(`/courses/${courseCode}`);
+  };
+
+  const handleRestart = () => {
+    dispatch(resetQuiz());
+    // Additional logic if needed
+  };
+
+  const handleFinishQuiz = () => {
+    router.push(`/courses/${courseCode}`);
+  };
 
   if (quizEnded) {
     return (
@@ -851,7 +833,7 @@ const Quiz = ({
               totalQuestions={questions.length}
               currentQuestionIndex={currentQuestionIndex}
               selectedOptions={selectedOptions}
-              isAnswerLocked={isAnswerLocked}
+              isAnswerLocked={isCurrentQuestionLocked}
               shake={shake}
             />
             <div className="flex justify-between mt-4">
@@ -912,11 +894,11 @@ const Quiz = ({
         )}
       </AnimatePresence>
       <Modal 
-  isOpen={isModalOpen}
-  title={modalContent.title}
-  message={modalContent.message}
-  onClose={handleCloseModal}
-/>
+        isOpen={isModalOpen}
+        title={modalContent.title}
+        message={modalContent.message}
+        onClose={handleCloseModal}
+      />
     </div>
   );
 };
@@ -929,7 +911,8 @@ export default function InteractiveQuiz({
   quizTime = null,
   numQuestions = null,
 }: InteractiveQuizProps) {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState({ title: '', message: '' });
 
@@ -952,19 +935,18 @@ export default function InteractiveQuiz({
     setIsModalOpen(false);
   };
 
-  if (isModalOpen) {
-    return (
-      <Modal
-        isOpen={isModalOpen}
-        title={modalContent.title}
-        message={modalContent.message}
-        onClose={handleCloseModal}
-      />
-    );
-  }
+  const handleRestart = () => {
+    dispatch(resetQuiz());
+    // Additional logic if needed
+  };
+
+  const handleFinishQuiz = () => {
+    router.push(`/courses/${courseCode}`);
+  };
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-gray-100 flex flex-col items-center justify-center p-6 lg:p-12">
+      <ParticleBackground />
       <div className="w-full max-w-screen-xl mx-auto">
         <motion.h1
           initial={{ y: -50, opacity: 0 }}
