@@ -191,19 +191,26 @@ export default function PracticeMode({ params }: { params: { course_code: string
         const question = weekQuestions[index]
         if (!question) return
 
-        const optionsText = question.options.map((option, i) => {
-          const optionText = option.replace(/^([A-Z])[).:-]/i, '').trim()
-          return `Option ${i + 1}: ${optionText}`
-        }).join('. ')
+        // Get the correct option(s)
+        const correctOptionIndices = question.answer.map(ans => {
+          const index = question.options.findIndex(option => {
+            const labelMatch = option.match(/^([A-Z])[).:-]/i);
+            const label = labelMatch ? labelMatch[1].toUpperCase() : '';
+            return label === ans;
+          });
+          return index;
+        });
 
-        const correctAnswers = question.answer.map(ans => {
-          const ansIndex = question.options.findIndex(option => option.startsWith(ans))
-          return `Option ${ansIndex + 1}`
-        }).join(', ')
+        const correctOptionsText = correctOptionIndices.map((optionIndex) => {
+          const option = question.options[optionIndex];
+          const optionText = option.replace(/^([A-Z])[).:-]/i, '').trim();
+          return `Option ${optionIndex + 1}: ${optionText}`;
+        }).join('. ');
 
-        const textToSpeak = `Question ${index + 1}: ${question.question}. ${optionsText}. Correct answer is ${correctAnswers}.`
+        const textToSpeak = `Question ${index + 1}: ${question.question}. ${correctOptionsText}.`;
 
         utteranceRef.current = new SpeechSynthesisUtterance(textToSpeak)
+        utteranceRef.current.rate = 1.2; // Increase the rate to make it faster
         utteranceRef.current.onend = () => {
           setIsSpeaking(false)
           if (index + 1 < weekQuestions.length) {
