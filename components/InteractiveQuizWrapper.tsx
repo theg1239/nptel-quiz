@@ -19,13 +19,13 @@ const InteractiveQuizWrapper: React.FC<InteractiveQuizWrapperProps> = ({
   quiz_type,
   processedQuestions,
 }) => {
-    
   const searchParams = useSearchParams();
+  
+  // Set quizTime and numQuestions based on the quiz type
   const quizTimeParam = searchParams.get('quiz_time');
   const numQuestionsParam = searchParams.get('num_questions');
-
-  const quizTime = quizTimeParam ? parseInt(quizTimeParam, 10) : undefined;
-  const numQuestions = numQuestionsParam ? parseInt(numQuestionsParam, 10) : undefined;
+  const quizTime = quiz_type === 'timed' || quiz_type === 'quick' ? parseInt(quizTimeParam ?? '0', 10) : undefined;
+  const numQuestions = quiz_type === 'timed' || quiz_type === 'quick' ? parseInt(numQuestionsParam ?? '0', 10) : undefined;
 
   return (
     <InteractiveQuiz
@@ -33,8 +33,8 @@ const InteractiveQuizWrapper: React.FC<InteractiveQuizWrapperProps> = ({
       questions={processedQuestions}
       quizType={quiz_type}
       courseCode={course_code}
-      quizTime={quizTime}
-      numQuestions={numQuestions}
+      quizTime={quizTime} // Only passed if applicable
+      numQuestions={numQuestions} // Only passed if applicable
     />
   );
 };

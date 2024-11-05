@@ -4,8 +4,8 @@ export interface ProcessedQuestion {
     question: string;
     options: string[];
     answer: string[]; // Array to support multiple correct answers
-    shuffledOptions?: string[]; // Optional, used after shuffling
-    answerIndices?: number[];    // Optional, indices of correct answers in shuffledOptions
+    shuffledOptions: string[]; // Optional, used after shuffling
+    answerIndices: number[];    // Optional, indices of correct answers in shuffledOptions
   }
   export interface InteractiveQuizProps {
     quizType: QuizType;

@@ -68,13 +68,16 @@ export default function Component({ course, course_code }: QuizPortalProps = { c
       finalQuizTime = finalQuestionCount * 1;
     }
   
-    // Convert quiz time from minutes to seconds for URL query parameter
-    const queryParams = new URLSearchParams({
-      quiz_time: (finalQuizTime * 60).toString(),
-      num_questions: finalQuestionCount.toString(),
-    });
+    let queryParams = "";
+    if (selectedQuiz === "timed" || selectedQuiz === "quick") {
+      const params = new URLSearchParams({
+        quiz_time: (finalQuizTime * 60).toString(),
+        num_questions: finalQuestionCount.toString(),
+      });
+      queryParams = `?${params.toString()}`;
+    }
   
-    const quizPath = `/courses/${course_code}/quiz/${selectedQuiz}?${queryParams.toString()}`;
+    const quizPath = `/courses/${course_code}/quiz/${selectedQuiz}${queryParams}`;
     router.push(quizPath);
   };
   
