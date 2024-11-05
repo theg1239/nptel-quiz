@@ -1,12 +1,9 @@
-// components/InteractiveQuiz.tsx
-
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useEffect, useCallback, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Heart,
-  Zap,
   Clock,
   Shield,
   Award,
@@ -19,13 +16,31 @@ import {
   XCircle as XCircleIcon,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState, AppDispatch } from './store';
+import {
+  setCurrentQuestionIndex,
+  setIsAnswerLocked,
+  setScore,
+  setLives,
+  setTimeLeft,
+  setPowerUps,
+  setQuizEnded,
+  setAvailableOptions,
+  setFeedback,
+  setSelectedOptions,
+  setUserAnswers,
+  setShake,
+  resetQuiz,
+} from './slices/quizSlice';
 import { Button } from '@/components/ui/Button';
 import { Progress } from '@/components/ui/Progress';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/Tooltip';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
+import { Fragment } from 'react';
+import { Dialog, Transition } from '@headlessui/react';
 import { InteractiveQuizProps, ProcessedQuestion } from '@/types/quiz';
 
 type QuizType = 'timed' | 'quick' | 'practice' | 'progress';
@@ -38,6 +53,13 @@ interface ResultScreenProps {
   courseCode: string;
   userAnswers: UserAnswer[];
   questions: ProcessedQuestion[];
+}
+
+interface ModalProps {
+  isOpen: boolean;
+  title: string;
+  message: string;
+  onClose: () => void;
 }
 
 interface PowerUpType {
@@ -68,13 +90,11 @@ const defaultPowerUps = (quizType: QuizType): PowerUpType[] => {
     case 'timed':
     case 'quick':
       return [
-        { type: 'fiftyFifty', icon: Zap, name: '50/50', active: true },
         { type: 'extraTime', icon: Clock, name: 'Extra Time', active: true },
         { type: 'shield', icon: Shield, name: 'Shield', active: true },
       ];
     case 'practice':
       return [
-        { type: 'fiftyFifty', icon: Zap, name: '50/50', active: true },
         { type: 'shield', icon: Shield, name: 'Shield', active: true },
       ];
     case 'progress':
@@ -83,6 +103,53 @@ const defaultPowerUps = (quizType: QuizType): PowerUpType[] => {
       return [];
   }
 };
+
+const Modal = ({ isOpen, title, message, onClose }: ModalProps) => (
+  <Transition appear show={isOpen} as={Fragment}>
+    <Dialog as="div" className="relative z-10" onClose={onClose}>
+      <Transition.Child
+        as={Fragment}
+        enter="ease-out duration-300"
+        enterFrom="opacity-0"
+        enterTo="opacity-100"
+        leave="ease-in duration-200"
+        leaveFrom="opacity-100"
+        leaveTo="opacity-0"
+      >
+        <div className="fixed inset-0 bg-black bg-opacity-25" />
+      </Transition.Child>
+
+      <div className="fixed inset-0 overflow-y-auto">
+        <div className="flex min-h-full items-center justify-center p-4 text-center">
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0 scale-95"
+            enterTo="opacity-100 scale-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100 scale-100"
+            leaveTo="opacity-0 scale-95"
+          >
+            <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+              <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
+                {title}
+              </Dialog.Title>
+              <div className="mt-2">
+                <p className="text-sm text-gray-500">{message}</p>
+              </div>
+
+              <div className="mt-4">
+                <Button onClick={onClose} className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200">
+                  Close
+                </Button>
+              </div>
+            </Dialog.Panel>
+          </Transition.Child>
+        </div>
+      </div>
+    </Dialog>
+  </Transition>
+);
 
 const ParticleBackground = () => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -149,7 +216,9 @@ const PowerUp = ({
         <button
           onClick={onClick}
           className={`p-2 rounded-full ${
-            active ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-700 cursor-not-allowed'
+            active
+              ? 'bg-blue-600 hover:bg-blue-700'
+              : 'bg-gray-700 cursor-not-allowed opacity-50'
           } transition-colors duration-300`}
           disabled={!active}
           aria-label={`Use ${name} power-up`}
@@ -305,7 +374,7 @@ const ResultScreen = ({
   questions,
 }: ResultScreenProps) => {
   const router = useRouter();
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
 
   const handleBackToPortal = () => {
     router.push(`/courses/${courseCode}`);
@@ -570,7 +639,6 @@ const Quiz = ({
     setScore(0);
     setLives(3);
     setTimeLeft(quizType === 'timed' || quizType === 'quick' ? quizTime : null);
-    setPowerUpsState(defaultPowerUps(quizType));
     setQuizEnded(false);
     setAvailableOptions([0, 1, 2, 3]);
     setFeedback(null);
@@ -679,26 +747,21 @@ const Quiz = ({
     (type: string) => {
       if (!powerUps.some((p) => p.type === type && p.active)) return;
 
-      if (type === 'fiftyFifty') {
-        const currentQuestion = questions[currentQuestionIndex];
-        const correctIndices = currentQuestion.answerIndices?.slice().sort((a, b) => a - b) || [];
-
-        let incorrectOptions = availableOptions.filter((idx) => !correctIndices.includes(idx));
-
-        // Ensure at least one correct option remains
-        if (incorrectOptions.length === 0) return;
-
-        const optionsToRemove = shuffleArray(incorrectOptions).slice(0, Math.min(2, incorrectOptions.length));
-        setAvailableOptions((prev) => prev.filter((idx) => !optionsToRemove.includes(idx)));
-      } else if (type === 'extraTime') {
+      if (type === 'extraTime') {
         setTimeLeft((prev) => (typeof prev === 'number' ? prev + 30 : 30));
       } else if (type === 'shield') {
         setLives((prev) => prev + 1);
       }
 
-      setPowerUpsState((prev) => prev.map((p) => (p.type === type ? { ...p, active: false } : p)));
+      setPowerUpsState((prev) =>
+        prev.map((p) =>
+          p.type === type
+            ? { ...p, active: false }
+            : p
+        )
+      );
     },
-    [powerUps, questions, currentQuestionIndex, availableOptions]
+    [powerUps]
   );
 
   useEffect(() => {
@@ -717,7 +780,19 @@ const Quiz = ({
     setAvailableOptions([0, 1, 2, 3]);
     setFeedback(null);
     setIsAnswerLocked(userAnswers[currentQuestionIndex]?.locked || false);
-  }, [currentQuestionIndex, restartTrigger, userAnswers]);
+
+    // Update power-ups based on the number of options
+    const currentQuestion = questions[currentQuestionIndex];
+    const initialOptionsCount = currentQuestion.shuffledOptions.length;
+
+    let newPowerUps = defaultPowerUps(quizType);
+    if (initialOptionsCount <= 2) {
+      newPowerUps = newPowerUps.map((p) =>
+        p.type === 'shield' ? { ...p, active: true } : p
+      );
+    }
+    setPowerUpsState(newPowerUps);
+  }, [currentQuestionIndex, restartTrigger, userAnswers, questions, quizType]);
 
   if (quizEnded) {
     return (
@@ -843,6 +918,8 @@ export default function InteractiveQuiz({
   numQuestions,
 }: InteractiveQuizProps) {
   const router = useRouter();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const handleExit = useCallback(() => {
     router.push(`/courses/${courseCode}`);
   }, [router, courseCode]);
@@ -856,13 +933,13 @@ export default function InteractiveQuiz({
           const storedProgress = JSON.parse(localStorage.getItem('quizProgress') || '{}');
           const incorrectQuestions = storedProgress[courseCode]?.incorrectQuestions || [];
           if (incorrectQuestions.length === 0) {
-            alert('You have no incorrect questions to review!');
+            setIsModalOpen(true);
             return [];
           }
 
           selected = questions.filter((q) => incorrectQuestions.includes(cleanQuestionText(q.question)));
           if (selected.length === 0) {
-            alert('No matching incorrect questions found.');
+            setIsModalOpen(true);
             return [];
           }
 
@@ -918,7 +995,19 @@ export default function InteractiveQuiz({
   }, [quizType, numQuestions, questions, courseCode]);
 
   if (quizType === 'progress' && selectedQuestions.length === 0) {
-    return null;
+    return (
+      <>
+        <Modal
+          isOpen={isModalOpen}
+          title="No Incorrect Questions"
+          message="You have no incorrect questions to review!"
+          onClose={() => {
+            setIsModalOpen(false);
+            handleExit();
+          }}
+        />
+      </>
+    );
   }
 
   if (selectedQuestions.length === 0) {

@@ -16,3 +16,16 @@ export interface ProcessedQuestion {
     quizTime?: number; // Optional prop for quiz time in seconds
     numQuestions?: number; // Optional prop for the number of questions
   }
+  export interface UserAnswer {
+    selectedOptions: number[];
+    correct: boolean;
+    locked: boolean;
+    timeSpent: number;
+  }
+  
+  export interface PowerUpType {
+    type: string;
+    icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+    name: string;
+    active: boolean;
+  }
