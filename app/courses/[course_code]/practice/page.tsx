@@ -84,8 +84,6 @@ export default function PracticeMode({ params }: { params: { course_code: string
   const [error, setError] = useState<string | null>(null)
   const [isNavOpen, setIsNavOpen] = useState(false)
   const [isReadAloudMode, setIsReadAloudMode] = useState(false)
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([])
-  const [selectedVoiceURI, setSelectedVoiceURI] = useState<string | null>(null)
   const synthRef = useRef<SpeechSynthesis | null>(null)
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null)
   const [currentSpeechIndex, setCurrentSpeechIndex] = useState<number>(0)
@@ -93,20 +91,7 @@ export default function PracticeMode({ params }: { params: { course_code: string
 
   useEffect(() => {
     synthRef.current = window.speechSynthesis
-
-    const loadVoices = () => {
-      const availableVoices = synthRef.current?.getVoices() || []
-      setVoices(availableVoices)
-      if (availableVoices.length > 0 && !selectedVoiceURI) {
-        setSelectedVoiceURI(availableVoices[0].voiceURI)
-      }
-    }
-
-    loadVoices()
-    if (synthRef.current) {
-      synthRef.current.onvoiceschanged = loadVoices
-    }
-  }, [selectedVoiceURI])
+  }, [])
 
   useEffect(() => {
     const fetchCourseData = async () => {
@@ -225,12 +210,6 @@ export default function PracticeMode({ params }: { params: { course_code: string
             setCurrentSpeechIndex(index + 1)
           }
         }
-        if (selectedVoiceURI) {
-          const selectedVoice = voices.find(voice => voice.voiceURI === selectedVoiceURI)
-          if (selectedVoice) {
-            utteranceRef.current.voice = selectedVoice
-          }
-        }
         setIsSpeaking(true)
         synthRef.current.speak(utteranceRef.current)
       }
@@ -244,7 +223,7 @@ export default function PracticeMode({ params }: { params: { course_code: string
         setIsSpeaking(false)
       }
     }
-  }, [isReadAloudMode, currentSpeechIndex, sanitizedCourse, selectedWeek, loading, error, isSpeaking, selectedVoiceURI, voices])
+  }, [isReadAloudMode, currentSpeechIndex, sanitizedCourse, selectedWeek, loading, error, isSpeaking])
 
   const toggleReadAloudMode = () => {
     setIsReadAloudMode(!isReadAloudMode)
@@ -267,28 +246,14 @@ export default function PracticeMode({ params }: { params: { course_code: string
             <ChevronLeft className="mr-2 h-4 w-4" />
             Back to Quiz Portal
           </Button>
-          <div className="flex items-center space-x-4">
-            <select
-              className="bg-gray-800 text-gray-300 p-2 rounded-md"
-              value={selectedVoiceURI || ''}
-              onChange={(e) => setSelectedVoiceURI(e.target.value)}
-              disabled={!isReadAloudMode}
-            >
-              {voices.map((voice, index) => (
-                <option key={index} value={voice.voiceURI}>
-                  {voice.name} ({voice.lang})
-                </option>
-              ))}
-            </select>
-            <Button
-              variant="ghost"
-              className="text-indigo-300 hover:text-indigo-100 hover:bg-indigo-900 transition-colors flex items-center"
-              onClick={toggleReadAloudMode}
-            >
-              <Volume2 className="mr-2 h-5 w-5" />
-              {isReadAloudMode ? 'Disable Read Aloud' : 'Enable Read Aloud'}
-            </Button>
-          </div>
+          <Button
+            variant="ghost"
+            className="text-indigo-300 hover:text-indigo-100 hover:bg-indigo-900 transition-colors flex items-center"
+            onClick={toggleReadAloudMode}
+          >
+            <Volume2 className="mr-2 h-5 w-5" />
+            {isReadAloudMode ? 'Disable Read Aloud' : 'Enable Read Aloud'}
+          </Button>
           <Sheet open={isNavOpen} onOpenChange={setIsNavOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="md:hidden">
