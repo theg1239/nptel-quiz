@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronLeft, ChevronRight, Menu, CheckCircle2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Menu, CheckCircle2, Volume2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent } from '@/components/ui/Card'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Progress } from '@/components/ui/Progress'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import SpaceLoader from "@/components/SpaceLoader"
-import { stripOptionLabels, initializeQuestionsWithFixedOrder, Question } from '@/lib/quizUtils'
+import { initializeQuestionsWithFixedOrder, Question } from '@/lib/quizUtils'
 
 interface Week {
   name: string
@@ -41,7 +41,7 @@ const ParticleBackground = () => (
     {[...Array(50)].map((_, i) => (
       <div
         key={i}
-        className="absolute bg-blue-500 rounded-full opacity-20 animate-float" 
+        className="absolute bg-blue-500 rounded-full opacity-20 animate-float"
         style={{
           top: `${Math.random() * 100}%`,
           left: `${Math.random() * 100}%`,
@@ -83,6 +83,15 @@ export default function PracticeMode({ params }: { params: { course_code: string
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isNavOpen, setIsNavOpen] = useState(false)
+  const [isReadAloudMode, setIsReadAloudMode] = useState(false)
+  const synthRef = useRef<SpeechSynthesis | null>(null)
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null)
+  const [currentSpeechIndex, setCurrentSpeechIndex] = useState<number>(0)
+  const [isSpeaking, setIsSpeaking] = useState<boolean>(false)
+
+  useEffect(() => {
+    synthRef.current = window.speechSynthesis
+  }, [])
 
   useEffect(() => {
     const fetchCourseData = async () => {
@@ -145,6 +154,7 @@ export default function PracticeMode({ params }: { params: { course_code: string
   const handleWeekSelect = (weekName: string) => {
     setSelectedWeek(weekName)
     setIsNavOpen(false)
+    setCurrentSpeechIndex(0)
   }
 
   const currentWeekIndex = course?.weeks.findIndex(w => w.name === selectedWeek) ?? -1
@@ -155,6 +165,7 @@ export default function PracticeMode({ params }: { params: { course_code: string
     const newIndex = direction === 'prev' ? currentWeekIndex - 1 : currentWeekIndex + 1
     if (newIndex >= 0 && newIndex < course.weeks.length) {
       setSelectedWeek(course.weeks[newIndex].name)
+      setCurrentSpeechIndex(0)
     }
   }
 
@@ -170,6 +181,66 @@ export default function PracticeMode({ params }: { params: { course_code: string
     }
   }, [course])
 
+  useEffect(() => {
+    if (isReadAloudMode && !loading && !error && sanitizedCourse && selectedWeek) {
+      const weekQuestions = sanitizedCourse.weeks.find((week) => week.name === selectedWeek)?.questions
+      if (!weekQuestions || weekQuestions.length === 0) return
+
+      const speakQuestion = (index: number) => {
+        if (!synthRef.current) return
+        const question = weekQuestions[index]
+        if (!question) return
+
+        // Get the correct option(s)
+        const correctOptionIndices = question.answer.map(ans => {
+          const index = question.options.findIndex(option => {
+            const labelMatch = option.match(/^([A-Z])[).:-]/i);
+            const label = labelMatch ? labelMatch[1].toUpperCase() : '';
+            return label === ans;
+          });
+          return index;
+        });
+
+        const correctOptionsText = correctOptionIndices.map((optionIndex) => {
+          const option = question.options[optionIndex];
+          const optionText = option.replace(/^([A-Z])[).:-]/i, '').trim();
+          return `Option ${optionIndex + 1}: ${optionText}`;
+        }).join('. ');
+
+        const textToSpeak = `Question ${index + 1}: ${question.question}. ${correctOptionsText}.`;
+
+        utteranceRef.current = new SpeechSynthesisUtterance(textToSpeak)
+        utteranceRef.current.rate = 1.2; // Increase the rate to make it faster
+        utteranceRef.current.onend = () => {
+          setIsSpeaking(false)
+          if (index + 1 < weekQuestions.length) {
+            setCurrentSpeechIndex(index + 1)
+          }
+        }
+        setIsSpeaking(true)
+        synthRef.current.speak(utteranceRef.current)
+      }
+
+      if (!isSpeaking) {
+        speakQuestion(currentSpeechIndex)
+      }
+    } else {
+      if (synthRef.current) {
+        synthRef.current.cancel()
+        setIsSpeaking(false)
+      }
+    }
+  }, [isReadAloudMode, currentSpeechIndex, sanitizedCourse, selectedWeek, loading, error, isSpeaking])
+
+  const toggleReadAloudMode = () => {
+    setIsReadAloudMode(!isReadAloudMode)
+    setCurrentSpeechIndex(0)
+    if (synthRef.current) {
+      synthRef.current.cancel()
+      setIsSpeaking(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 text-gray-100 flex flex-col items-center">
       <header className="w-full max-w-4xl flex flex-col items-center p-4 md:p-6 space-y-4">
@@ -181,6 +252,14 @@ export default function PracticeMode({ params }: { params: { course_code: string
           >
             <ChevronLeft className="mr-2 h-4 w-4" />
             Back to Quiz Portal
+          </Button>
+          <Button
+            variant="ghost"
+            className="text-indigo-300 hover:text-indigo-100 hover:bg-indigo-900 transition-colors flex items-center"
+            onClick={toggleReadAloudMode}
+          >
+            <Volume2 className="mr-2 h-5 w-5" />
+            {isReadAloudMode ? 'Disable Read Aloud' : 'Enable Read Aloud'}
           </Button>
           <Sheet open={isNavOpen} onOpenChange={setIsNavOpen}>
             <SheetTrigger asChild>
@@ -274,41 +353,43 @@ export default function PracticeMode({ params }: { params: { course_code: string
                   <CardContent className="pt-4">
                     {sanitizedCourse.weeks
                       .find((week) => week.name === selectedWeek)
-                      ?.questions.map((question: Question, index: number) => (
-                        <div key={index} className="mb-8 last:mb-0">
-                          <h3 className="text-lg md:text-xl font-semibold mb-2 text-gray-100">
-                            {index + 1}. {question.question} 
-                          </h3>
-                          <ul className="space-y-3">
-                            {question.options.map((option: string, optionIndex: number) => {
-                              // Extract the label from the option
-                              const labelMatch = option.match(/^([A-Z])[).:-]/i);
-                              const label = labelMatch ? labelMatch[1].toUpperCase() : '';
-                              const isCorrect = question.answer.includes(label);
+                      ?.questions.map((question: Question, index: number) => {
+                        return (
+                          <div key={index} className="mb-8 last:mb-0">
+                            <h3 className="text-lg md:text-xl font-semibold mb-2 text-gray-100">
+                              {index + 1}. {question.question} 
+                            </h3>
+                            <ul className="space-y-3">
+                              {question.options.map((option: string, optionIndex: number) => {
+                                // Extract the label from the option
+                                const labelMatch = option.match(/^([A-Z])[).:-]/i);
+                                const label = labelMatch ? labelMatch[1].toUpperCase() : '';
+                                const isCorrect = question.answer.includes(label);
 
-                              return (
-                                <li
-                                  key={optionIndex}
-                                  className={`p-3 rounded-md transition-colors ${
-                                    isCorrect
-                                      ? 'bg-green-800 bg-opacity-30 border border-green-600 text-green-300'
-                                      : 'bg-gray-800 bg-opacity-30 border border-gray-700 hover:bg-gray-700'
-                                  }`}
-                                >
-                                  <div className="flex items-center">
-                                    {isCorrect && (
-                                      <CheckCircle2 className="mr-2 h-5 w-5 text-green-400 flex-shrink-0" />
-                                    )}
-                                    <span className={isCorrect ? 'text-green-300' : 'text-gray-300'}>
-                                      {option}
-                                    </span>
-                                  </div>
-                                </li>
-                              )
-                            })}
-                          </ul>
-                        </div>
-                      ))}
+                                return (
+                                  <li
+                                    key={optionIndex}
+                                    className={`p-3 rounded-md transition-colors ${
+                                      isCorrect
+                                        ? 'bg-green-800 bg-opacity-30 border border-green-600 text-green-300'
+                                        : 'bg-gray-800 bg-opacity-30 border border-gray-700 hover:bg-gray-700'
+                                    }`}
+                                  >
+                                    <div className="flex items-center">
+                                      {isCorrect && (
+                                        <CheckCircle2 className="mr-2 h-5 w-5 text-green-400 flex-shrink-0" />
+                                      )}
+                                      <span className={isCorrect ? 'text-green-300' : 'text-gray-300'}>
+                                        {option}
+                                      </span>
+                                    </div>
+                                  </li>
+                                )
+                              })}
+                            </ul>
+                          </div>
+                        )
+                      })}
                   </CardContent>
                 </Card>
               </motion.div>
