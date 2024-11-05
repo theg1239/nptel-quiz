@@ -639,50 +639,35 @@ const Quiz = ({
   useEffect(() => {
     setIsAnswerLocked(userAnswers[currentQuestionIndex]?.locked || false);
     setSelectedOptions(userAnswers[currentQuestionIndex]?.selectedOptions || []);
-    setAvailableOptions(userAnswers[currentQuestionIndex]?.locked ? userAnswers[currentQuestionIndex].selectedOptions : [0, 1, 2, 3]);
+    setAvailableOptions(userAnswers[currentQuestionIndex]?.selectedOptions.length > 0 ? [] : [0, 1, 2, 3]);
   }, [currentQuestionIndex, userAnswers]);
 
+  // End Quiz Function
   const endQuiz = useCallback(() => {
-    if (['practice', 'progress'].includes(quizType)) return; // Prevent auto-ending for 'practice' and 'progress'
-    
-    setQuizEnded(true);
-    let incorrectQuestions: string[] = [];
-    
+    // Only end the quiz for 'progress' type or if lives are exhausted
+    if (quizType === 'progress' || lives <= 0) {
+      setQuizEnded(true);
+      let incorrectQuestions: string[] = [];
+
     try {
       const storedProgress = JSON.parse(localStorage.getItem('quizProgress') || '{}');
       incorrectQuestions = questions
         .filter((_, idx) => !userAnswers[idx]?.correct)
         .map((q) => q.question);
-  
-      // For Progress Quiz, merge new incorrect questions with existing ones to avoid duplicates
+
       if (quizType === 'progress') {
         const existingIncorrect = storedProgress[courseCode]?.incorrectQuestions || [];
         const mergedIncorrect = Array.from(new Set([...existingIncorrect, ...incorrectQuestions]));
-        storedProgress[courseCode] = {
-          incorrectQuestions: mergedIncorrect,
-        };
+        storedProgress[courseCode] = { incorrectQuestions: mergedIncorrect };
       } else {
-        storedProgress[courseCode] = {
-          incorrectQuestions,
-        };
+        storedProgress[courseCode] = { incorrectQuestions };
       }
-  
       localStorage.setItem('quizProgress', JSON.stringify(storedProgress));
     } catch (error) {
       console.error('Error accessing localStorage:', error);
     }
-  
-    try {
-      const totalQuestions = questions.length;
-      const correctAnswers = userAnswers.filter((ans) => ans.correct).length;
-      const completionPercentage = Math.floor((correctAnswers / totalQuestions) * 100);
-      const courseProgress = JSON.parse(localStorage.getItem('courseProgress') || '{}');
-      courseProgress[courseCode] = completionPercentage;
-      localStorage.setItem('courseProgress', JSON.stringify(courseProgress));
-    } catch (error) {
-      console.error('Error updating course completion:', error);
-    }
-  }, [questions, userAnswers, courseCode, quizType]);
+  }
+}, [questions, userAnswers, courseCode, quizType, lives]);
 
   // Go To Next Question Function
   const goToNextQuestion = useCallback(() => {
@@ -1012,19 +997,20 @@ export default function InteractiveQuiz({
             handleExit();
             return [];
           }
-          // Filter to only incorrect questions
-          const filteredQuestions = questions.filter((q) => incorrectQuestions.includes(q.question));
-          if (filteredQuestions.length === 0) {
+
+          // Filter to only include incorrect questions
+          selected = questions.filter((q) => incorrectQuestions.includes(q.question));
+          if (selected.length === 0) {
             alert('No matching incorrect questions found.');
             handleExit();
             return [];
           }
+
           // Limit based on numQuestions if provided
-          if (numQuestions) {
-            selected = shuffleArray(filteredQuestions).slice(0, Math.min(numQuestions, filteredQuestions.length));
-          } else {
-            selected = filteredQuestions;
-          }
+          selected = numQuestions 
+            ? shuffleArray(selected).slice(0, Math.min(numQuestions, selected.length))
+            : selected;
+
         } catch (error) {
           console.error('Error loading progress from localStorage:', error);
           alert('Failed to load progress.');
@@ -1032,38 +1018,36 @@ export default function InteractiveQuiz({
           return [];
         }
         break;
+
       case 'quick':
         selected = shuffleArray(questions).slice(0, numQuestions ? Math.min(numQuestions, questions.length) : 10);
         break;
+
       case 'timed':
         selected = shuffleArray(questions).slice(
           0,
           numQuestions ? Math.min(numQuestions, questions.length) : questions.length
         );
         break;
+
       case 'practice':
         selected = numQuestions ? shuffleArray(questions).slice(0, Math.min(numQuestions, questions.length)) : questions;
         break;
+
       default:
         selected = questions;
         break;
     }
 
+    // Process and shuffle options for each selected question
     selected = selected.map((question) => {
-      // Strip "Option X: " from options
       const strippedOptions = question.options.map(opt => opt.replace(/^Option [A-D]:\s*/, ''));
-
-      // Map answer letters to option texts
       const answerLetters = question.answer;
       const correctOptionTexts = answerLetters.map(letter => {
         const index = letter.toUpperCase().charCodeAt(0) - 'A'.charCodeAt(0);
         return strippedOptions[index];
       });
-
-      // Shuffle options
       const shuffled = shuffleArray(strippedOptions);
-
-      // Find indices of correct options in shuffled
       const answerIndices = correctOptionTexts.map(text => shuffled.indexOf(text));
 
       return {
