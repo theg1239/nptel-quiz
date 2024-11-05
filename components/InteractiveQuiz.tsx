@@ -71,6 +71,10 @@ interface ResultScreenProps {
   questions: ProcessedQuestion[];
 }
 
+const removeTrailingNumbers = (question: string): string => {
+  return question.replace(/[\d]+\)|[\d]+\./g, '').trim();
+};
+
 // Shuffle function
 const shuffleArray = <T,>(array: T[]): T[] => {
   return array
@@ -922,13 +926,22 @@ export default function InteractiveQuiz({
 
   const selectedQuestions: ProcessedQuestion[] = useMemo(() => {
     const totalQuestions = numQuestions ?? questions.length;
-    return shuffleArray(questions).slice(0, totalQuestions).map((question) => {
-      const strippedOptions = question.options.map((opt) => opt.replace(/^Option [A-D]:\s*/, ''));
-      const correctOptionTexts = question.answer.map((letter) => strippedOptions[letter.charCodeAt(0) - 65]);
-      const shuffled = shuffleArray(strippedOptions);
-      const answerIndices = correctOptionTexts.map((text) => shuffled.indexOf(text)).filter((idx) => idx !== -1);
-      return { ...question, shuffledOptions: shuffled, answerIndices };
-    });
+    return shuffleArray(questions)
+      .slice(0, totalQuestions)
+      .map((question) => {
+        const strippedQuestion = removeTrailingNumbers(question.question);
+        const strippedOptions = question.options.map((opt) =>
+          opt.replace(/^Option [A-D]:\s*/, '')
+        );
+        const correctOptionTexts = question.answer.map(
+          (letter) => strippedOptions[letter.charCodeAt(0) - 65]
+        );
+        const shuffled = shuffleArray(strippedOptions);
+        const answerIndices = correctOptionTexts
+          .map((text) => shuffled.indexOf(text))
+          .filter((idx) => idx !== -1);
+        return { ...question, question: strippedQuestion, shuffledOptions: shuffled, answerIndices };
+      });
   }, [numQuestions, questions]);
 
   const handleCloseModal = () => {
