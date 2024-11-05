@@ -1,6 +1,4 @@
-// app/courses/[course_code]/quiz/[quiz_type]/page.tsx
-
-import InteractiveQuizWrapper from '@/components/InteractiveQuizWrapper';
+import QuizClientProvider from '@/components/QuizClientProvider';
 import { QuizType, ProcessedQuestion } from '@/types/quiz';
 
 interface Course {
@@ -38,17 +36,14 @@ export default async function QuizPage({ params }: QuizPageProps) {
   const processedQuestions: ProcessedQuestion[] = shuffleArray(
     course.weeks.flatMap(week =>
       week.questions.map(question => {
-        // Calculate the original indices of the answers in the options array
         const answerIndices = question.answer.map(ans => {
           const label = ans.toUpperCase();
           const index = question.options.findIndex(opt => opt.startsWith(`Option ${label}`));
           return index !== -1 ? index : -1;
         }).filter(idx => idx !== -1);
 
-        // Shuffle the options
         const shuffledOptions = shuffleArray([...question.options]);
 
-        // Map the answer indices to the shuffled options
         const shuffledAnswerIndices = answerIndices
           .map(originalIndex => {
             if (originalIndex === -1 || originalIndex >= question.options.length) return -1;
@@ -57,14 +52,13 @@ export default async function QuizPage({ params }: QuizPageProps) {
           })
           .filter(idx => idx !== -1);
 
-        // Optional: Clean up the question and options text
         const cleanedQuestion = question.question.replace(/^Option [A-Z]:\s*/, '');
         const cleanedShuffledOptions = shuffledOptions.map(opt => opt.replace(/^Option [A-Z]:\s*/, ''));
 
         return {
           question: cleanedQuestion,
-          options: question.options, // Original options as required by ProcessedQuestion
-          answer: question.answer, // Original answer as required by ProcessedQuestion
+          options: question.options,
+          answer: question.answer,
           shuffledOptions: cleanedShuffledOptions,
           answerIndices: shuffledAnswerIndices,
         };
@@ -73,11 +67,11 @@ export default async function QuizPage({ params }: QuizPageProps) {
   );
 
   return (
-    <InteractiveQuizWrapper
+    <QuizClientProvider
       courseName={course.title}
       course_code={course_code}
       quiz_type={quiz_type}
       processedQuestions={processedQuestions}
     />
   );
-}
+} 

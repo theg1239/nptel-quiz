@@ -2,6 +2,11 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { ProcessedQuestion, UserAnswer, QuizType, PowerUpType } from '@/types/quiz';
 
+interface ModalContent {
+    title: string;
+    message: string;
+  }
+  
 interface QuizState {
   currentQuestionIndex: number;
   isAnswerLocked: boolean;
@@ -15,6 +20,8 @@ interface QuizState {
   selectedOptions: number[];
   userAnswers: UserAnswer[];
   shake: boolean;
+  isModalOpen: boolean;
+  modalContent: ModalContent;
 }
 
 const initialState: QuizState = {
@@ -30,6 +37,8 @@ const initialState: QuizState = {
   selectedOptions: [],
   userAnswers: [],
   shake: false,
+  isModalOpen: false,
+  modalContent: { title: '', message: '' },
 };
 
 const quizSlice = createSlice({
@@ -54,6 +63,9 @@ const quizSlice = createSlice({
     setPowerUps(state, action: PayloadAction<PowerUpType[]>) {
       state.powerUps = action.payload;
     },
+    addUserAnswer(state, action: PayloadAction<UserAnswer>) {
+        state.userAnswers.push(action.payload);
+      },
     setQuizEnded(state, action: PayloadAction<boolean>) {
       state.quizEnded = action.payload;
     },
@@ -75,7 +87,14 @@ const quizSlice = createSlice({
     resetQuiz(state) {
       Object.assign(state, initialState);
     },
-  },
+    openModal: (state, action: PayloadAction<ModalContent>) => {
+        state.isModalOpen = true;
+        state.modalContent = action.payload;
+    },
+      closeModal: (state) => {
+        state.isModalOpen = false;
+        state.modalContent = { title: '', message: '' };
+  },}
 });
 
 export const {
@@ -91,7 +110,10 @@ export const {
   setSelectedOptions,
   setUserAnswers,
   setShake,
+  addUserAnswer,
   resetQuiz,
+  openModal,
+  closeModal
 } = quizSlice.actions;
 
 export default quizSlice.reducer;

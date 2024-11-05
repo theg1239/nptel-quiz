@@ -1,6 +1,6 @@
-'use client';
+'use client'
 
-import { useEffect, useCallback, useMemo, useState } from 'react';
+import React, { useEffect, useCallback, useMemo, Fragment, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Heart,
@@ -29,9 +29,11 @@ import {
   setAvailableOptions,
   setFeedback,
   setSelectedOptions,
-  setUserAnswers,
+  addUserAnswer, // Changed from setUserAnswers to addUserAnswer
   setShake,
   resetQuiz,
+  openModal,
+  closeModal,
 } from './slices/quizSlice';
 import { Button } from '@/components/ui/Button';
 import { Progress } from '@/components/ui/Progress';
@@ -39,12 +41,26 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/Tooltip';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { InteractiveQuizProps, ProcessedQuestion } from '@/types/quiz';
 
-type QuizType = 'timed' | 'quick' | 'practice' | 'progress';
+// Define PowerUpType interface
+interface PowerUpType {
+  type: string;
+  name: string;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  active: boolean;
+}
 
+// Define UserAnswer interface
+interface UserAnswer {
+  selectedOptions: number[];
+  correct: boolean;
+  locked: boolean;
+  timeSpent: number;
+}
+
+// Define ResultScreenProps interface
 interface ResultScreenProps {
   score: number;
   totalQuestions: number;
@@ -55,101 +71,15 @@ interface ResultScreenProps {
   questions: ProcessedQuestion[];
 }
 
-interface ModalProps {
-  isOpen: boolean;
-  title: string;
-  message: string;
-  onClose: () => void;
-}
-
-interface PowerUpType {
-  type: string;
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-  name: string;
-  active: boolean;
-}
-
-interface UserAnswer {
-  selectedOptions: number[];
-  correct: boolean;
-  locked: boolean;
-  timeSpent: number;
-}
-
-const shuffleArray = <T,>(array: T[]): T[] => [...array].sort(() => Math.random() - 0.5);
-
-const defaultUserAnswer = (): UserAnswer => ({
-  selectedOptions: [],
-  correct: false,
-  locked: false,
-  timeSpent: 0,
-});
-
-const defaultPowerUps = (quizType: QuizType): PowerUpType[] => {
-  switch (quizType) {
-    case 'timed':
-    case 'quick':
-      return [
-        { type: 'extraTime', icon: Clock, name: 'Extra Time', active: true },
-        { type: 'shield', icon: Shield, name: 'Shield', active: true },
-      ];
-    case 'practice':
-      return [
-        { type: 'shield', icon: Shield, name: 'Shield', active: true },
-      ];
-    case 'progress':
-      return [];
-    default:
-      return [];
-  }
+// Shuffle function
+const shuffleArray = <T,>(array: T[]): T[] => {
+  return array
+    .map(value => ({ value, sort: Math.random() }))
+    .sort((a, b) => a.sort - b.sort)
+    .map(({ value }) => value);
 };
 
-const Modal = ({ isOpen, title, message, onClose }: ModalProps) => (
-  <Transition appear show={isOpen} as={Fragment}>
-    <Dialog as="div" className="relative z-10" onClose={onClose}>
-      <Transition.Child
-        as={Fragment}
-        enter="ease-out duration-300"
-        enterFrom="opacity-0"
-        enterTo="opacity-100"
-        leave="ease-in duration-200"
-        leaveFrom="opacity-100"
-        leaveTo="opacity-0"
-      >
-        <div className="fixed inset-0 bg-black bg-opacity-25" />
-      </Transition.Child>
-
-      <div className="fixed inset-0 overflow-y-auto">
-        <div className="flex min-h-full items-center justify-center p-4 text-center">
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-300"
-            enterFrom="opacity-0 scale-95"
-            enterTo="opacity-100 scale-100"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-100 scale-100"
-            leaveTo="opacity-0 scale-95"
-          >
-            <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-              <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
-                {title}
-              </Dialog.Title>
-              <div className="mt-2">
-                <p className="text-sm text-gray-500">{message}</p>
-              </div>
-
-              <div className="mt-4">
-                <Button onClick={onClose} className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200">
-                  Close
-                </Button>
-              </div>
-            </Dialog.Panel>
-          </Transition.Child>
-        </div>
-      </div>
-    </Dialog>
-  </Transition>
-);
+type QuizType = 'timed' | 'quick' | 'practice' | 'progress';
 
 const ParticleBackground = () => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -177,6 +107,65 @@ const ParticleBackground = () => (
   </div>
 );
 
+interface ModalProps {
+  isOpen: boolean;
+  title: string;
+  message: string;
+  onClose: () => void;
+}
+
+const Modal: React.FC<ModalProps> = ({ isOpen, title, message, onClose }) => {
+  return (
+    <Transition appear show={isOpen} as={Fragment}>
+      <Dialog as="div" className="relative z-10" onClose={onClose}>
+        <Transition.Child
+          as={Fragment}
+          enter="ease-out duration-300"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leave="ease-in duration-200"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <div className="fixed inset-0 bg-black bg-opacity-25" />
+        </Transition.Child>
+
+        <div className="fixed inset-0 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4 text-center">
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0 scale-95"
+              enterTo="opacity-100 scale-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100 scale-100"
+              leaveTo="opacity-0 scale-95"
+            >
+              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
+                  {title}
+                </Dialog.Title>
+                <div className="mt-2">
+                  <p className="text-sm text-gray-500">{message}</p>
+                </div>
+
+                <div className="mt-4">
+                  <Button
+                    onClick={onClose}
+                    className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200"
+                  >
+                    Close
+                  </Button>
+                </div>
+              </Dialog.Panel>
+            </Transition.Child>
+          </div>
+        </div>
+      </Dialog>
+    </Transition>
+  );
+};
+
 const StatCard = ({ icon, title, value }: { icon: React.ReactNode; title: string; value: number | string }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
@@ -194,10 +183,6 @@ const StatCard = ({ icon, title, value }: { icon: React.ReactNode; title: string
     </Card>
   </motion.div>
 );
-
-const cleanQuestionText = (question: string): string => {
-  return question.replace(/^\s*\d+[\).]\s*/, '');
-};
 
 const PowerUp = ({
   icon: Icon,
@@ -292,7 +277,7 @@ const QuizContent = ({
     <Card className="w-full bg-gray-800 bg-opacity-50 backdrop-blur-sm border-2 border-blue-500 shadow-lg">
       <CardHeader className="flex justify-between items-center">
         <CardTitle className="text-xl font-bold text-blue-300">
-          {cleanQuestionText(question)}
+          {question}
         </CardTitle>
         <div className="text-blue-300 font-semibold">
           Score: {currentScore} / {totalQuestions}
@@ -526,7 +511,7 @@ const ResultScreen = ({
                         transition={{ duration: 0.5 }}
                       >
                         <h3 className="text-lg font-semibold mb-2 text-white">
-                          {cleanQuestionText(questions[currentQuestionIndex].question)}
+                          {questions[currentQuestionIndex].question}
                         </h3>
                         <ul className="space-y-2">
                           {questions[currentQuestionIndex].shuffledOptions!.map((option, optionIndex) => {
@@ -574,49 +559,55 @@ const ResultScreen = ({
 
 const Quiz = ({
   quizType,
-  onExit,
   questions,
   quizTime = 300,
   courseName,
   courseCode,
   numQuestions,
+  isModalOpen,
+  modalContent,
+  handleCloseModal,
 }: {
   quizType: QuizType;
-  onExit: () => void;
   questions: ProcessedQuestion[];
   quizTime?: number;
   courseName: string;
   courseCode: string;
   numQuestions?: number;
+  isModalOpen: boolean;
+  modalContent: { title: string; message: string };
+  handleCloseModal: () => void;
 }) => {
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [isAnswerLocked, setIsAnswerLocked] = useState(false);
-  const [score, setScore] = useState(0);
-  const [lives, setLives] = useState(3);
-  const [timeLeft, setTimeLeft] = useState<number | null>(
-    quizType === 'timed' || quizType === 'quick' ? quizTime : null
-  );
-  const [powerUps, setPowerUpsState] = useState<PowerUpType[]>(defaultPowerUps(quizType));
-  const [quizEnded, setQuizEnded] = useState(false);
-  const [availableOptions, setAvailableOptions] = useState<number[]>([0, 1, 2, 3]);
-  const [feedback, setFeedback] = useState<{ correct: boolean; selectedIndexes: number[] } | null>(null);
-  const [selectedOptions, setSelectedOptions] = useState<number[]>([]);
-  const [userAnswers, setUserAnswers] = useState<UserAnswer[]>(questions.map(() => defaultUserAnswer()));
-  const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now());
-  const [restartTrigger, setRestartTrigger] = useState(false);
-  const [shake, setShake] = useState(false);
-
+  const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
+  const {
+    currentQuestionIndex,
+    score,
+    lives,
+    timeLeft,
+    powerUps,
+    quizEnded,
+    availableOptions,
+    feedback,
+    selectedOptions,
+    userAnswers,
+    shake,
+    isAnswerLocked, // Destructure isAnswerLocked
+  } = useSelector((state: RootState) => state.quiz);
 
+  const handleExit = () => {
+    dispatch(resetQuiz());
+    router.push(`/courses/${courseCode}`);
+  };
   const endQuiz = useCallback(() => {
-    setQuizEnded(true);
+    dispatch(setQuizEnded(true));
     let incorrectQuestions: string[] = [];
 
     try {
       const storedProgress = JSON.parse(localStorage.getItem('quizProgress') || '{}');
       incorrectQuestions = questions
         .filter((_, idx) => !userAnswers[idx]?.correct)
-        .map((q) => cleanQuestionText(q.question));
+        .map((q) => q.question);
 
       if (quizType === 'progress') {
         const existingIncorrect = storedProgress[courseCode]?.incorrectQuestions || [];
@@ -627,7 +618,7 @@ const Quiz = ({
     } catch (error) {
       console.error('Error accessing localStorage:', error);
     }
-  }, [questions, userAnswers, courseCode, quizType]);
+  }, [dispatch, questions, userAnswers, courseCode, quizType]);
 
   const handleFinishQuiz = useCallback(() => {
     endQuiz();
@@ -635,18 +626,7 @@ const Quiz = ({
   }, [endQuiz, router, courseCode]);
 
   const handleRestart = useCallback(() => {
-    setCurrentQuestionIndex(0);
-    setScore(0);
-    setLives(3);
-    setTimeLeft(quizType === 'timed' || quizType === 'quick' ? quizTime : null);
-    setQuizEnded(false);
-    setAvailableOptions([0, 1, 2, 3]);
-    setFeedback(null);
-    setSelectedOptions([]);
-    setUserAnswers(questions.map(() => defaultUserAnswer()));
-    setIsAnswerLocked(false);
-    setRestartTrigger((prev) => !prev);
-
+    dispatch(resetQuiz());
     if (quizType === 'progress') {
       try {
         const storedProgress = JSON.parse(localStorage.getItem('quizProgress') || '{}');
@@ -656,33 +636,45 @@ const Quiz = ({
         console.error('Error resetting quiz progress:', error);
       }
     }
-  }, [quizTime, questions, quizType, courseCode]);
+  }, [dispatch, quizType, courseCode]);
 
   const goToNextQuestion = useCallback(() => {
     if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex((prev) => prev + 1);
-      setSelectedOptions(userAnswers[currentQuestionIndex + 1]?.selectedOptions || []);
-      setAvailableOptions([0, 1, 2, 3]);
-      setFeedback(null);
+      dispatch(setCurrentQuestionIndex(currentQuestionIndex + 1));
+      const nextAnswer = userAnswers[currentQuestionIndex + 1] || {
+        selectedOptions: [],
+        correct: false,
+        locked: false,
+        timeSpent: 0,
+      };
+      dispatch(setSelectedOptions([]));
+      dispatch(setAvailableOptions([0, 1, 2, 3]));
+      dispatch(setFeedback(null));
+      dispatch(setIsAnswerLocked(false));
     } else {
       endQuiz();
     }
-  }, [currentQuestionIndex, questions.length, endQuiz, userAnswers]);
+  }, [dispatch, currentQuestionIndex, questions.length, userAnswers, endQuiz]);
 
-  const handleAnswer = useCallback((newSelectedOptions: number[]) => {
-    if (quizType === 'practice' || !isAnswerLocked) {
-      setSelectedOptions(newSelectedOptions);
-    }
-  }, [quizType, isAnswerLocked]);
+  const handleAnswer = useCallback(
+    (newSelectedOptions: number[]) => {
+      if (quizType === 'practice' || !selectedOptions.length) {
+        dispatch(setSelectedOptions(newSelectedOptions));
+      }
+    },
+    [dispatch, quizType, selectedOptions.length]
+  );
 
   const saveAnswers = useCallback(() => {
     if (selectedOptions.length === 0) {
-      setShake(true);
-      setTimeout(() => setShake(false), 600);
+      dispatch(setShake(true));
+      setTimeout(() => dispatch(setShake(false)), 600);
       return;
     }
 
-    if (isAnswerLocked && quizType !== 'practice') return;
+    if (quizType !== 'practice') {
+      dispatch(setIsAnswerLocked(true));
+    }
 
     const currentQuestion = questions[currentQuestionIndex];
     const correctIndices = currentQuestion.answerIndices?.slice().sort((a, b) => a - b) || [];
@@ -693,106 +685,81 @@ const Quiz = ({
       selectedIndices.every((val, index) => val === correctIndices[index]);
 
     if (isCorrect) {
-      setScore((prev) => prev + 1);
+      dispatch(setScore(score + 1));
     } else if (quizType === 'practice' || quizType === 'progress') {
-      setLives((prev) => {
-        const newLives = prev - 1;
-        if (newLives === 0) {
-          endQuiz();
-        }
-        return newLives;
-      });
+      dispatch(setLives(lives - 1));
+      if (lives - 1 === 0) {
+        endQuiz();
+      }
     }
 
-    const currentTime = Date.now();
-    const timeSpent = Math.floor((currentTime - questionStartTime) / 1000);
+    const timeSpent = userAnswers[currentQuestionIndex]?.timeSpent ?? 0; // Implement time tracking as needed
 
-    setUserAnswers((prev) => {
-      const newAnswers = [...prev];
-      newAnswers[currentQuestionIndex] = {
+    dispatch(
+      addUserAnswer({ // Changed from setUserAnswers to addUserAnswer
         selectedOptions,
         correct: isCorrect,
         locked: quizType !== 'practice',
-        timeSpent: timeSpent,
-      };
-      return newAnswers;
-    });
+        timeSpent,
+      })
+    );
 
     if (quizType === 'practice' || quizType === 'progress') {
-      setFeedback({ correct: isCorrect, selectedIndexes: selectedOptions });
+      dispatch(setFeedback({ correct: isCorrect, selectedIndexes: selectedOptions }));
     }
 
-    setIsAnswerLocked(quizType !== 'practice');
+    if (quizType !== 'practice') {
+      dispatch(setIsAnswerLocked(true));
+    }
 
     setTimeout(() => {
       if (isCorrect || (quizType !== 'practice' && quizType !== 'progress')) {
         goToNextQuestion();
       } else {
-        setIsAnswerLocked(false);
+        dispatch(setIsAnswerLocked(false));
       }
     }, 1500);
   }, [
-    questions,
-    currentQuestionIndex,
+    dispatch,
     selectedOptions,
     quizType,
+    score,
     lives,
+    currentQuestionIndex,
+    questions,
     endQuiz,
     goToNextQuestion,
-    questionStartTime,
-    isAnswerLocked,
+    userAnswers,
   ]);
+
+  const powerUpsTimeLeft = useSelector((state: RootState) => state.quiz.powerUps);
+  const powerUpsLivesLeft = useSelector((state: RootState) => state.quiz.powerUps);
 
   const usePowerUp = useCallback(
     (type: string) => {
       if (!powerUps.some((p) => p.type === type && p.active)) return;
-
+  
       if (type === 'extraTime') {
-        setTimeLeft((prev) => (typeof prev === 'number' ? prev + 30 : 30));
+        dispatch(setTimeLeft((timeLeft ?? 0) + 30));
       } else if (type === 'shield') {
-        setLives((prev) => prev + 1);
+        dispatch(setLives(lives + 1));
       }
-
-      setPowerUpsState((prev) =>
-        prev.map((p) =>
-          p.type === type
-            ? { ...p, active: false }
-            : p
-        )
-      );
+  
+      dispatch(setPowerUps(powerUps.map(p => p.type === type ? {...p, active: false} : p)));
     },
-    [powerUps]
+    [dispatch, powerUps, timeLeft, lives]
   );
+  
 
   useEffect(() => {
+    
     if ((quizType === 'timed' || quizType === 'quick') && typeof timeLeft === 'number' && timeLeft > 0 && !quizEnded) {
-      const timer = setTimeout(() => setTimeLeft((prev) => (typeof prev === 'number' ? prev - 1 : prev)), 1000);
+      const timer = setTimeout(() => dispatch(setTimeLeft(timeLeft - 1)), 1000);
       return () => clearTimeout(timer);
     } else if (typeof timeLeft === 'number' && timeLeft <= 0 && !quizEnded) {
       endQuiz();
     }
-  }, [timeLeft, quizEnded, quizType, endQuiz]);
-
-  useEffect(() => {
-    setQuestionStartTime(Date.now());
-    const previousAnswer = userAnswers[currentQuestionIndex];
-    setSelectedOptions(previousAnswer.selectedOptions);
-    setAvailableOptions([0, 1, 2, 3]);
-    setFeedback(null);
-    setIsAnswerLocked(userAnswers[currentQuestionIndex]?.locked || false);
-
-    // Update power-ups based on the number of options
-    const currentQuestion = questions[currentQuestionIndex];
-    const initialOptionsCount = currentQuestion.shuffledOptions.length;
-
-    let newPowerUps = defaultPowerUps(quizType);
-    if (initialOptionsCount <= 2) {
-      newPowerUps = newPowerUps.map((p) =>
-        p.type === 'shield' ? { ...p, active: true } : p
-      );
-    }
-    setPowerUpsState(newPowerUps);
-  }, [currentQuestionIndex, restartTrigger, userAnswers, questions, quizType]);
+  }, [timeLeft, quizEnded, quizType, dispatch, endQuiz]);
 
   if (quizEnded) {
     return (
@@ -812,13 +779,12 @@ const Quiz = ({
     <div className="w-full max-w-2xl mx-auto h-full flex flex-col">
       <div className="flex justify-between items-center mb-4">
         <Button
-          onClick={onExit}
+          onClick={handleExit}
           variant="ghost"
           className="text-blue-300 hover:bg-blue-900 transition-colors duration-300 flex items-center"
         >
           <ArrowLeft className="mr-2 h-4 w-4" /> Exit Quiz
         </Button>
-        {/* Removed the "Finish Quiz" button from the Quiz component */}
       </div>
       <AnimatePresence mode="wait">
         {currentQuestionIndex < questions.length && (
@@ -849,7 +815,7 @@ const Quiz = ({
             />
             <div className="flex justify-between mt-4">
               <Button
-                onClick={() => setCurrentQuestionIndex((prev) => Math.max(0, prev - 1))}
+                onClick={() => dispatch(setCurrentQuestionIndex(Math.max(0, currentQuestionIndex - 1)))}
                 disabled={currentQuestionIndex === 0}
                 variant="outline"
               >
@@ -859,7 +825,7 @@ const Quiz = ({
                 Save Answer
               </Button>
               <Button
-                onClick={goToNextQuestion}
+                onClick={() => dispatch(setCurrentQuestionIndex(Math.min(questions.length - 1, currentQuestionIndex + 1)))}
                 disabled={currentQuestionIndex === questions.length - 1}
                 variant="outline"
               >
@@ -904,6 +870,12 @@ const Quiz = ({
           </motion.div>
         )}
       </AnimatePresence>
+      <Modal 
+  isOpen={isModalOpen}
+  title={modalContent.title}
+  message={modalContent.message}
+  onClose={handleCloseModal}
+/>
     </div>
   );
 };
@@ -911,115 +883,101 @@ const Quiz = ({
 export default function InteractiveQuiz({
   quizType,
   courseName,
-  onExit,
   questions,
   courseCode,
   quizTime = 300,
   numQuestions,
 }: InteractiveQuizProps) {
-  const router = useRouter();
+  const dispatch = useDispatch();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalContent, setModalContent] = useState({ title: '', message: '' });
 
-  const handleExit = useCallback(() => {
-    router.push(`/courses/${courseCode}`);
-  }, [router, courseCode]);
+  useEffect(() => {
+    dispatch(resetQuiz());
+  }, [dispatch]);
 
   const selectedQuestions: ProcessedQuestion[] = useMemo(() => {
     let selected: ProcessedQuestion[] = [];
 
-    switch (quizType) {
-      case 'progress':
-        try {
-          const storedProgress = JSON.parse(localStorage.getItem('quizProgress') || '{}');
-          const incorrectQuestions = storedProgress[courseCode]?.incorrectQuestions || [];
-          if (incorrectQuestions.length === 0) {
-            setIsModalOpen(true);
-            return [];
-          }
+    if (quizType === 'progress') {
+      try {
+        const storedProgress = JSON.parse(localStorage.getItem('quizProgress') || '{}');
+        const incorrectQuestions = storedProgress[courseCode]?.incorrectQuestions || [];
+        
+        if (incorrectQuestions.length === 0) {
+          setIsModalOpen(true);
+          setModalContent({
+            title: 'No Incorrect Questions',
+            message: 'You have no incorrect questions to review!',
+          });
+          return []; // Prevent any question selection if there are no incorrect questions
+        }
 
-          selected = questions.filter((q) => incorrectQuestions.includes(cleanQuestionText(q.question)));
-          if (selected.length === 0) {
-            setIsModalOpen(true);
-            return [];
-          }
-
-          selected = numQuestions
-            ? shuffleArray(selected).slice(0, Math.min(numQuestions, selected.length))
-            : selected;
-
-        } catch (error) {
-          console.error('Error loading progress from localStorage:', error);
-          alert('Failed to load progress.');
+        selected = questions.filter((q) => incorrectQuestions.includes(q.question));
+        
+        // If the filtered list is empty, show the modal
+        if (selected.length === 0) {
+          setIsModalOpen(true);
+          setModalContent({
+            title: 'No Incorrect Questions',
+            message: 'You have no incorrect questions to review!',
+          });
           return [];
         }
-        break;
 
-      case 'quick':
-        selected = shuffleArray(questions).slice(0, numQuestions ? Math.min(numQuestions, questions.length) : 10);
-        break;
-
-      case 'timed':
-        selected = shuffleArray(questions).slice(
-          0,
-          numQuestions ? Math.min(numQuestions, questions.length) : questions.length
-        );
-        break;
-
-      case 'practice':
-        selected = numQuestions ? shuffleArray(questions).slice(0, Math.min(numQuestions, questions.length)) : questions;
-        break;
-
-      default:
-        selected = questions;
-        break;
+        selected = numQuestions
+          ? shuffleArray(selected).slice(0, Math.min(numQuestions, selected.length))
+          : selected;
+      } catch (error) {
+        console.error('Error loading progress from localStorage:', error);
+        alert('Failed to load progress.');
+        return [];
+      }
+    } else {
+      selected = shuffleArray(questions).slice(0, numQuestions || questions.length);
     }
 
-    selected = selected.map((question) => {
-      const strippedOptions = question.options.map(opt => opt.replace(/^Option [A-D]:\s*/, ''));
+    return selected.map((question) => {
+      const strippedOptions = question.options.map((opt) => opt.replace(/^Option [A-D]:\s*/, ''));
       const answerLetters = question.answer;
-      const correctOptionTexts = answerLetters.map(letter => {
+      const correctOptionTexts = answerLetters.map((letter) => {
         const index = letter.toUpperCase().charCodeAt(0) - 'A'.charCodeAt(0);
         return strippedOptions[index];
       });
       const shuffled = shuffleArray(strippedOptions);
-      const answerIndices = correctOptionTexts.map(text => shuffled.indexOf(text)).filter(idx => idx !== -1);
+      const answerIndices = correctOptionTexts
+        .map((text) => shuffled.indexOf(text))
+        .filter((idx) => idx !== -1);
 
       return {
         ...question,
         shuffledOptions: shuffled,
-        answerIndices: answerIndices,
+        answerIndices,
       };
     });
-
-    return selected;
   }, [quizType, numQuestions, questions, courseCode]);
 
-  if (quizType === 'progress' && selectedQuestions.length === 0) {
+  // Function to close the modal
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  // If the modal is open, return only the modal component
+  if (isModalOpen) {
     return (
-      <>
-        <Modal
-          isOpen={isModalOpen}
-          title="No Incorrect Questions"
-          message="You have no incorrect questions to review!"
-          onClose={() => {
-            setIsModalOpen(false);
-            handleExit();
-          }}
-        />
-      </>
+      <Modal
+        isOpen={isModalOpen}
+        title={modalContent.title}
+        message={modalContent.message}
+        onClose={handleCloseModal}
+      />
     );
   }
 
-  if (selectedQuestions.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-screen text-white">No questions available.</div>
-    );
-  }
-
+  // Render the quiz if there are selected questions
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-gray-100 flex flex-col items-center justify-center p-6 lg:p-12">
-      <ParticleBackground />
-      <div className="w-full max-w-screen-xl mx-auto h-full flex flex-col">
+      <div className="w-full max-w-screen-xl mx-auto">
         <motion.h1
           initial={{ y: -50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -1029,16 +987,18 @@ export default function InteractiveQuiz({
           {courseName} Quiz
         </motion.h1>
         <AnimatePresence mode="wait">
-          <Quiz
-            key={`quiz-${quizType}-${quizTime ?? 'default'}-${numQuestions ?? 'default'}`}
-            quizType={quizType}
-            onExit={handleExit}
-            questions={selectedQuestions}
-            quizTime={quizType === 'timed' ? quizTime : quizType === 'quick' ? 300 : quizTime}
-            courseName={courseName}
-            courseCode={courseCode}
-            numQuestions={numQuestions}
-          />
+        <Quiz
+  key={`quiz-${quizType}-${quizTime ?? 'default'}-${numQuestions ?? 'default'}`}
+  quizType={quizType}
+  questions={selectedQuestions}
+  quizTime={quizTime}
+  courseName={courseName}
+  courseCode={courseCode}
+  numQuestions={numQuestions}
+  isModalOpen={isModalOpen} // Pass modal-related props
+  modalContent={modalContent} // Pass modal-related props
+  handleCloseModal={handleCloseModal} // Pass modal-related props
+/>
         </AnimatePresence>
       </div>
     </div>

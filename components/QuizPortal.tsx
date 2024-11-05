@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Fragment } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import { Dialog, Transition } from "@headlessui/react" // Import for modal functionality
 import { Book, Clock, Zap, BarChart, ArrowRight, BookOpen, Award, ChevronLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
 
@@ -36,11 +37,10 @@ export default function Component({ course, course_code }: QuizPortalProps = { c
   const [questionCount, setQuestionCount] = useState<number>(10)
   const [quizTime, setQuizTime] = useState<number>(30)
   const [progress, setProgress] = useState<number>(0)
+  const [isModalOpen, setIsModalOpen] = useState(false) // Modal state
+  const [modalMessage, setModalMessage] = useState("") // Modal message
 
-  const totalQuestions = course.weeks.reduce(
-    (acc, week) => acc + week.questions.length,
-    0
-  )
+  const totalQuestions = course.weeks.reduce((acc, week) => acc + week.questions.length, 0)
 
   useEffect(() => {
     const storedProgress = JSON.parse(localStorage.getItem("courseProgress") || "{}")
@@ -50,40 +50,58 @@ export default function Component({ course, course_code }: QuizPortalProps = { c
 
   const handleStartQuiz = () => {
     if (!VALID_QUIZ_TYPES.includes(selectedQuiz || "")) {
-      console.error("Invalid quiz type selected.");
-      return;
+      console.error("Invalid quiz type selected.")
+      return
     }
-  
-    let finalQuestionCount = questionCount;
-    let finalQuizTime = quizTime;
-  
+
+    if (selectedQuiz === "progress") {
+      // Check for any incorrect questions
+      const storedProgress = JSON.parse(localStorage.getItem("courseProgress") || "{}")
+      const incorrectQuestions = storedProgress[course_code]?.incorrectQuestions || []
+      
+      if (incorrectQuestions.length === 0) {
+        // If there are no incorrect questions, open the modal
+        setModalMessage("You have no incorrect questions to review!")
+        setIsModalOpen(true)
+        return
+      }
+    }
+
+    // Set up quiz parameters
+    let finalQuestionCount = questionCount
+    let finalQuizTime = quizTime
+
     if (selectedQuiz === "quick") {
-      finalQuestionCount = 10;
-      finalQuizTime = 5;
+      finalQuestionCount = 10
+      finalQuizTime = 5
     } else if (selectedQuiz === "practice") {
-      finalQuestionCount = totalQuestions;
-      finalQuizTime = 0;
+      finalQuestionCount = totalQuestions
+      finalQuizTime = 0
     } else if (selectedQuiz === "progress") {
-      finalQuestionCount = Math.min(20, totalQuestions);
-      finalQuizTime = finalQuestionCount * 1;
+      finalQuestionCount = Math.min(20, totalQuestions)
+      finalQuizTime = finalQuestionCount * 1
     }
-  
-    let queryParams = "";
+
+    let queryParams = ""
     if (selectedQuiz === "timed" || selectedQuiz === "quick") {
       const params = new URLSearchParams({
         quiz_time: (finalQuizTime * 60).toString(),
         num_questions: finalQuestionCount.toString(),
-      });
-      queryParams = `?${params.toString()}`;
+      })
+      queryParams = `?${params.toString()}`
     }
-  
-    const quizPath = `/courses/${course_code}/quiz/${selectedQuiz}${queryParams}`;
-    router.push(quizPath);
-  };
-  
+
+    const quizPath = `/courses/${course_code}/quiz/${selectedQuiz}${queryParams}`
+    router.push(quizPath)
+  }
 
   const handleStartPracticeMode = () => {
     router.push(`/courses/${course_code}/practice`)
+  }
+
+  const closeModal = () => {
+    setIsModalOpen(false)
+    setSelectedQuiz(null)
   }
 
   const quizOptions = [
@@ -115,6 +133,49 @@ export default function Component({ course, course_code }: QuizPortalProps = { c
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 text-gray-100 flex flex-col items-center p-4 md:p-6">
+      {/* Modal */}
+      <Transition appear show={isModalOpen} as={Fragment}>
+        <Dialog as="div" className="relative z-10" onClose={closeModal}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black bg-opacity-50" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <Dialog.Panel className="bg-gray-800 rounded-lg shadow-xl max-w-sm mx-auto p-6">
+                  <Dialog.Title as="h3" className="text-lg font-medium text-white">
+                    Notice
+                  </Dialog.Title>
+                  <div className="mt-2 text-gray-300">{modalMessage}</div>
+                  <div className="mt-4">
+                    <Button onClick={closeModal} className="w-full bg-violet-600 hover:bg-violet-700">
+                      Close
+                    </Button>
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
+
       <div className="w-full max-w-6xl flex items-center justify-between mb-6">
         <Button
           variant="ghost"
@@ -122,37 +183,36 @@ export default function Component({ course, course_code }: QuizPortalProps = { c
           className="flex items-center text-violet-300 hover:bg-violet-800"
         >
           <ChevronLeft className="mr-1 h-5 w-5" />
-          
         </Button>
-  
+
         <div className="text-center flex-1">
           <h1 className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-violet-400">
             {course.title}
           </h1>
-          <p className="text-lg md:text-xl text-violet-300">
-            Interactive Learning Portal
-          </p>
+          <p className="text-lg md:text-xl text-violet-300">Interactive Learning Portal</p>
         </div>
-      </div>  
-      
+      </div>
+
+      {/* Main content */}
       <main className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-      <Card className="bg-gray-800 bg-opacity-40 backdrop-blur-sm border-violet-700 md:col-span-2">
-  <CardHeader className="pb-4"> 
-    <CardTitle className="text-xl flex items-center gap-2 text-violet-300 mb-2"> 
-      <Award className="h-5 w-5 text-yellow-400" />
-      Your Progress
-    </CardTitle>
-  </CardHeader>
-  <CardContent className="pt-4 pb-6 px-4"> 
-    <div className="flex justify-between mb-3 text-sm text-violet-200">
-      <span>Course Completion</span>
-      <span>{progress}%</span>
-    </div>
-    <Progress value={progress} className="h-2 bg-violet-900" colorClass="bg-violet-400" />
-  </CardContent>
-</Card>
+        {/* Progress Card */}
+        <Card className="bg-gray-800 bg-opacity-40 backdrop-blur-sm border-violet-700 md:col-span-2">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl flex items-center gap-2 text-violet-300 mb-2">
+              <Award className="h-5 w-5 text-yellow-400" />
+              Your Progress
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4 pb-6 px-4">
+            <div className="flex justify-between mb-3 text-sm text-violet-200">
+              <span>Course Completion</span>
+              <span>{progress}%</span>
+            </div>
+            <Progress value={progress} className="h-2 bg-violet-900" colorClass="bg-violet-400" />
+          </CardContent>
+        </Card>
 
-
+        {/* Practice Mode Card */}
         <Card className="bg-gray-800 bg-opacity-40 backdrop-blur-sm border-violet-700">
           <CardHeader className="pb-2">
             <CardTitle className="text-xl flex items-center gap-2 text-violet-300">
@@ -161,18 +221,14 @@ export default function Component({ course, course_code }: QuizPortalProps = { c
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-violet-200 mb-3">
-              Study materials and concept review.
-            </p>
-            <Button
-              className="w-full bg-emerald-600 hover:bg-emerald-700 flex items-center justify-center text-sm"
-              onClick={handleStartPracticeMode}
-            >
+            <p className="text-sm text-violet-200 mb-3">Study materials and concept review.</p>
+            <Button className="w-full bg-emerald-600 hover:bg-emerald-700 flex items-center justify-center text-sm" onClick={handleStartPracticeMode}>
               Start Practice <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </CardContent>
         </Card>
 
+        {/* Quiz Options Card */}
         <Card className="bg-gray-800 bg-opacity-40 backdrop-blur-sm border-violet-700 md:col-span-3">
           <CardHeader className="pb-2">
             <CardTitle className="text-xl font-semibold text-violet-300">Quiz Options</CardTitle>
@@ -184,11 +240,7 @@ export default function Component({ course, course_code }: QuizPortalProps = { c
                 <TooltipProvider key={index}>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="w-full h-auto flex flex-col items-center p-3 bg-violet-900 bg-opacity-50 hover:bg-opacity-75 border-violet-600 text-left hover:border-violet-400"
-                        onClick={option.onClick}
-                      >
+                      <Button variant="outline" className="w-full h-auto flex flex-col items-center p-3 bg-violet-900 bg-opacity-50 hover:bg-opacity-75 border-violet-600 text-left hover:border-violet-400" onClick={option.onClick}>
                         <option.icon className="h-6 w-6 mb-2 text-violet-300" />
                         <div className="text-sm font-semibold text-violet-200">{option.title}</div>
                       </Button>
@@ -202,17 +254,11 @@ export default function Component({ course, course_code }: QuizPortalProps = { c
             </div>
           </CardContent>
         </Card>
-
+        
+        {/* Selected Quiz Confirmation */}
         <AnimatePresence mode="wait">
           {selectedQuiz && (
-            <motion.div
-              key="selected-quiz"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-              className="md:col-span-3"
-            >
+            <motion.div key="selected-quiz" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }} className="md:col-span-3">
               <Card className="bg-gray-800 bg-opacity-40 backdrop-blur-sm border-violet-700">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xl font-semibold text-violet-300">
@@ -235,43 +281,21 @@ export default function Component({ course, course_code }: QuizPortalProps = { c
                         <label htmlFor="questionCount" className="text-sm text-violet-200 block mb-1">
                           Questions (1 - {totalQuestions}):
                         </label>
-                        <input
-                          id="questionCount"
-                          type="number"
-                          min={1}
-                          max={totalQuestions}
-                          value={questionCount}
-                          onChange={(e) => setQuestionCount(Number(e.target.value))}
-                          className="w-full p-2 rounded bg-violet-900 text-violet-100 border border-violet-600 focus:border-violet-400 focus:ring focus:ring-violet-400 focus:ring-opacity-50 text-sm"
-                        />
+                        <input id="questionCount" type="number" min={1} max={totalQuestions} value={questionCount} onChange={(e) => setQuestionCount(Number(e.target.value))} className="w-full p-2 rounded bg-violet-900 text-violet-100 border border-violet-600 focus:border-violet-400 focus:ring focus:ring-violet-400 focus:ring-opacity-50 text-sm" />
                       </div>
                       <div>
                         <label htmlFor="quizTime" className="text-sm text-violet-200 block mb-1">
                           Time Limit (minutes):
                         </label>
-                        <input
-                          id="quizTime"
-                          type="number"
-                          min={1}
-                          value={quizTime}
-                          onChange={(e) => setQuizTime(Number(e.target.value))}
-                          className="w-full p-2 rounded bg-violet-900 text-violet-100 border border-violet-600 focus:border-violet-400 focus:ring focus:ring-violet-400 focus:ring-opacity-50 text-sm"
-                        />
+                        <input id="quizTime" type="number" min={1} value={quizTime} onChange={(e) => setQuizTime(Number(e.target.value))} className="w-full p-2 rounded bg-violet-900 text-violet-100 border border-violet-600 focus:border-violet-400 focus:ring focus:ring-violet-400 focus:ring-opacity-50 text-sm" />
                       </div>
                     </div>
                   )}
                   <div className="flex justify-between">
-                    <Button
-                      variant="outline"
-                      onClick={() => setSelectedQuiz(null)}
-                      className="bg-transparent border-violet-500 text-violet-300 hover:bg-violet-900 hover:text-violet-100 text-sm"
-                    >
+                    <Button variant="outline" onClick={() => setSelectedQuiz(null)} className="bg-transparent border-violet-500 text-violet-300 hover:bg-violet-900 hover:text-violet-100 text-sm">
                       Back to Options
                     </Button>
-                    <Button
-                      className="bg-violet-600 hover:bg-violet-700 flex items-center text-sm"
-                      onClick={handleStartQuiz}
-                    >
+                    <Button className="bg-violet-600 hover:bg-violet-700 flex items-center text-sm" onClick={handleStartQuiz}>
                       Start Quiz <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </div>
