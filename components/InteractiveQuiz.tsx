@@ -267,7 +267,7 @@ const QuizContent = ({
               <Button
                 key={index}
                 onClick={() => {
-                  if (!isAnswerLocked) {
+                  if (quizType === 'practice' || !isAnswerLocked) {
                     const newSelectedOptions = isSelected
                       ? selectedOptions.filter((i) => i !== index)
                       : [...selectedOptions, index];
@@ -281,8 +281,8 @@ const QuizContent = ({
                   isSelected
                     ? 'bg-blue-500 bg-opacity-20 text-blue-300'
                     : 'hover:shadow-outline-blue'
-                } ${isAnswerLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
-                disabled={isAnswerLocked}
+                } ${quizType !== 'practice' && isAnswerLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={quizType !== 'practice' && isAnswerLocked}
               >
                 {option}
               </Button>
@@ -635,12 +635,22 @@ const Quiz = ({
     isAnswerLocked, // Include in Dependencies
   ]);
 
-  // **Synchronize isAnswerLocked with userAnswers**
-  useEffect(() => {
+// Separate effect to initialize `isAnswerLocked` for practice mode
+useEffect(() => {
+  if (quizType === 'practice') {
+    setIsAnswerLocked(false); // Only set to false once for practice mode
+    console.log('isAnswerLocked set to false for practice quiz');
+  }
+}, [quizType]);
+
+// Conditional effect to update lock state based on other quiz types
+useEffect(() => {
+  if (quizType !== 'practice') {
     setIsAnswerLocked(userAnswers[currentQuestionIndex]?.locked || false);
-    setSelectedOptions(userAnswers[currentQuestionIndex]?.selectedOptions || []);
-    setAvailableOptions(userAnswers[currentQuestionIndex]?.selectedOptions.length > 0 ? [] : [0, 1, 2, 3]);
-  }, [currentQuestionIndex, userAnswers]);
+  }
+}, [quizType, currentQuestionIndex, userAnswers]);
+
+  
 
   // End Quiz Function
   const endQuiz = useCallback(() => {
@@ -680,32 +690,32 @@ const Quiz = ({
     }
   }, [currentQuestionIndex, questions.length, endQuiz]);
 
-  // Handle Answer Selection
   const handleAnswer = useCallback((newSelectedOptions: number[]) => {
-    setSelectedOptions(newSelectedOptions);
-  }, []);
-
+    if (quizType === 'practice' || !isAnswerLocked) {
+      setSelectedOptions(newSelectedOptions);
+    }
+  }, [quizType, isAnswerLocked]);
+  
+  
   // Save Answers Function
   const saveAnswers = useCallback(() => {
     if (selectedOptions.length === 0) {
-      // Trigger shake animation
       setShake(true);
-      setTimeout(() => setShake(false), 400); // Duration should match the shake animation
+      setTimeout(() => setShake(false), 400);
       return;
     }
-
-    if (isAnswerLocked) return; // Prevent saving if already locked
-
-    setIsAnswerLocked(true); // Lock the answer
-
+  
+    // Skip locking in practice mode
+    if (isAnswerLocked && quizType !== 'practice') return;
+  
     const currentQuestion = questions[currentQuestionIndex];
     const correctIndices = currentQuestion.answerIndices?.slice().sort((a, b) => a - b) || [];
     const selectedIndices = selectedOptions.slice().sort((a, b) => a - b);
-
+  
     const isCorrect =
       selectedIndices.length === correctIndices.length &&
       selectedIndices.every((val, index) => val === correctIndices[index]);
-
+  
     if (isCorrect) {
       setScore((prev) => prev + 1);
     } else if (quizType === 'practice' || quizType === 'progress') {
@@ -717,28 +727,30 @@ const Quiz = ({
         return newLives;
       });
     }
-
+  
     const currentTime = Date.now();
     const timeSpent = Math.floor((currentTime - questionStartTime) / 1000);
-
+  
     setUserAnswers((prev) => {
       const newAnswers = [...prev];
       newAnswers[currentQuestionIndex] = {
         selectedOptions,
         correct: isCorrect,
-        locked: true,
+        locked: quizType !== 'practice', // Lock only if not in practice mode
         timeSpent: timeSpent,
       };
       return newAnswers;
     });
-
+  
     if (quizType === 'practice' || quizType === 'progress') {
       setFeedback({ correct: isCorrect, selectedIndexes: selectedOptions });
     }
-
+  
     setTimeout(() => {
       if (isCorrect || (quizType !== 'practice' && quizType !== 'progress')) {
         goToNextQuestion();
+      } else {
+        setIsAnswerLocked(false); // Ensure lock is reset in practice mode
       }
     }, 1500);
   }, [
@@ -752,23 +764,24 @@ const Quiz = ({
     questionStartTime,
     isAnswerLocked,
   ]);
+  
 
   // Handle Timer Expiry
   useEffect(() => {
     if (timeLeft === 0 && !quizEnded) {
-      // Automatically save as incorrect if not answered
       if (!userAnswers[currentQuestionIndex]?.locked) {
         setUserAnswers((prev) => {
           const newAnswers = [...prev];
           newAnswers[currentQuestionIndex] = {
             selectedOptions: [],
             correct: false,
-            locked: true,
+            locked: quizType !== 'practice', // Only lock if not in practice mode
             timeSpent: Math.floor((Date.now() - questionStartTime) / 1000),
           };
           return newAnswers;
         });
-        if (quizType === 'practice' || quizType === 'progress') {
+  
+        if (quizType === 'quick' || quizType === 'timed' || quizType === 'progress') {
           setLives((prev) => {
             const newLives = prev - 1;
             if (newLives === 0) {
@@ -778,7 +791,9 @@ const Quiz = ({
           });
         }
       }
-      endQuiz();
+      if (quizType !== 'practice') {
+        endQuiz();
+      }
     }
   }, [
     timeLeft,
