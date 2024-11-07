@@ -65,10 +65,6 @@ export const generateViewport = () => ({
   userScalable: true,
 });
 
-export const generateThemeColor = () => ({
-  themeColor: "#ffffff",
-});
-
 export default function RootLayout({
   children,
 }: Readonly<{
