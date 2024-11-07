@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation'
 import { Input } from "@/components/ui/Input"
 import { Button } from "@/components/ui/Button"
 import SpaceLoader from "@/components/SpaceLoader"
-import LogoIcon from '../public/LogoIcon.svg';
 
 interface Stats {
   total_courses_from_json: number
@@ -82,14 +81,13 @@ const UnderConstructionModal: React.FC<UnderConstructionModalProps> = ({ isOpen,
 const Logo = () => (
   <div className="flex justify-center items-center min-h-[100px] text-4xl font-bold">
     <span>
-      <span></span>
+      <span>NPTEL</span>
       <span className="text-transparent bg-clip-text bg-gradient-to-tr from-[#253EE0] to-[#27BAEC]">
-        NPTEL Quiz
+        Prep
       </span>
     </span>
   </div>
 );
-
 
 export default function Component() {
   const router = useRouter()

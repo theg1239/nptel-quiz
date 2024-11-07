@@ -4,7 +4,6 @@ import { Suspense } from "react";
 import SpaceLoader from "@/components/SpaceLoader";
 import "./globals.css";
 
-// Load custom fonts with optimized settings
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -19,7 +18,6 @@ const geistMono = localFont({
   display: "swap",
 });
 
-// Define comprehensive metadata for SEO
 export const metadata: Metadata = {
   title: "NPTELPrep - Practice Made Easy",
   description: "Master NPTEL courses with interactive questions, quizzes, and study tools on NPTELPrep. Practice, learn, and succeed with personalized learning paths.",
@@ -29,14 +27,6 @@ export const metadata: Metadata = {
   publisher: "NPTELPrep",
   applicationName: "NPTELPrep",
   referrer: "origin-when-cross-origin",
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    minimumScale: 1,
-    maximumScale: 5,
-    userScalable: true,
-  },
-  themeColor: "#ffffff",
   robots: "index, follow",
   openGraph: {
     title: "NPTELPrep - Your NPTEL Practice Hub",
@@ -58,18 +48,26 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "NPTELPrep - Practice Made Easy",
     description: "Enhance your NPTEL learning with interactive quizzes and resources on NPTELPrep.",
-    images: ["twitter-image.jpg"], 
+    images: ["/twitter-image.jpg"], 
     creator: "@img2pdf",
   },
   icons: {
     icon: "/favicon.ico",
     apple: "/apple-touch-icon.png",
-    other: {
-      rel: "manifest",
-      url: "/site.webmanifest",
-    },
-  },
+  }
 };
+
+export const generateViewport = () => ({
+  width: "device-width",
+  initialScale: 1,
+  minimumScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+});
+
+export const generateThemeColor = () => ({
+  themeColor: "#ffffff",
+});
 
 export default function RootLayout({
   children,
