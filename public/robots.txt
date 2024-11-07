@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://examcooker.in
+
+# Sitemaps
+Sitemap: https://examcooker.in/sitemap.xml
