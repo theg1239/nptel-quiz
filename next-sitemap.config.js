@@ -1,5 +1,5 @@
 module.exports = {
-    siteUrl: 'https://examcooker.in', 
+    siteUrl: 'https://nptelprep.in', 
     generateRobotsTxt: true,
     sitemapSize: 5000, 
     outDir: './public', 

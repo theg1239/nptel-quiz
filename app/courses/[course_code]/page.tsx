@@ -16,7 +16,7 @@ interface Course {
 export default async function CoursePage({ params }: { params: { course_code: string } }) {
   const { course_code } = params;
 
-  const res = await fetch(`https://api.examcooker.in/courses/${course_code}`, { cache: 'no-store' });
+  const res = await fetch(`https://api.nptelprep.in/courses/${course_code}`, { cache: 'no-store' });
 
   if (!res.ok) {
     return <p>Course not found</p>;

@@ -24,7 +24,7 @@ interface QuizPageProps {
 export default async function QuizPage({ params }: QuizPageProps) {
   const { course_code, quiz_type } = params;
 
-  const res = await fetch(`https://api.examcooker.in/courses/${course_code}`, { cache: 'no-store' });
+  const res = await fetch(`https://api.nptelprep.in/courses/${course_code}`, { cache: 'no-store' });
   if (!res.ok) {
     throw new Error('Failed to fetch course data');
   }

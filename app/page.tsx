@@ -102,8 +102,8 @@ export default function Component() {
 
   useEffect(() => {
     Promise.all([
-      fetch('https://api.examcooker.in/courses').then(res => res.json()),
-      fetch('https://api.examcooker.in/counts').then(res => res.json())
+      fetch('https://api.nptelprep.in/courses').then(res => res.json()),
+      fetch('https://api.nptelprep.in/counts').then(res => res.json())
     ]).then(([coursesData, statsData]) => {
       if (Array.isArray(coursesData.courses)) {
         setCourses(coursesData.courses)

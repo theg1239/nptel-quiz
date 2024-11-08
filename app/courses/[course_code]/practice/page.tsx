@@ -97,7 +97,7 @@ export default function PracticeMode({ params }: { params: { course_code: string
     const fetchCourseData = async () => {
       try {
         setLoading(true)
-        const response = await fetch(`https://api.examcooker.in/courses/${params.course_code}`)
+        const response = await fetch(`https://api.nptelprep.in/courses/${params.course_code}`)
         if (!response.ok) {
           throw new Error('Failed to fetch course data')
         }

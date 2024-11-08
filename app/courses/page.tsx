@@ -63,7 +63,7 @@ export default function CoursesList() {
   const router = useRouter()
 
   useEffect(() => {
-    fetch('https://api.examcooker.in/courses')
+    fetch('https://api.nptelprep.in/courses')
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data.courses)) {

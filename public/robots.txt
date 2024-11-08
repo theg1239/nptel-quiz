@@ -3,7 +3,7 @@ User-agent: *
 Allow: /
 
 # Host
-Host: https://examcooker.in
+Host: https://nptelprep.in
 
 # Sitemaps
-Sitemap: https://examcooker.in/sitemap.xml
+Sitemap: https://nptelprep.in/sitemap.xml

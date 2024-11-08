@@ -20,9 +20,9 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: "NPTELPrep - Practice Made Easy",
-  description: "Master NPTEL courses with interactive questions, quizzes, and study tools on NPTELPrep. Practice, learn, and succeed with personalized learning paths.",
+  description: "Master NPTEL Swayam courses with interactive questions, quizzes, and study tools on NPTELPrep. Practice, learn, and succeed with personalized learning paths.",
   keywords: ["NPTEL", "Practice", "Quizzes", "Courses", "Interactive Learning", "Exam Prep"],
-  authors: [{ name: "Ishaan S", url: "https://examcooker.in" }],
+  authors: [{ name: "Ishaan S", url: "https://nptelprep.in" }],
   creator: "Ishaan S",
   publisher: "NPTELPrep",
   applicationName: "NPTELPrep",
