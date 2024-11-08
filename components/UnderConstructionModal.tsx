@@ -1,5 +1,3 @@
-// components/UnderConstructionModal.tsx
-
 'use client'
 
 import { AlertTriangle } from 'lucide-react'

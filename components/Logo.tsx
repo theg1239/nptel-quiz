@@ -1,7 +1,5 @@
 'use client'
 
-import { motion } from 'framer-motion'
-
 const Logo = () => (
   <div className="flex justify-center items-center min-h-[100px] text-4xl font-bold">
     <span>

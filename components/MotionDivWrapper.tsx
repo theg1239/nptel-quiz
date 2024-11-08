@@ -1,5 +1,3 @@
-// components/MotionDivWrapper.tsx
-
 'use client'
 
 import { motion, MotionProps } from 'framer-motion'
@@ -16,12 +14,14 @@ const MotionDivWrapper: React.FC<MotionDivWrapperProps> = ({
   initial,
   animate,
   transition,
+  ...rest
 }) => (
   <motion.div
     className={className}
     initial={initial}
     animate={animate}
     transition={transition}
+    {...rest}
   >
     {children}
   </motion.div>
