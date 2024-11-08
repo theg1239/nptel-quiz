@@ -19,9 +19,9 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "NPTELPrep - Practice Made Easy",
-  description: "Master NPTEL Swayam courses with interactive questions, quizzes, and study tools on NPTELPrep. Practice, learn, and succeed with personalized learning paths.",
-  keywords: ["NPTEL", "Practice", "Quizzes", "Courses", "Interactive Learning", "Exam Prep"],
+  title: "NPTELPrep - Free Practice for NPTEL Exams | Interactive Quizzes",
+  description: "Ace your NPTEL exams with interactive quizzes, mock exams, and study resources tailored for NPTEL courses. Practice and succeed on NPTELPrep.",
+  keywords: ["NPTEL practice", "free NPTEL quizzes", "NPTEL mock exams", "Swayam courses", "NPTEL preparation"],
   authors: [{ name: "Ishaan S", url: "https://nptelprep.in" }],
   creator: "Ishaan S",
   publisher: "NPTELPrep",
@@ -29,8 +29,8 @@ export const metadata: Metadata = {
   referrer: "origin-when-cross-origin",
   robots: "index, follow",
   openGraph: {
-    title: "NPTELPrep - Your NPTEL Practice Hub",
-    description: "Interactive questions, quizzes, and resources for mastering NPTEL courses. Join NPTELPrep for an engaging learning experience.",
+    title: "NPTELPrep - Your Free NPTEL Practice Hub",
+    description: "Get free interactive questions, quizzes, and resources for NPTEL success. Join NPTELPrep for engaging and effective learning.",
     url: "https://nptelprep.in",
     siteName: "NPTELPrep",
     images: [
@@ -46,8 +46,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "NPTELPrep - Practice Made Easy",
-    description: "Enhance your NPTEL learning with interactive quizzes and resources on NPTELPrep.",
+    title: "NPTELPrep - Free NPTEL Practice and Quizzes",
+    description: "Interactive NPTEL quizzes and resources for exam success. Join NPTELPrep today!",
     images: ["/twitter-image.jpg"], 
     creator: "@img2pdf",
   },
