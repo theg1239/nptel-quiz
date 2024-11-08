@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import SpaceLoader from "@/components/SpaceLoader";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/react"
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -90,6 +91,7 @@ export default function RootLayout({
         >
           {children}
         </Suspense>
+        <SpeedInsights />
         <Analytics />
       </body>
     </html>
