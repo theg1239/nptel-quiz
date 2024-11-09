@@ -1,14 +1,10 @@
-// app/page.tsx
-
 import { Metadata } from 'next'
 import { Book, FileText, HelpCircle } from 'lucide-react'
 import ParticleBackground from '@/components/ParticleBackground'
-import Logo from '@/components/Logo'
 import SearchComponent from '@/components/SearchComponent'
 import StatCard from '@/components/StatCard'
 import { Button } from '@/components/ui/Button'
 import Link from 'next/link'
-import MotionDivWrapper from '@/components/MotionDivWrapper'
 
 interface Stats {
   total_courses_from_json: number
@@ -29,8 +25,18 @@ export const metadata: Metadata = {
   description: 'Prepare for NPTEL courses with quizzes and assignments.',
 }
 
+const Logo = () => (
+  <div className="flex justify-center items-center min-h-[100px] text-4xl font-bold">
+    <span>
+      <span>NPTEL</span>
+      <span className="text-transparent bg-clip-text bg-gradient-to-tr from-[#253EE0] to-[#27BAEC]">
+        Prep
+      </span>
+    </span>
+  </div>
+)
+
 export default async function Page() {
-  // Placeholder stats in case of error
   const placeholderStats: Stats = {
     total_courses_from_json: 2987,
     total_assignments: 11212,
@@ -41,7 +47,6 @@ export default async function Page() {
   let statsData: Stats = placeholderStats
 
   try {
-    // Fetch courses and counts with ISR: revalidate every 60 seconds
     const [coursesRes, statsRes] = await Promise.all([
       fetch('https://api.nptelprep.in/courses', { next: { revalidate: 60 } }),
       fetch('https://api.nptelprep.in/counts', { next: { revalidate: 60 } }),
@@ -58,10 +63,8 @@ export default async function Page() {
     const coursesData: { courses: Course[] } = await coursesRes.json()
     const fetchedStatsData: any = await statsRes.json()
 
-    // Validate coursesData
     courses = Array.isArray(coursesData.courses) ? coursesData.courses : []
 
-    // Validate fetchedStatsData has required fields
     if (
       typeof fetchedStatsData.total_courses_from_json === 'number' &&
       typeof fetchedStatsData.total_assignments === 'number' &&
@@ -77,7 +80,6 @@ export default async function Page() {
     }
   } catch (error) {
     console.error('Error fetching data:', error)
-    // Use placeholderStats
     courses = []
     statsData = placeholderStats
   }
@@ -86,30 +88,16 @@ export default async function Page() {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-gray-100 flex flex-col items-center justify-center p-4 relative overflow-hidden">
       <ParticleBackground />
       <div className="w-full max-w-6xl z-10">
-        {/* Animated Header */}
-        <MotionDivWrapper
-          className="text-center mb-12"
-          initial={{ y: -50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.5 }}
-        >
+        <div className="text-center mb-12">
           <Logo />
           <p className="mt-4 text-xl text-blue-300">
-            {/* Optional subtitle or description */}
           </p>
-        </MotionDivWrapper>
+        </div>
 
-        {/* Search Component */}
         <SearchComponent courses={courses} />
 
-        {/* Statistics Section */}
         {statsData && (
-          <MotionDivWrapper
-            className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6, duration: 0.5 }}
-          >
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <StatCard
               icon={<Book className="h-10 w-10 text-blue-400" />}
               title="Total Courses"
@@ -125,16 +113,11 @@ export default async function Page() {
               title="Total Questions"
               value={statsData.total_questions}
             />
-          </MotionDivWrapper>
+          </div>
         )}
 
         {/* Call-to-Action Section */}
-        <MotionDivWrapper
-          className="mt-16 text-center"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8, duration: 0.5 }}
-        >
+        <div className="mt-16 text-center">
           <h2 className="text-3xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
             {/* Optional heading */}
           </h2>
@@ -148,7 +131,7 @@ export default async function Page() {
               Explore Courses
             </Button>
           </Link>
-        </MotionDivWrapper>
+        </div>
       </div>
     </div>
   )
