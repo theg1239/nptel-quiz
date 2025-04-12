@@ -1,13 +1,7 @@
 'use server'
 
-/**
- * Server actions for fetching course data
- */
-
-// Get API base URL from environment variable or use default
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.nptelprep.in';
 
-// Default fallback courses for when API is down
 const FALLBACK_COURSES = [
   {
     title: "Data Structures and Algorithms",
@@ -62,7 +56,6 @@ const FALLBACK_COURSES = [
   }
 ];
 
-// Default stats for when API is down
 const FALLBACK_STATS = {
   total_courses_from_json: 987,
   total_assignments: 4500,
@@ -91,19 +84,14 @@ export interface Stats {
   total_questions: number;
 }
 
-/**
- * Fetch a course by its code
- */
 export async function getCourse(courseCode: string): Promise<Course> {
   try {
     const res = await fetch(`${API_BASE_URL}/courses/${courseCode}`, { 
       cache: 'no-store',
-      next: { revalidate: 3600 } // Revalidate every hour
     });
     
     if (!res.ok) {
       console.warn(`Failed to fetch course ${courseCode}, using fallback`);
-      // Return a fallback course with the requested code
       const fallbackCourse = FALLBACK_COURSES.find(c => c.course_code === courseCode) || {
         title: `Course ${courseCode}`,
         course_name: `Course ${courseCode}`,
@@ -118,7 +106,6 @@ export async function getCourse(courseCode: string): Promise<Course> {
     return res.json();
   } catch (error) {
     console.error(`Error fetching course ${courseCode}:`, error);
-    // Return a fallback course with the requested code
     const fallbackCourse = FALLBACK_COURSES.find(c => c.course_code === courseCode) || {
       title: `Course ${courseCode}`,
       course_name: `Course ${courseCode}`,
@@ -131,13 +118,10 @@ export async function getCourse(courseCode: string): Promise<Course> {
   }
 }
 
-/**
- * Fetch all courses
- */
 export async function getAllCourses(): Promise<Course[]> {
   try {
     const res = await fetch(`${API_BASE_URL}/courses`, { 
-      next: { revalidate: 60 } // Revalidate every minute
+      next: { revalidate: 60 }
     });
     
     if (!res.ok) {
@@ -153,13 +137,10 @@ export async function getAllCourses(): Promise<Course[]> {
   }
 }
 
-/**
- * Fetch app statistics
- */
 export async function getStats(): Promise<Stats> {
   try {
     const res = await fetch(`${API_BASE_URL}/counts`, { 
-      next: { revalidate: 60 } // Revalidate every minute
+      next: { revalidate: 60 }
     });
     
     if (!res.ok) {
