@@ -1,14 +1,19 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { Progress } from "@/components/ui/Progress";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Award } from "lucide-react";
 
-export default function QuizResultsPage({ params }: { params: { course_code: string; quiz_type: string } }) {
+export default function QuizResultsPage({ params }: { params: Promise<{ course_code: string; quiz_type: string }> }) {
+  // Unwrap params using React.use()
+  const unwrappedParams = use(params);
+  const courseCode = unwrappedParams.course_code;
+  const quizType = unwrappedParams.quiz_type;
+  
   const router = useRouter();
   const searchParams = useSearchParams();
   const [score, setScore] = useState<number | null>(null);
@@ -28,11 +33,11 @@ export default function QuizResultsPage({ params }: { params: { course_code: str
 
   const updateProgressInLocalStorage = (quizScore: number, totalQuizQuestions: number) => {
     const storedProgress = JSON.parse(localStorage.getItem("quizProgress") || "{}");
-    const completedQuestions = storedProgress[params.course_code]?.completedQuestions || [];
+    const completedQuestions = storedProgress[courseCode]?.completedQuestions || [];
 
     if (quizScore === totalQuizQuestions) {
       const newQuestions = Array(totalQuizQuestions).fill(true); 
-      storedProgress[params.course_code] = {
+      storedProgress[courseCode] = {
         completedQuestions: newQuestions,
       };
 
@@ -41,7 +46,7 @@ export default function QuizResultsPage({ params }: { params: { course_code: str
   };
 
   const handleRetake = () => {
-    router.push(`/courses/${params.course_code}/quiz/${params.quiz_type}`);
+    router.push(`/courses/${courseCode}/quiz/${quizType}`);
   };
 
   if (score === null || totalQuestions === null) {

@@ -1,28 +1,14 @@
 import QuizPortal from '@/components/QuizPortal';
+import { getCourse, Course } from '@/lib/actions';
 
-interface Course {
-  title: string;
-  request_count: string;
-  weeks: {
-    name: string;
-    questions: {
-      question: string;
-      options: string[];
-      answer: string[];
-    }[];
-  }[];
-}
+export default async function CoursePage({ params }: { params: Promise<{ course_code: string }> }) {
+  // Await params before accessing properties
+  const { course_code } = await params;
 
-export default async function CoursePage({ params }: { params: { course_code: string } }) {
-  const { course_code } = params;
-
-  const res = await fetch(`https://api.nptelprep.in/courses/${course_code}`, { cache: 'no-store' });
-
-  if (!res.ok) {
+  try {
+    const course = await getCourse(course_code);
+    return <QuizPortal course={course} course_code={course_code} />;
+  } catch (error) {
     return <p>Course not found</p>;
   }
-
-  const course: Course = await res.json();
-
-  return <QuizPortal course={course} course_code={course_code} />;
 }

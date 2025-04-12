@@ -24,6 +24,7 @@ export const metadata: Metadata = {
   title: "NPTELPrep - Free Practice for NPTEL Exams | Interactive Quizzes",
   description:
     "Ace your NPTEL exams with interactive quizzes, mock exams, and study resources tailored for NPTEL and Swayam courses. Practice and succeed with NPTELPrep's comprehensive materials, including courses like Wild Life Ecology, Data Structures, Machine Learning, and more.",
+  metadataBase: new URL(process.env.SITE_URL || 'https://nptelprep.in'),
   keywords: [
     "NPTEL",
     "Swayam NPTEL",

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight, Menu, CheckCircle2, Volume2 } from 'lucide-react'
@@ -12,6 +12,7 @@ import { Progress } from '@/components/ui/Progress'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import SpaceLoader from "@/components/SpaceLoader"
 import { initializeQuestionsWithFixedOrder, Question } from '@/lib/quizUtils'
+import { getCourse } from '@/lib/actions'
 
 interface Week {
   name: string
@@ -23,7 +24,8 @@ interface Course {
   course_name: string
   question_count: number
   weeks: Week[]
-  request_count: string
+  request_count: string | number
+  title?: string
 }
 
 interface StatCardProps {
@@ -76,7 +78,11 @@ const StatCard: React.FC<StatCardProps> = ({ icon, title, value }) => (
   </motion.div>
 )
 
-export default function PracticeMode({ params }: { params: { course_code: string } }) {
+export default function PracticeMode({ params }: { params: Promise<{ course_code: string }> }) {
+  // Unwrap params using React.use()
+  const unwrappedParams = use(params);
+  const courseCode = unwrappedParams.course_code;
+  
   const router = useRouter()
   const [course, setCourse] = useState<Course | null>(null)
   const [selectedWeek, setSelectedWeek] = useState<string | null>(null)
@@ -97,11 +103,7 @@ export default function PracticeMode({ params }: { params: { course_code: string
     const fetchCourseData = async () => {
       try {
         setLoading(true)
-        const response = await fetch(`https://api.nptelprep.in/courses/${params.course_code}`)
-        if (!response.ok) {
-          throw new Error('Failed to fetch course data')
-        }
-        const data: Course = await response.json()
+        const data = await getCourse(courseCode)
 
         const sanitizedWeeks = data.weeks.map(week => {
           const sanitizedQuestions = week.questions
@@ -149,7 +151,7 @@ export default function PracticeMode({ params }: { params: { course_code: string
     }
 
     fetchCourseData()
-  }, [params.course_code])
+  }, [courseCode])
 
   const handleWeekSelect = (weekName: string) => {
     setSelectedWeek(weekName)

@@ -5,14 +5,11 @@ import SearchComponent from '@/components/SearchComponent'
 import StatCard from '@/components/StatCard'
 import { Button } from '@/components/ui/Button'
 import Link from 'next/link'
+import { getAllCourses, getStats } from '@/lib/actions'
+import { Stats } from '@/lib/actions'
 
-interface Stats {
-  total_courses_from_json: number
-  total_assignments: number
-  total_questions: number
-}
-
-interface Course {
+// Local interface for SearchComponent which expects a different Course structure
+interface SearchCourse {
   course_code: string
   course_name: string
   question_count: number
@@ -43,38 +40,34 @@ export default async function Page() {
     total_questions: 114546,
   }
 
-  let courses: Course[] = []
+  let courses: SearchCourse[] = []
   let statsData: Stats = placeholderStats
 
   try {
-    const [coursesRes, statsRes] = await Promise.all([
-      fetch('https://api.nptelprep.in/courses', { next: { revalidate: 60 } }),
-      fetch('https://api.nptelprep.in/counts', { next: { revalidate: 60 } }),
+    const [coursesData, fetchedStatsData] = await Promise.all([
+      getAllCourses(),
+      getStats()
     ])
 
-    if (!coursesRes.ok) {
-      throw new Error(`Failed to fetch courses: ${coursesRes.status}`)
-    }
-
-    if (!statsRes.ok) {
-      throw new Error(`Failed to fetch stats: ${statsRes.status}`)
-    }
-
-    const coursesData: { courses: Course[] } = await coursesRes.json()
-    const fetchedStatsData: any = await statsRes.json()
-
-    courses = Array.isArray(coursesData.courses) ? coursesData.courses : []
-
+    // Map the returned courses to the format expected by SearchComponent
+    courses = coursesData.map(course => ({
+      course_code: course.course_code,
+      course_name: course.course_name || course.title,
+      question_count: course.question_count,
+      weeks: Array.isArray(course.weeks) 
+        ? course.weeks
+            .filter(week => week && typeof week === 'object') // Filter out null/undefined weeks
+            .map(week => week.name || `Week ${course.weeks.indexOf(week) + 1}`) // Use a default name if name is missing
+        : null,
+      request_count: Number(course.request_count) || 0
+    }))
+    
     if (
       typeof fetchedStatsData.total_courses_from_json === 'number' &&
       typeof fetchedStatsData.total_assignments === 'number' &&
       typeof fetchedStatsData.total_questions === 'number'
     ) {
-      statsData = {
-        total_courses_from_json: fetchedStatsData.total_courses_from_json,
-        total_assignments: fetchedStatsData.total_assignments,
-        total_questions: fetchedStatsData.total_questions,
-      }
+      statsData = fetchedStatsData
     } else {
       console.error('Invalid stats data format. Using placeholder stats.')
     }

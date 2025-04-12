@@ -12,7 +12,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 interface Course {
   title: string
-  request_count: string
+  request_count: string | number
   weeks: {
     name: string
     questions: {
