@@ -4,10 +4,32 @@ import { getAllCourses } from '@/lib/actions'
 // Maximum URLs per sitemap as per protocol guidelines
 const MAX_URLS_PER_SITEMAP = 45000;
 
+// Basic fallback sitemap for when API is down
+const FALLBACK_SITEMAP: MetadataRoute.Sitemap = [
+  {
+    url: process.env.SITE_URL || 'https://nptelprep.in',
+    lastModified: new Date(),
+    changeFrequency: 'daily' as const,
+    priority: 1,
+  },
+  {
+    url: `${process.env.SITE_URL || 'https://nptelprep.in'}/courses`,
+    lastModified: new Date(),
+    changeFrequency: 'daily' as const,
+    priority: 0.9,
+  }
+];
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     // Get all courses to generate dynamic routes
-    const courses = await getAllCourses()
+    const courses = await getAllCourses();
+    
+    // If courses is empty (which means we got fallbacks), return basic sitemap
+    if (!courses || courses.length === 0) {
+      console.warn('No courses available for sitemap, using fallback');
+      return FALLBACK_SITEMAP;
+    }
     
     // Base URL for your site
     const baseUrl = process.env.SITE_URL || 'https://nptelprep.in'
@@ -105,13 +127,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   } catch (error) {
     console.error('Error generating sitemap:', error);
     // Return basic sitemap on error
-    return [
-      {
-        url: process.env.SITE_URL || 'https://nptelprep.in',
-        lastModified: new Date(),
-        changeFrequency: 'daily' as const,
-        priority: 1,
-      }
-    ];
+    return FALLBACK_SITEMAP;
   }
 } 
