@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/Button"
 import { Progress } from "@/components/ui/Progress"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/Tooltip"
-import { ScrollArea } from '@/components/ui/scroll-area'; // Import ScrollArea
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { QuizType } from '@/types/quiz'
 import { stripOptionLabels, initializeQuestionsWithFixedOrder, Question } from '@/lib/quizUtils'
 
@@ -87,7 +87,7 @@ const QuizContent = ({
   questions,
 }: {
   question: string;
-  options: string[];
+  options: (string | { option_number: string, option_text: string })[];
   onAnswer: (newSelectedOptions: number[]) => void;
   timeLeft: number;
   maxTime: number;
@@ -131,7 +131,8 @@ const QuizContent = ({
               ))}
             </div>
           )}
-          {quizType === 'practice' && (
+          {/* Only show lives for timed and quick modes */}
+          {(quizType === 'timed' || quizType === 'quick') && (
             <div className="flex space-x-2">
               {[...Array(lives)].map((_, i) => (
                 <Heart key={i} className="h-6 w-6 text-red-500" />
@@ -141,13 +142,24 @@ const QuizContent = ({
         </div>
         <div className="grid grid-cols-1 gap-4 mt-4">
           {displayOptions.map((option, index) => {
-            const labelMatch = option.match(/^([A-Z])[).:-]/i);
-            const label = labelMatch ? labelMatch[1].toUpperCase() : '';
+            let label = "";
+            let optionText = "";
+            if (typeof option === 'object' && 'option_number' in option) {
+              label = option.option_number;
+              optionText = option.option_text;
+            } else if (typeof option === 'string') {
+              const labelMatch = option.match(/^([A-Z])[).:-]?\s*/i);
+              label = labelMatch ? labelMatch[1].toUpperCase() : '';
+              optionText = option.replace(/^([A-Z])[).:-]?\s*/i, '').trim();
+            }
+            
             const isSelected = selectedOptions.includes(index);
             const currentQuestion = questions[currentQuestionIndex];
-            const correctAnswerLabels = currentQuestion.answer.map(ans => ans.toUpperCase());
-            const isCorrect = correctAnswerLabels.includes(label);
-            const showCorrect = feedback && !feedback.correct && isCorrect;
+            const correctAnswers = currentQuestion.answer.map(ans => ans.toUpperCase());
+            const isCorrect = correctAnswers.includes(label.toUpperCase());
+            // Show correct answers in green when feedback exists and it's practice mode
+            const showCorrect = (feedback && quizType === 'practice' && isCorrect) || 
+                              (feedback && !feedback.correct && isCorrect);
 
             return (
               <Button
@@ -174,7 +186,10 @@ const QuizContent = ({
                 }`}
                 disabled={isAnswerLocked}
               >
-                {option}
+                <span className="inline-block font-bold mr-3 px-2 py-1 rounded bg-gray-700 text-blue-300 align-middle">
+                  {label}
+                </span>
+                <span className="align-middle">{optionText}</span>
               </Button>
             );
           })}
@@ -210,7 +225,8 @@ const Quiz = ({
   const router = useRouter()
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [score, setScore] = useState(0)
-  const [lives, setLives] = useState(3)
+  // Initialize lives to 0 for practice mode; otherwise 3.
+  const [lives, setLives] = useState(quizType === 'practice' ? 0 : 3)
   const [timeLeft, setTimeLeft] = useState(quizType === 'timed' || quizType === 'quick' ? quizTime * 60 : 0)
   const [powerUps, setPowerUps] = useState<PowerUpType[]>([])
   const [quizEnded, setQuizEnded] = useState(false)
@@ -326,8 +342,13 @@ const Quiz = ({
 
     const selectedLabels = selectedOptions.map(idx => {
       const option = displayedOptions[idx];
-      const match = option.match(/^([A-Z])[).:-]/i);
-      return match ? match[1].toUpperCase() : '';
+      if (typeof option === 'object' && option.option_number) {
+        return option.option_number.toUpperCase();
+      } else if (typeof option === 'string') {
+        const match = option.match(/^([A-Z])[).:-]/i);
+        return match ? match[1].toUpperCase() : '';
+      }
+      return '';
     });
 
     console.log(`Correct Labels: ${correctLabels}`);
@@ -341,14 +362,17 @@ const Quiz = ({
 
     if (isCorrect) {
       setScore(prev => prev + 1);
-    } else if (quizType === "practice") {
-      setLives(prev => {
-        const newLives = prev - 1;
-        if (newLives === 0) {
-          endQuiz();
-        }
-        return newLives;
-      });
+    } else {
+      // In non-practice modes, subtract a life if wrong.
+      if (quizType !== "practice") {
+        setLives(prev => {
+          const newLives = prev - 1;
+          if (newLives === 0) {
+            endQuiz();
+          }
+          return newLives;
+        });
+      }
     }
 
     setUserAnswers(prev => {
@@ -357,11 +381,13 @@ const Quiz = ({
       return newAnswers;
     });
 
+    // Always provide feedback in practice mode to show the correct answer.
     if (quizType === "practice") {
       setFeedback({ correct: isCorrect, selectedIndexes: selectedOptions });
     }
 
     setTimeout(() => {
+      // Auto-advance if the answer is correct or if not in practice mode.
       if (isCorrect || quizType !== "practice") {
         if (currentQuestionIndex < questions.length - 1) {
           goToNextQuestion();
@@ -370,12 +396,12 @@ const Quiz = ({
         }
       }
     }, 1500);
-  }, [questions, currentQuestionIndex, selectedOptions, quizType, lives, endQuiz, goToNextQuestion, availableOptions]);
+  }, [questions, currentQuestionIndex, selectedOptions, quizType, endQuiz, goToNextQuestion, availableOptions]);
 
   const restartQuiz = useCallback(() => {
     setCurrentQuestionIndex(0)
     setScore(0)
-    setLives(3)
+    setLives(quizType === 'practice' ? 0 : 3)
     setTimeLeft(quizType === 'timed' || quizType === 'quick' ? quizTime * 60 : 0)
     setPowerUps((prev) => prev.map((p) => ({ ...p, active: true })))
     setQuizEnded(false)
@@ -391,12 +417,14 @@ const Quiz = ({
       const correctLabels = currentQuestion.answer.map(ans => ans.toUpperCase());
       
       const correctIndexes = currentQuestion.options.map((opt, idx) => {
-        const labelMatch = opt.match(/^([A-Z])[).:-]/i);
-        if (labelMatch) {
-          const label = labelMatch[1].toUpperCase();
-          return correctLabels.includes(label) ? idx : -1;
+        let label = "";
+        if (typeof opt === 'object' && opt.option_number) {
+          label = opt.option_number.toUpperCase();
+        } else if (typeof opt === 'string') {
+          const labelMatch = opt.match(/^([A-Z])[).:-]/i);
+          label = labelMatch ? labelMatch[1].toUpperCase() : '';
         }
-        return -1;
+        return correctLabels.includes(label) ? idx : -1;
       }).filter(idx => idx !== -1);
       
       let incorrectOptions = availableOptions.filter(idx => !correctIndexes.includes(idx));

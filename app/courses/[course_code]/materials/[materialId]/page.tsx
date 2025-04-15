@@ -1,5 +1,5 @@
 import { Metadata, ResolvingMetadata } from 'next'
-import { getCourse } from '@/lib/actions'
+import { getCourse, getCourseMaterials } from '@/lib/actions'
 import MaterialViewClient from './material-view-client'
 
 export async function generateMetadata({ 
@@ -62,11 +62,27 @@ export async function generateMetadata({
   }
 }
 
-export default async function MaterialViewPage({ 
-  params 
-}: { 
-  params: Promise<{ course_code: string, materialId: string }> 
-}) {
-  const { course_code, materialId } = await params;
+export default async function MaterialPage({ params }: { params: { course_code: string; materialId: string } }) {
+  const { course_code, materialId } = params;
+  const materials = await getCourseMaterials(course_code);
+  const material = materials.find(m => m.id === materialId);
+
+  if (!material) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 flex items-center justify-center">
+        <div className="bg-gray-800 bg-opacity-50 backdrop-blur-md p-8 rounded-lg text-center">
+          <h1 className="text-2xl font-bold text-indigo-300 mb-4">Material Not Found</h1>
+          <p className="text-gray-300 mb-6">We couldn't find the requested study material.</p>
+          <a 
+            href={`/courses/${course_code}/materials`} 
+            className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg transition-colors"
+          >
+            Return to Materials
+          </a>
+        </div>
+      </div>
+    );
+  }
+
   return <MaterialViewClient courseCode={course_code} materialId={materialId} />;
 }

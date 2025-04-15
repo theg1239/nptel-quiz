@@ -78,6 +78,20 @@ const StatCard: React.FC<StatCardProps> = ({ icon, title, value }) => (
   </motion.div>
 )
 
+const getLabelAndText = (option: string | { option_number: string; option_text: string }) => {
+  if (typeof option === 'object' && option !== null) {
+    return {
+      label: option.option_number.toUpperCase(),
+      optionText: option.option_text
+    };
+  } else {
+    const labelMatch = option.match(/^([A-Z])[).:-]/i);
+    const label = labelMatch ? labelMatch[1].toUpperCase() : '';
+    const optionText = option.replace(/^([A-Z])[).:-]/i, '').trim();
+    return { label, optionText };
+  }
+};
+
 export default function PracticeClient({ courseCode }: { courseCode: string }) {
   const router = useRouter()
   const [course, setCourse] = useState<Course | null>(null)
@@ -214,8 +228,7 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
         // Get the correct option(s)
         const correctOptionIndices = question.answer.map(ans => {
           const index = question.options.findIndex(option => {
-            const labelMatch = option.match(/^([A-Z])[).:-]/i);
-            const label = labelMatch ? labelMatch[1].toUpperCase() : '';
+            const { label } = getLabelAndText(option);
             return label === ans;
           });
           return index;
@@ -223,7 +236,7 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
 
         const correctOptionsText = correctOptionIndices.map((optionIndex) => {
           const option = question.options[optionIndex];
-          const optionText = option.replace(/^([A-Z])[).:-]/i, '').trim();
+          const { optionText } = getLabelAndText(option);
           return `Option ${optionIndex + 1}: ${optionText}`;
         }).join('. ');
 
@@ -380,10 +393,8 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
                               {index + 1}. {question.question} 
                             </h3>
                             <ul className="space-y-3">
-                              {question.options.map((option: string, optionIndex: number) => {
-                                // Extract the label from the option
-                                const labelMatch = option.match(/^([A-Z])[).:-]/i);
-                                const label = labelMatch ? labelMatch[1].toUpperCase() : '';
+                              {question.options.map((option, optionIndex: number) => {
+                                const { label, optionText } = getLabelAndText(option);
                                 const isCorrect = question.answer.includes(label);
 
                                 return (
@@ -400,11 +411,11 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
                                         <CheckCircle2 className="mr-2 h-5 w-5 text-green-400 flex-shrink-0" />
                                       )}
                                       <span className={isCorrect ? 'text-green-300' : 'text-gray-300'}>
-                                        {option}
+                                        {`${label}. ${optionText}`}
                                       </span>
                                     </div>
                                   </li>
-                                )
+                                );
                               })}
                             </ul>
                           </div>

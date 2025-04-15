@@ -143,8 +143,11 @@ export async function getCourse(courseCode: string): Promise<Course> {
       name: `Week ${assignment.week_number}`,
       questions: assignment.questions.map((q: ApiQuestion) => ({
         question: q.question_text,
-        // Format options with option_number from API
-        options: q.options.map(opt => `${opt.option_number}. ${opt.option_text}`),
+        // Preserve option_number and option_text for each option
+        options: q.options.map(opt => ({
+          option_number: opt.option_number,
+          option_text: opt.option_text
+        })),
         answer: [q.correct_option.toUpperCase()]
       }))
     })) || [];

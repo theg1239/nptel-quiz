@@ -43,6 +43,7 @@ export default async function QuizPage({
 }) {
   const { course_code, quiz_type } = await params;
   
+  // Validate quiz type
   if (!['practice', 'timed', 'quick', 'progress'].includes(quiz_type)) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 flex items-center justify-center">
@@ -63,8 +64,10 @@ export default async function QuizPage({
   try {
     const course = await getCourse(course_code);
     
+    // Get all questions from all assignments
     const questions = course.assignments?.reduce<Question[]>((allQuestions, assignment) => {
       if (assignment.questions && Array.isArray(assignment.questions)) {
+        // Transform questions to match the expected format
         const transformedQuestions = assignment.questions.map(q => ({
           question: q.question_text,
           options: q.options.map(opt => opt.option_text),
@@ -75,6 +78,7 @@ export default async function QuizPage({
       return allQuestions;
     }, []) || [];
 
+    // If no valid questions found
     if (questions.length === 0) {
       return (
         <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 flex items-center justify-center">
@@ -92,6 +96,7 @@ export default async function QuizPage({
       );
     }
 
+    // Initialize questions with fixed order
     const shuffledQuestions = initializeQuestionsWithFixedOrder(questions);
     
     return (
