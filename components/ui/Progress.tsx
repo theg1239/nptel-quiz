@@ -3,11 +3,12 @@ import { cn } from '@/lib/utils'
 
 interface ProgressProps extends React.HTMLAttributes<HTMLDivElement> {
   value: number 
-  colorClass?: string 
+  colorClass?: string
+  indicatorClassName?: string
 }
 
 const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
-  ({ className, value, colorClass = 'bg-blue-600 dark:bg-blue-500', ...props }, ref) => {
+  ({ className, value, colorClass = 'bg-blue-600 dark:bg-blue-500', indicatorClassName, ...props }, ref) => {
     const clampedValue = Math.min(100, Math.max(0, value))
     return (
       <div
@@ -16,13 +17,14 @@ const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
         {...props}
       >
         <div
-          className={cn('absolute top-0 left-0 h-full rounded-full transition-all duration-300', colorClass)}
+          className={cn('h-full rounded-full transition-all', colorClass, indicatorClassName)}
           style={{ width: `${clampedValue}%` }}
         />
       </div>
     )
   }
 )
+
 Progress.displayName = 'Progress'
 
 export { Progress }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Book, Clock, Zap, BarChart, ArrowRight, BookOpen, Award, ChevronLeft } from "lucide-react"
+import { Book, Clock, Zap, BarChart, ArrowRight, BookOpen, Award, ChevronLeft, Film, Users, Calendar } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/Button"
@@ -11,7 +11,8 @@ import { Progress } from "@/components/ui/Progress"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/Tooltip"
 
 interface Course {
-  title: string
+  title?: string
+  course_name?: string
   request_count: string | number
   weeks: {
     name: string
@@ -30,14 +31,16 @@ interface QuizPortalProps {
 
 const VALID_QUIZ_TYPES = ["practice", "timed", "quick", "progress"]
 
-export default function Component({ course, course_code }: QuizPortalProps = { course: { title: "Sample Course", request_count: "0", weeks: [] }, course_code: "SAMPLE101" }) {
+export default function Component(
+  { course, course_code }: QuizPortalProps = { course: { title: "Sample Course", request_count: "0", weeks: [] }, course_code: "SAMPLE101" }
+) {
   const router = useRouter()
   const [selectedQuiz, setSelectedQuiz] = useState<string | null>(null)
   const [questionCount, setQuestionCount] = useState<number>(10)
   const [quizTime, setQuizTime] = useState<number>(30)
   const [progress, setProgress] = useState<number>(0)
 
-  const totalQuestions = course.weeks.reduce(
+  const totalQuestions = (course?.weeks || []).reduce(
     (acc, week) => acc + week.questions.length,
     0
   )
@@ -109,6 +112,33 @@ export default function Component({ course, course_code }: QuizPortalProps = { c
     },
   ]
 
+  const learningFeatures = [
+    {
+      icon: BookOpen,
+      title: "Study Materials",
+      description: "Access lecture notes and supplementary content",
+      onClick: () => router.push(`/courses/${course_code}/materials`),
+    },
+    {
+      icon: Film,
+      title: "Video Lectures",
+      description: "Watch video explanations of key concepts",
+      onClick: () => router.push(`/courses/${course_code}/videos`),
+    },
+    {
+      icon: Users,
+      title: "Discussion Forum",
+      description: "Ask questions and participate in discussions",
+      onClick: () => router.push(`/courses/${course_code}/discussions`),
+    },
+    {
+      icon: Calendar,
+      title: "Study Planner",
+      description: "Create personalized study schedules",
+      onClick: () => router.push(`/courses/${course_code}/study-planner`),
+    },
+  ]
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 text-gray-100 flex flex-col items-center p-4 md:p-6">
       <div className="w-full max-w-6xl flex items-center justify-between mb-6">
@@ -118,12 +148,12 @@ export default function Component({ course, course_code }: QuizPortalProps = { c
           className="flex items-center text-violet-300 hover:bg-violet-800"
         >
           <ChevronLeft className="mr-1 h-5 w-5" />
-          
         </Button>
   
         <div className="text-center flex-1">
+          {/* Display the course name; if course.title is missing, use course.course_name */}
           <h1 className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-violet-400">
-            {course.title}
+            {course.title || course.course_name}
           </h1>
           <p className="text-lg md:text-xl text-violet-300">
             Interactive Learning Portal
@@ -132,22 +162,21 @@ export default function Component({ course, course_code }: QuizPortalProps = { c
       </div>  
       
       <main className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-      <Card className="bg-gray-800 bg-opacity-40 backdrop-blur-sm border-violet-700 md:col-span-2">
-  <CardHeader className="pb-4"> 
-    <CardTitle className="text-xl flex items-center gap-2 text-violet-300 mb-2"> 
-      <Award className="h-5 w-5 text-yellow-400" />
-      Your Progress
-    </CardTitle>
-  </CardHeader>
-  <CardContent className="pt-4 pb-6 px-4"> 
-    <div className="flex justify-between mb-3 text-sm text-violet-200">
-      <span>Course Completion</span>
-      <span>{progress}%</span>
-    </div>
-    <Progress value={progress} className="h-2 bg-violet-900" colorClass="bg-violet-400" />
-  </CardContent>
-</Card>
-
+        <Card className="bg-gray-800 bg-opacity-40 backdrop-blur-sm border-violet-700 md:col-span-2">
+          <CardHeader className="pb-4"> 
+            <CardTitle className="text-xl flex items-center gap-2 text-violet-300 mb-2"> 
+              <Award className="h-5 w-5 text-yellow-400" />
+              Your Progress
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4 pb-6 px-4"> 
+            <div className="flex justify-between mb-3 text-sm text-violet-200">
+              <span>Course Completion</span>
+              <span>{progress}%</span>
+            </div>
+            <Progress value={progress} className="h-2 bg-violet-900" colorClass="bg-violet-400" />
+          </CardContent>
+        </Card>
 
         <Card className="bg-gray-800 bg-opacity-40 backdrop-blur-sm border-violet-700">
           <CardHeader className="pb-2">
@@ -191,6 +220,36 @@ export default function Component({ course, course_code }: QuizPortalProps = { c
                     </TooltipTrigger>
                     <TooltipContent side="top" className="bg-violet-800 border-violet-600 text-violet-100">
                       <p className="text-xs">{option.description}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gray-800 bg-opacity-40 backdrop-blur-sm border-violet-700 md:col-span-3">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xl font-semibold text-violet-300">Learning Features</CardTitle>
+            <CardDescription className="text-sm text-violet-200">Explore additional study options</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {learningFeatures.map((feature, index) => (
+                <TooltipProvider key={index}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full h-auto flex flex-col items-center p-3 bg-violet-900 bg-opacity-50 hover:bg-opacity-75 border-violet-600 text-left hover:border-violet-400"
+                        onClick={feature.onClick}
+                      >
+                        <feature.icon className="h-6 w-6 mb-2 text-violet-300" />
+                        <div className="text-sm font-semibold text-violet-200">{feature.title}</div>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="bg-violet-800 border-violet-600 text-violet-100">
+                      <p className="text-xs">{feature.description}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>

@@ -1,9 +1,10 @@
 import { Metadata } from 'next'
-import { Book, FileText, HelpCircle } from 'lucide-react'
+import { Book, FileText, HelpCircle, Users, Video, Calendar, Trophy, Sparkles } from 'lucide-react'
 import ParticleBackground from '@/components/ParticleBackground'
 import SearchComponent from '@/components/SearchComponent'
 import StatCard from '@/components/StatCard'
 import { Button } from '@/components/ui/Button'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/Card'
 import Link from 'next/link'
 import { getAllCourses, getStats } from '@/lib/actions'
 import { Stats } from '@/lib/actions'
@@ -19,7 +20,7 @@ interface SearchCourse {
 
 export const metadata: Metadata = {
   title: 'NPTEL Prep',
-  description: 'Prepare for NPTEL courses with quizzes and assignments.',
+  description: 'A comprehensive learning platform for NPTEL courses with quizzes, study materials, discussion forums, and more.',
 }
 
 const Logo = () => (
@@ -49,7 +50,6 @@ export default async function Page() {
       getStats()
     ])
 
-    // Map the returned courses to the format expected by SearchComponent
     courses = coursesData.map(course => ({
       course_code: course.course_code,
       course_name: course.course_name || course.title,

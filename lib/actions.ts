@@ -84,6 +84,18 @@ export interface Stats {
   total_questions: number;
 }
 
+export interface StudyMaterial {
+  id: string;
+  title: string;
+  description: string;
+  type: 'document' | 'notes' | 'summary' | 'video' | 'transcript' | 'book' | 'audio';
+  content: string;
+  weekNumber: number | null;
+  url?: string;
+  mimetype?: string;
+  languages?: { language: string; url: string }[];
+}
+
 export async function getCourse(courseCode: string): Promise<Course> {
   try {
     const res = await fetch(`${API_BASE_URL}/courses/${courseCode}`, { 
@@ -103,7 +115,7 @@ export async function getCourse(courseCode: string): Promise<Course> {
       return fallbackCourse;
     }
     
-    return res.json();
+    return await res.json();
   } catch (error) {
     console.error(`Error fetching course ${courseCode}:`, error);
     const fallbackCourse = FALLBACK_COURSES.find(c => c.course_code === courseCode) || {
@@ -148,9 +160,80 @@ export async function getStats(): Promise<Stats> {
       return FALLBACK_STATS;
     }
     
-    return res.json();
+    return await res.json();
   } catch (error) {
     console.error('Error fetching stats:', error);
     return FALLBACK_STATS;
   }
-} 
+}
+
+// Updated getCourseMaterials – simply read the "materials" field from the course endpoint.
+export async function getCourseMaterials(courseCode: string): Promise<StudyMaterial[]> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/courses/${courseCode}`, { cache: 'no-store' });
+    
+    if (!res.ok) {
+      console.warn(`Failed to fetch course materials for ${courseCode}, using empty array`);
+      return [];
+    }
+    
+    const data = await res.json();
+    // Return the 'materials' array directly.
+    return Array.isArray(data.materials) ? data.materials : [];
+  } catch (error) {
+    console.error(`Error fetching course materials for ${courseCode}:`, error);
+    return [];
+  }
+}
+
+// Study plan data type
+export interface StudyPlan {
+  courseCode: string;
+  tasks: Array<{
+    id: string;
+    materialId: string;
+    title: string;
+    completed: boolean;
+    dueDate: string;
+    notes: string;
+  }>;
+  lastUpdated: string;
+}
+
+export async function saveStudyPlan(courseCode: string, tasks: any[]): Promise<boolean> {
+  try {
+    // For now, we'll save to localStorage on the client side.
+    // In a real application, you would send this to your API endpoint.
+    if (typeof window !== 'undefined') {
+      const studyPlan: StudyPlan = {
+        courseCode,
+        tasks,
+        lastUpdated: new Date().toISOString()
+      };
+      
+      localStorage.setItem(`studyPlan_${courseCode}`, JSON.stringify(studyPlan));
+    }
+    
+    return true;
+  } catch (error) {
+    console.error(`Error saving study plan for ${courseCode}:`, error);
+    return false;
+  }
+}
+
+export async function getStudyPlan(courseCode: string): Promise<StudyPlan | null> {
+  try {
+    if (typeof window !== 'undefined') {
+      const savedPlan = localStorage.getItem(`studyPlan_${courseCode}`);
+      
+      if (savedPlan) {
+        return JSON.parse(savedPlan) as StudyPlan;
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.error(`Error retrieving study plan for ${courseCode}:`, error);
+    return null;
+  }
+}
