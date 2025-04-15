@@ -2,18 +2,18 @@ import { Metadata } from 'next'
 import { getCourse } from '@/lib/actions'
 import VideosClient from './videos-client'
 
-export async function generateMetadata({ params }: { params: { course_code: string } }): Promise<Metadata> {
-  const { course_code } = params
+export async function generateMetadata({ params }: { params: Promise<{ course_code: string }> }): Promise<Metadata> {
+  const { course_code } = await params
   const courseData = await getCourse(course_code)
   
   return {
-    title: `${courseData?.title || 'Course'} Videos - NPTELPrep`,
-    description: `Watch video lectures for ${courseData?.title || 'this course'}. Learn at your own pace with comprehensive video explanations.`,
+    title: `${courseData?.title || courseData?.course_name || 'Course'} Videos - NPTELPrep`,
+    description: `Watch video lectures for ${courseData?.title || courseData?.course_name || 'this course'}. Learn at your own pace with comprehensive video explanations.`,
   }
 }
 
-export default async function VideosPage({ params }: { params: { course_code: string } }) {
-  const { course_code } = params
+export default async function VideosPage({ params }: { params: Promise<{ course_code: string }> }) {
+  const { course_code } = await params
   const courseData = await getCourse(course_code)
   
   if (!courseData) {
@@ -30,7 +30,7 @@ export default async function VideosPage({ params }: { params: { course_code: st
   return (
     <VideosClient
       courseCode={course_code}
-      courseName={courseData.title}
+      courseName={courseData.title || courseData.course_name}
     />
   )
 }

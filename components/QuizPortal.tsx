@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Book, Clock, Zap, BarChart, ArrowRight, BookOpen, Award, ChevronLeft, Film, Users, Calendar } from "lucide-react"
+import { Book, Clock, Zap, BarChart, ArrowRight, BookOpen, Award, ChevronLeft, Film, Users, Calendar, ConstructionIcon } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/Button"
@@ -75,7 +75,7 @@ export default function Component(
       questionCount: finalQuestionCount,
       quizTime: finalQuizTime,
     }
-    localStorage.setItem('quizSettings', JSON.stringify(quizSettings))
+    localStorage.setItem("quizSettings", JSON.stringify(quizSettings))
 
     const quizPath = `/courses/${course_code}/quiz/${selectedQuiz}`
     router.push(quizPath)
@@ -112,6 +112,8 @@ export default function Component(
     },
   ]
 
+  // Updated learning features:
+  // For the Discussion Forum, we remove the onClick navigation and update the label to indicate it's under construction.
   const learningFeatures = [
     {
       icon: BookOpen,
@@ -126,16 +128,16 @@ export default function Component(
       onClick: () => router.push(`/courses/${course_code}/videos`),
     },
     {
-      icon: Users,
-      title: "Discussion Forum",
-      description: "Ask questions and participate in discussions",
-      onClick: () => router.push(`/courses/${course_code}/discussions`),
-    },
-    {
       icon: Calendar,
       title: "Study Planner",
       description: "Create personalized study schedules",
       onClick: () => router.push(`/courses/${course_code}/study-planner`),
+    },
+    {
+      icon: ConstructionIcon,
+      title: "Coming soon...",
+      description: "Coming soon...",
+      onClick: () => {}, 
     },
   ]
 
@@ -179,7 +181,7 @@ export default function Component(
         </Card>
 
         <Card className="bg-gray-800 bg-opacity-40 backdrop-blur-sm border-violet-700">
-          <CardHeader className="pb-2">
+          <CardHeader className="pb-6">
             <CardTitle className="text-xl flex items-center gap-2 text-violet-300">
               <BookOpen className="h-5 w-5 text-emerald-400" />
               Practice Mode
