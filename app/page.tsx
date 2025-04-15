@@ -4,12 +4,10 @@ import ParticleBackground from '@/components/ParticleBackground'
 import SearchComponent from '@/components/SearchComponent'
 import StatCard from '@/components/StatCard'
 import { Button } from '@/components/ui/Button'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/Card'
 import Link from 'next/link'
 import { getAllCourses, getStats } from '@/lib/actions'
 import { Stats } from '@/lib/actions'
 
-// Local interface for SearchComponent which expects a different Course structure
 interface SearchCourse {
   course_code: string
   course_name: string
@@ -56,8 +54,8 @@ export default async function Page() {
       question_count: course.question_count,
       weeks: Array.isArray(course.weeks) 
         ? course.weeks
-            .filter(week => week && typeof week === 'object') // Filter out null/undefined weeks
-            .map(week => week.name || `Week ${course.weeks.indexOf(week) + 1}`) // Use a default name if name is missing
+            .filter(week => week && typeof week === 'object')
+            .map(week => week.name || `Week ${course.weeks.indexOf(week) + 1}`)
         : null,
       request_count: Number(course.request_count) || 0
     }))
@@ -109,10 +107,8 @@ export default async function Page() {
           </div>
         )}
 
-        {/* Call-to-Action Section */}
         <div className="mt-16 text-center">
           <h2 className="text-3xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
-            {/* Optional heading */}
           </h2>
           <p className="text-xl text-blue-300 mb-8">
             Choose a course, take quizzes, and enhance your learning experience
