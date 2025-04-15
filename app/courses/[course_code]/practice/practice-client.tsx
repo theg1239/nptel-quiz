@@ -106,7 +106,6 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
             .map(q => {
               const originalQuestion = q.question
               const sanitized = sanitizeQuestion(q.question)
-              console.log(`Original: "${originalQuestion}" | Sanitized: "${sanitized}"`) 
               return {
                 ...q,
                 question: sanitized
@@ -134,6 +133,13 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
           weeks: sanitizedWeeks
         }
 
+        const courseMetadata = {
+          totalWeeks: sanitizedWeeks.length,
+          courseName: data.course_name || data.title,
+          lastUpdated: new Date().toISOString()
+        };
+        localStorage.setItem(`courseData_${courseCode}`, JSON.stringify(courseMetadata));
+
         setCourse(sanitizedCourse)
         if (sanitizedCourse.weeks.length > 0) {
           setSelectedWeek(sanitizedCourse.weeks[0].name)
@@ -148,6 +154,44 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
 
     fetchCourseData()
   }, [courseCode])
+
+  const sanitizedCourse = useMemo(() => {
+    if (!course) return null
+    const sanitizedWeeks: Week[] = course.weeks.map(week => ({
+      ...week,
+      questions: initializeQuestionsWithFixedOrder(week.questions)
+    }))
+    return {
+      ...course,
+      weeks: sanitizedWeeks
+    }
+  }, [course])
+  
+  useEffect(() => {
+    if (selectedWeek && !loading && !error) {
+      try {
+        const courseProgress = JSON.parse(localStorage.getItem("courseProgress") || "{}");
+        const weekProgress = JSON.parse(localStorage.getItem(`weekProgress_${courseCode}`) || "{}");
+        
+        weekProgress[selectedWeek] = true;
+        localStorage.setItem(`weekProgress_${courseCode}`, JSON.stringify(weekProgress));
+        
+        const totalWeeks = sanitizedCourse?.weeks.length || 0;
+        const viewedWeeks = Object.keys(weekProgress).length;
+        const viewProgress = Math.round((viewedWeeks / totalWeeks) * 40); // 40% weight for viewing content
+        
+        const quizProgress = courseProgress[courseCode] || 0;
+        const weightedQuizProgress = Math.round(quizProgress * 0.6); // 60% weight for quiz performance
+        
+        const totalProgress = Math.min(100, Math.round(viewProgress + weightedQuizProgress));
+        
+        courseProgress[courseCode] = totalProgress;
+        localStorage.setItem("courseProgress", JSON.stringify(courseProgress));
+      } catch (error) {
+        console.error("Error updating course progress:", error);
+      }
+    }
+  }, [selectedWeek, courseCode, loading, error, sanitizedCourse?.weeks.length]);
 
   const handleWeekSelect = (weekName: string) => {
     setSelectedWeek(weekName)
@@ -166,18 +210,6 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
       setCurrentSpeechIndex(0)
     }
   }
-
-  const sanitizedCourse = useMemo(() => {
-    if (!course) return null
-    const sanitizedWeeks: Week[] = course.weeks.map(week => ({
-      ...week,
-      questions: initializeQuestionsWithFixedOrder(week.questions)
-    }))
-    return {
-      ...course,
-      weeks: sanitizedWeeks
-    }
-  }, [course])
 
   useEffect(() => {
     if (isReadAloudMode && !loading && !error && sanitizedCourse && selectedWeek) {
@@ -408,7 +440,7 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
             </div>
             <Progress 
               value={selectedWeek && sanitizedCourse ? 
-                ((currentWeekIndex + 1) / totalWeeks) * 100 : 
+                Math.round(((currentWeekIndex + 1) / totalWeeks) * 100) : 
                 0
               } 
               className="h-2 bg-gray-700"
@@ -418,4 +450,4 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
       </main>
     </div>
   )
-} 
+}

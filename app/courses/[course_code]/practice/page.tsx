@@ -5,10 +5,10 @@ import PracticeClient from './practice-client'
 export async function generateMetadata({ 
   params 
 }: { 
-  params: { course_code: string }
+  params: Promise<{ course_code: string }> 
 }, parent: ResolvingMetadata): Promise<Metadata> {
   try {
-    const { course_code } = params;
+    const { course_code } = await params;
     
     const course = await getCourse(course_code);
     
@@ -49,6 +49,7 @@ export async function generateMetadata({
   }
 }
 
-export default function PracticePage({ params }: { params: { course_code: string } }) {
-  return <PracticeClient courseCode={params.course_code} />;
+export default async function PracticePage({ params }: { params: Promise<{ course_code: string }> }) {
+  const { course_code } = await params;
+  return <PracticeClient courseCode={course_code} />;
 }

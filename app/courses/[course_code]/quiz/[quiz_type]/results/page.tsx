@@ -9,7 +9,6 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Award } from "lucide-react";
 
 export default function QuizResultsPage({ params }: { params: Promise<{ course_code: string; quiz_type: string }> }) {
-  // Unwrap params using React.use()
   const unwrappedParams = use(params);
   const courseCode = unwrappedParams.course_code;
   const quizType = unwrappedParams.quiz_type;
@@ -66,7 +65,7 @@ export default function QuizResultsPage({ params }: { params: Promise<{ course_c
         <CardContent>
           <Award className="h-16 w-16 mx-auto text-yellow-400 mb-4" />
           <p className="text-2xl font-bold text-gray-200">Your Score: {score}/{totalQuestions}</p>
-          <Progress value={(score / totalQuestions) * 100} className="mt-4" />
+          <Progress value={Math.round((score / totalQuestions) * 100)} className="mt-4" />
         </CardContent>
         <CardFooter>
           <Button onClick={handleRetake} className="w-full bg-blue-600 hover:bg-blue-700">

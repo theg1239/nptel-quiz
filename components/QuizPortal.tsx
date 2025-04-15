@@ -218,7 +218,7 @@ export default function Component({ course, course_code }: QuizPortalProps = { c
                     {selectedQuiz === "progress" && "Progress Test"}
                   </CardTitle>
                   <CardDescription className="text-sm text-violet-200">
-                    {selectedQuiz === "practice" && "All questions with unlimited time."}
+                    {selectedQuiz === "practice" && "All questions with unlimited time and live feedback."}
                     {selectedQuiz === "timed" && "Set your preferred quiz time and number of questions."}
                     {selectedQuiz === "quick" && "Quick 10-question quiz with 5-minute limit."}
                     {selectedQuiz === "progress" && "Focus on questions you've previously missed."}

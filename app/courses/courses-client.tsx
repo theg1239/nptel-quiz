@@ -144,7 +144,7 @@ export default function CourseListClient({ initialCourses }: CourseListClientPro
                         <Book className="h-6 w-6 flex-shrink-0" />
                         <span className="truncate">{course.course_name || course.title}</span>
                       </span>
-                      {Number(course.request_count) > 10 && (
+                      {Number(course.request_count) > 20 && (
                         <Badge variant="secondary" className="ml-2 flex-shrink-0">
                           <Star className="h-4 w-4 mr-1 text-yellow-500" />
                           Featured
