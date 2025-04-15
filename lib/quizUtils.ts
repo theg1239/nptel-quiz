@@ -5,29 +5,44 @@ export interface Question {
 }
 
 export function stripOptionLabels(options: string[]): { cleanOptions: string[]; labels: string[] } {
-  const regex = /^(?:Option\s)?([A-Z])[).:-]?\s*/i; 
-  const cleanOptions = options.map((option) => {
-    const match = option.match(regex);
-    const label = match ? match[1].toUpperCase() : '';
-    const cleanOption = option.replace(regex, '');
-    console.log(`Option: "${option}", Label: "${label}", Clean Option: "${cleanOption}"`);
+  const regex = /^([A-Z])[).:-]?\s*/i;
+  const cleanOptions = options.map(option => {
+    const cleanOption = option.replace(regex, '').trim();
     return cleanOption;
   });
-  const labels = options.map((option) => {
+  
+  const labels = options.map(option => {
     const match = option.match(regex);
     return match ? match[1].toUpperCase() : '';
   });
+  
   return { cleanOptions, labels };
 }
 
 export function initializeQuestionsWithFixedOrder(questions: Question[]): Question[] {
   return questions.map((q) => {
-    const { cleanOptions, labels } = stripOptionLabels(q.options);
-    const labeledOptions = labels.map((label, index) => `${label}. ${cleanOptions[index]}`);
-    console.log(`Question: "${q.question}", Labeled Options: ${labeledOptions}`);
+    // Add option labels if they don't exist
+    const options = q.options.map((opt, idx) => {
+      const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const hasLabel = /^[A-Z][).:-]?\s*/i.test(opt);
+      return hasLabel ? opt : `${letters[idx]}. ${opt}`;
+    });
+
+    // Transform answers to use letter format if they're indices
+    const answers = q.answer.map(ans => {
+      const isNumeric = !isNaN(Number(ans));
+      if (isNumeric) {
+        const idx = parseInt(ans);
+        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        return letters[idx];
+      }
+      return ans.toUpperCase();
+    });
+
     return {
       ...q,
-      options: labeledOptions,
+      options,
+      answer: answers
     };
   });
 }

@@ -50,12 +50,12 @@ export default async function Page() {
 
     courses = coursesData.map(course => ({
       course_code: course.course_code,
-      course_name: course.course_name || course.title,
-      question_count: course.question_count,
-      weeks: Array.isArray(course.weeks) 
+      course_name: course.course_name || course.title || `Course ${course.course_code}`,
+      question_count: course.question_count || 0,
+      weeks: course.weeks 
         ? course.weeks
             .filter(week => week && typeof week === 'object')
-            .map(week => week.name || `Week ${course.weeks.indexOf(week) + 1}`)
+            .map(week => week.name || `Week ${course.weeks!.indexOf(week) + 1}`)
         : null,
       request_count: Number(course.request_count) || 0
     }))

@@ -72,8 +72,8 @@ const SpaceLoader = ({ size = 100 }) => {
             style={{
               width: size * 0.1,
               height: size * 0.1,
-              top: `-${size * 0.05}px`,
-              left: `${size * scale * 0.5 - size * 0.05}px`,
+              top: -size * 0.05,
+              left: size * scale * 0.5 - size * 0.05,
             }}
             variants={planetVariants}
             animate="animate"
@@ -86,20 +86,20 @@ const SpaceLoader = ({ size = 100 }) => {
         style={{
           width: size * 0.2,
           height: size * 0.2,
-          top: `${size * 0.4}px`,
-          left: `${size * 0.4}px`,
+          top: size * 0.4,
+          left: size * 0.4,
         }}
         animate={{
           boxShadow: [
             "0 0 20px rgba(255, 165, 0, 0.5)",
             "0 0 40px rgba(255, 165, 0, 0.7)",
             "0 0 20px rgba(255, 165, 0, 0.5)",
-          ],
+          ]
         }}
         transition={{
-          duration: 3,
+          duration: 2,
           repeat: Infinity,
-          ease: "easeInOut",
+          ease: "easeInOut"
         }}
       />
     </div>

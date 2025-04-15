@@ -34,7 +34,6 @@ export async function generateMetadata({
       title: `${course.title || course.course_name} - NPTEL Practice Questions | NPTELPrep`,
       description: `Practice with ${totalQuestions}+ interactive questions for ${course.title || course.course_name}. Prepare for NPTEL exams with our comprehensive quiz portal and boost your grades.`,
       keywords: [
-        ...courseKeywords,
         "NPTEL quiz",
         "NPTEL exam preparation",
         "online quizzes",

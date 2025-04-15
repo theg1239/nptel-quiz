@@ -24,7 +24,6 @@ export async function generateMetadata({
       title: `${title} | NPTELPrep`,
       description,
       keywords: [
-        course.title,
         course.course_name,
         `${course.title} practice`,
         `${course.course_name} questions`,

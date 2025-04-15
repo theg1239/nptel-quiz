@@ -101,48 +101,38 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
         setLoading(true)
         const data = await getCourse(courseCode)
 
-        const sanitizedWeeks = data.weeks.map(week => {
-          const sanitizedQuestions = week.questions
-            .map(q => {
-              const originalQuestion = q.question
-              const sanitized = sanitizeQuestion(q.question)
-              return {
-                ...q,
-                question: sanitized
-              }
-            })
-            .filter(q => {
-              const isValidQuestion = q.question.length > 0
-              const hasEnoughOptions = q.options.length >= 2
-              const hasAnswers = q.answer.length > 0
-              if (!isValidQuestion || !hasEnoughOptions || !hasAnswers) {
-                console.warn(`Invalid question found and skipped: "${q.question}"`)
-                return false
-              }
-              return true
-            })
+        // Transform assignments into weeks format
+        const weeks = data.assignments?.map(assignment => {
+          const questions = assignment.questions.map(q => ({
+            question: q.question_text,
+            options: q.options.map(opt => opt.option_text),
+            answer: [q.correct_option]
+          }))
 
           return {
-            ...week,
-            questions: sanitizedQuestions
+            name: `Week ${assignment.week_number}`,
+            questions
           }
-        })
+        }) || []
 
-        const sanitizedCourse = {
+        const courseData = {
           ...data,
-          weeks: sanitizedWeeks
+          weeks,
+          title: data.course_name,
+          request_count: data.request_count || 0,
+          question_count: data.assignments?.reduce((total, assignment) => total + assignment.questions.length, 0) || 0
         }
 
         const courseMetadata = {
-          totalWeeks: sanitizedWeeks.length,
-          courseName: data.course_name || data.title,
+          totalWeeks: weeks.length,
+          courseName: data.course_name,
           lastUpdated: new Date().toISOString()
-        };
-        localStorage.setItem(`courseData_${courseCode}`, JSON.stringify(courseMetadata));
+        }
+        localStorage.setItem(`courseData_${courseCode}`, JSON.stringify(courseMetadata))
 
-        setCourse(sanitizedCourse)
-        if (sanitizedCourse.weeks.length > 0) {
-          setSelectedWeek(sanitizedCourse.weeks[0].name)
+        setCourse(courseData)
+        if (weeks.length > 0) {
+          setSelectedWeek(weeks[0].name)
         }
       } catch (error) {
         console.error('Error fetching course data:', error)

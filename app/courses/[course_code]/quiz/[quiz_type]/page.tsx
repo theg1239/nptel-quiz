@@ -1,114 +1,119 @@
-import InteractiveQuiz from '@/components/InteractiveQuiz';
-import { QuizType } from '@/types/quiz';
-import { getCourse } from '@/lib/actions';
-import { Metadata, ResolvingMetadata } from 'next';
+import { Metadata } from 'next'
+import { getCourse } from '@/lib/actions'
+import InteractiveQuiz from '@/components/InteractiveQuiz'
+import { initializeQuestionsWithFixedOrder } from '@/lib/quizUtils'
+import { QuizType } from '@/types/quiz'
 
-interface QuizPageProps {
-  params: Promise<{
-    course_code: string;
-    quiz_type: QuizType;
-  }>;
+export interface Question {
+  question: string
+  options: string[]
+  answer: string[]
 }
 
-export async function generateMetadata({ 
-  params 
-}: { 
-  params: Promise<{ course_code: string; quiz_type: QuizType }>
-}, parent: ResolvingMetadata): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ course_code: string }> }): Promise<Metadata> {
+  const { course_code } = await params
+  
   try {
-    const { course_code, quiz_type } = await params;
+    const course = await getCourse(course_code)
+    const title = `${course.title || course.course_name} Quiz`
+    const description = `Test your knowledge of ${course.title || course.course_name} with our interactive quiz.`
     
-    const course = await getCourse(course_code);
-    
-    const quizTypeLabel = quiz_type.charAt(0).toUpperCase() + quiz_type.slice(1);
-    
-    const totalQuestions = course.weeks.reduce(
-      (sum, week) => sum + (week.questions?.length || 0),
-      0
-    );
-
-    const quizTitles = {
-      practice: `Practice Quiz for ${course.title || course.course_name}`,
-      timed: `Timed Quiz for ${course.title || course.course_name}`,
-      quick: `Quick Review Quiz for ${course.title || course.course_name}`,
-      progress: `Progress Test for ${course.title || course.course_name}`,
-    };
-
-    const quizDescriptions = {
-      practice: `Unlimited time practice quiz with all ${totalQuestions}+ questions for ${course.title || course.course_name}. Master NPTEL concepts at your own pace.`,
-      timed: `Timed quiz with selected questions from ${course.title || course.course_name}. Test your knowledge under exam conditions.`,
-      quick: `Quick 10-question review quiz for ${course.title || course.course_name}. Perfect for a rapid refresher before exams.`,
-      progress: `Track your progress in ${course.title || course.course_name} with this targeted quiz focusing on your weak areas.`,
-    };
-
-    const title = quizTitles[quiz_type] || `${quizTypeLabel} Quiz for ${course.title || course.course_name}`;
-    const description = quizDescriptions[quiz_type] || `Interactive ${quiz_type} quiz for ${course.title || course.course_name}. Practice NPTEL exam questions and improve your score.`;
-
     return {
       title: `${title} | NPTELPrep`,
       description,
-      keywords: [
-        course.title,
-        course.course_name,
-        `${course.title} quiz`,
-        `${course.course_name} ${quiz_type} test`,
-        `${course.course_code} practice questions`,
-        `NPTEL ${course.course_name} quiz`,
-        `${quiz_type} quiz NPTEL`,
-        "NPTEL practice tests",
-        "NPTEL exam preparation",
-      ],
       openGraph: {
         title,
         description,
-        type: 'article',
-        url: `https://nptelprep.in/courses/${course_code}/quiz/${quiz_type}`,
+        type: 'website',
+        url: `https://nptelprep.in/courses/${course_code}/quiz/practice`,
       },
-    };
+    }
   } catch (error) {
     return {
-      title: "NPTEL Quiz | NPTELPrep",
-      description: "Practice with interactive quizzes for NPTEL courses. Prepare for your exams effectively.",
-    };
+      title: 'Quiz | NPTELPrep',
+      description: 'Test your knowledge with our interactive quiz.',
+    }
   }
 }
 
-export default async function QuizPage({ params }: QuizPageProps) {
-  try {
-    const { course_code, quiz_type } = await params;
-
-    const course = await getCourse(course_code);
-
-    const questions = course.weeks.flatMap(week => 
-      week.questions.map(question => ({
-        question: question.question,  
-        options: question.options,
-        answer: question.answer       
-      }))
-    );
-
+export default async function QuizPage({ 
+  params 
+}: { 
+  params: Promise<{ course_code: string; quiz_type: string }> 
+}) {
+  const { course_code, quiz_type } = await params;
+  
+  if (!['practice', 'timed', 'quick', 'progress'].includes(quiz_type)) {
     return (
-      <InteractiveQuiz
-        courseName={course.title}  
-        questions={questions}
-        quizType={quiz_type}
+      <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 flex items-center justify-center">
+        <div className="bg-gray-800 bg-opacity-50 backdrop-blur-md p-8 rounded-lg text-center">
+          <h1 className="text-2xl font-bold text-indigo-300 mb-4">Invalid Quiz Type</h1>
+          <p className="text-gray-300 mb-6">The requested quiz type is not valid.</p>
+          <a 
+            href={`/courses/${course_code}`}
+            className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg transition-colors"
+          >
+            Return to Course
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  try {
+    const course = await getCourse(course_code);
+    
+    const questions = course.assignments?.reduce<Question[]>((allQuestions, assignment) => {
+      if (assignment.questions && Array.isArray(assignment.questions)) {
+        const transformedQuestions = assignment.questions.map(q => ({
+          question: q.question_text,
+          options: q.options.map(opt => opt.option_text),
+          answer: [q.correct_option]
+        }));
+        return [...allQuestions, ...transformedQuestions];
+      }
+      return allQuestions;
+    }, []) || [];
+
+    if (questions.length === 0) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 flex items-center justify-center">
+          <div className="bg-gray-800 bg-opacity-50 backdrop-blur-md p-8 rounded-lg text-center">
+            <h1 className="text-2xl font-bold text-indigo-300 mb-4">No Questions Available</h1>
+            <p className="text-gray-300 mb-6">This course does not have any practice questions yet.</p>
+            <a 
+              href={`/courses/${course_code}`}
+              className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg transition-colors"
+            >
+              Return to Course
+            </a>
+          </div>
+        </div>
+      );
+    }
+
+    const shuffledQuestions = initializeQuestionsWithFixedOrder(questions);
+    
+    return (
+      <InteractiveQuiz 
+        questions={shuffledQuestions} 
         courseCode={course_code}
+        courseName={course.title || course.course_name}
+        quizType={quiz_type as QuizType}
       />
     );
   } catch (error) {
     console.error('Error loading quiz page:', error);
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-6">
-        <div className="bg-gray-800 rounded-lg p-8 max-w-md mx-auto text-center">
-          <h1 className="text-2xl font-bold text-red-400 mb-4">Quiz Unavailable</h1>
-          <p className="text-gray-300 mb-6">
-            We're experiencing technical difficulties loading this quiz. Please try again later.
-          </p>
+      <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 flex items-center justify-center">
+        <div className="bg-gray-800 bg-opacity-50 backdrop-blur-md p-8 rounded-lg text-center">
+          <h1 className="text-2xl font-bold text-indigo-300 mb-4">Error Loading Quiz</h1>
+          <p className="text-gray-300 mb-6">Sorry, we couldn&apos;t load the quiz questions. Please try again later.</p>
           <a 
-            href="/courses" 
-            className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
+            href={`/courses/${course_code}`}
+            className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg transition-colors"
           >
-            Return to Courses
+            Return to Course
           </a>
         </div>
       </div>

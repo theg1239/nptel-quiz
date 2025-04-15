@@ -9,6 +9,7 @@ const FALLBACK_COURSES = [
     course_code: "DSA101",
     request_count: 150,
     question_count: 240,
+    assignments: [],
     weeks: [
       {
         name: "Week 1: Introduction",
@@ -26,6 +27,7 @@ const FALLBACK_COURSES = [
     course_code: "ML202",
     request_count: 200,
     question_count: 180,
+    assignments: [],
     weeks: [
       {
         name: "Week 1: Basics",
@@ -43,6 +45,7 @@ const FALLBACK_COURSES = [
     course_code: "WEB303",
     request_count: 175,
     question_count: 160,
+    assignments: [],
     weeks: [
       {
         name: "Week 1: HTML & CSS",
@@ -62,12 +65,29 @@ const FALLBACK_STATS = {
   total_questions: 35000
 };
 
+export interface ApiQuestion {
+  question_text: string;
+  correct_option: string;
+  options: {
+    option_number: string;
+    option_text: string;
+  }[];
+}
+
+export interface Assignment {
+  assignment_id: number;
+  week_number: number;
+  assignment_title: string;
+  questions: ApiQuestion[];
+}
+
 export interface Course {
-  title: string;
-  course_name: string;
   course_code: string;
+  course_name: string;
+  assignments: Assignment[];
+  title?: string;
   request_count: string | number;
-  question_count: number;
+  question_count?: number;
   weeks: {
     name: string;
     questions: {
@@ -110,12 +130,34 @@ export async function getCourse(courseCode: string): Promise<Course> {
         course_code: courseCode,
         request_count: 0,
         question_count: 0,
+        assignments: [],
         weeks: []
       };
       return fallbackCourse;
     }
     
-    return await res.json();
+    const data = await res.json();
+    
+    // Transform assignments into weeks format for backward compatibility
+    const weeks = data.assignments?.map((assignment: Assignment) => ({
+      name: `Week ${assignment.week_number}`,
+      questions: assignment.questions.map((q: ApiQuestion) => ({
+        question: q.question_text,
+        // Format options with option_number from API
+        options: q.options.map(opt => `${opt.option_number}. ${opt.option_text}`),
+        answer: [q.correct_option.toUpperCase()]
+      }))
+    })) || [];
+
+    return {
+      ...data,
+      weeks,
+      title: data.course_name,
+      request_count: data.request_count || 0,
+      question_count: data.assignments?.reduce((total: number, assignment: Assignment) => 
+        total + assignment.questions.length, 0
+      ) || 0
+    };
   } catch (error) {
     console.error(`Error fetching course ${courseCode}:`, error);
     const fallbackCourse = FALLBACK_COURSES.find(c => c.course_code === courseCode) || {
@@ -124,6 +166,7 @@ export async function getCourse(courseCode: string): Promise<Course> {
       course_code: courseCode,
       request_count: 0,
       question_count: 0,
+      assignments: [],
       weeks: []
     };
     return fallbackCourse;
@@ -178,7 +221,6 @@ export async function getCourseMaterials(courseCode: string): Promise<StudyMater
     }
     
     const data = await res.json();
-    // Return the 'materials' array directly.
     return Array.isArray(data.materials) ? data.materials : [];
   } catch (error) {
     console.error(`Error fetching course materials for ${courseCode}:`, error);
@@ -186,7 +228,6 @@ export async function getCourseMaterials(courseCode: string): Promise<StudyMater
   }
 }
 
-// Study plan data type
 export interface StudyPlan {
   courseCode: string;
   tasks: Array<{
@@ -202,8 +243,6 @@ export interface StudyPlan {
 
 export async function saveStudyPlan(courseCode: string, tasks: any[]): Promise<boolean> {
   try {
-    // For now, we'll save to localStorage on the client side.
-    // In a real application, you would send this to your API endpoint.
     if (typeof window !== 'undefined') {
       const studyPlan: StudyPlan = {
         courseCode,

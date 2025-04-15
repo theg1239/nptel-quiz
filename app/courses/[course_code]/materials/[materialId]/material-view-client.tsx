@@ -6,9 +6,9 @@ import { motion } from 'framer-motion'
 import { ChevronLeft, Download, Bookmark, BookmarkCheck, ExternalLink, Video, FileText, Book, Music, MessageSquare } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import SpaceLoader from '@/components/SpaceLoader'
-import ReactMarkdown from 'react-markdown'
-import rehypeRaw from 'rehype-raw'
 import { getCourseMaterials, StudyMaterial } from '@/lib/actions'
 
 export default function MaterialViewClient({ courseCode, materialId }: { courseCode: string; materialId: string }) {
@@ -22,19 +22,17 @@ export default function MaterialViewClient({ courseCode, materialId }: { courseC
       try {
         setLoading(true)
         
-        // Use the server action to fetch all materials for the course
         const materials = await getCourseMaterials(courseCode)
-        
-        // Find the specific material by ID
         const foundMaterial = materials.find(m => m.id === materialId)
         
         if (!foundMaterial) {
-          throw new Error('Material not found')
+          setMaterial(null)
+          setLoading(false)
+          return
         }
         
         setMaterial(foundMaterial)
         
-        // Check if this material is bookmarked
         const savedBookmarks = localStorage.getItem(`bookmarks_${courseCode}`)
         let bookmarks: string[] = []
         if (savedBookmarks) {
@@ -45,32 +43,28 @@ export default function MaterialViewClient({ courseCode, materialId }: { courseC
         setLoading(false)
       } catch (error) {
         console.error('Error loading material:', error)
-        // Redirect to materials page if material not found
-        router.push(`/courses/${courseCode}/materials`)
+        setMaterial(null)
+        setLoading(false)
       }
     }
     
     fetchMaterial()
-  }, [courseCode, materialId, router])
+  }, [courseCode, materialId])
   
   const toggleBookmark = () => {
     if (!material) return
     
-    // Update bookmarked state
     setBookmarked(prev => {
       const newState = !prev
       
-      // Update localStorage
       const savedBookmarks = localStorage.getItem(`bookmarks_${courseCode}`)
       let bookmarks: string[] = savedBookmarks ? JSON.parse(savedBookmarks) : []
       
       if (newState) {
-        // Add bookmark
         if (!bookmarks.includes(material.id)) {
           bookmarks.push(material.id)
         }
       } else {
-        // Remove bookmark
         bookmarks = bookmarks.filter(id => id !== material.id)
       }
       
@@ -96,50 +90,52 @@ export default function MaterialViewClient({ courseCode, materialId }: { courseC
     }
   }
 
-  const renderDownloadButton = () => {
-    if (!material) return null
-    
-    if (material.type === 'video' && material.url) {
-      return (
-        <Button
-          variant="outline"
-          className="text-indigo-300 border-indigo-600 hover:bg-indigo-900"
-          onClick={() => window.open(material.url, '_blank')}
-        >
-          <Download className="mr-2 h-4 w-4" />
-          Download Video
-        </Button>
-      )
-    } else if (material.type === 'book' && material.url) {
-      return (
-        <Button
-          variant="outline"
-          className="text-indigo-300 border-indigo-600 hover:bg-indigo-900"
-          onClick={() => window.open(material.url, '_blank')}
-        >
-          <Download className="mr-2 h-4 w-4" />
-          Download Book
-        </Button>
-      )
-    } else if ((material.type === 'transcript' || material.type === 'audio') && material.languages && material.languages.length > 0) {
-      // Show a download button for the first available language
-      const firstLanguage = material.languages.find(lang => lang.url)
-      if (firstLanguage) {
-        return (
-          <Button
-            variant="outline"
-            className="text-indigo-300 border-indigo-600 hover:bg-indigo-900"
-            onClick={() => window.open(firstLanguage.url, '_blank')}
-          >
-            <Download className="mr-2 h-4 w-4" />
-            Download {material.type === 'transcript' ? 'Transcript' : 'Audio'}
-          </Button>
-        )
-      }
+  const renderDownloadSection = () => {
+    if (!material) return null;
+
+    const downloads = [];
+
+    if (material.url) {
+      downloads.push({
+        type: material.type,
+        url: material.url,
+        label: material.type === 'video' ? 'Download Video' : 'Download Book'
+      });
     }
-    
-    return null
-  }
+
+    if (material.languages) {
+      material.languages.forEach(lang => {
+        if (lang.url) {
+          downloads.push({
+            type: material.type,
+            url: lang.url,
+            label: `Download ${material.type === 'transcript' ? 'Transcript' : 'Audio'} (${lang.language})`
+          });
+        }
+      });
+    }
+
+    if (downloads.length === 0) return null;
+
+    return (
+      <div className="bg-gray-800 bg-opacity-40 rounded-lg p-4 mt-6">
+        <h3 className="text-lg font-semibold text-indigo-300 mb-3">Downloads</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {downloads.map((download, index) => (
+            <Button
+              key={index}
+              variant="outline"
+              className="text-indigo-300 border-indigo-600 hover:bg-indigo-900 w-full"
+              onClick={() => window.open(download.url, '_blank')}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              {download.label}
+            </Button>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   if (loading) {
     return (
@@ -170,21 +166,36 @@ export default function MaterialViewClient({ courseCode, materialId }: { courseC
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 text-gray-100">
       <div className="container mx-auto p-4 max-w-5xl">
-        <div className="flex justify-between items-center mb-6">
-          <Button
-            variant="ghost"
-            onClick={() => router.push(`/courses/${courseCode}/materials`)}
-            className="text-indigo-300 hover:text-indigo-100 hover:bg-indigo-900 transition-colors flex items-center"
-          >
-            <ChevronLeft className="mr-2 h-4 w-4" />
-            Back to Materials
-          </Button>
-          <div className="w-[100px]"></div>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="flex justify-between items-center mb-6">
+            <Button
+              variant="ghost"
+              onClick={() => router.push(`/courses/${courseCode}/materials`)}
+              className="text-indigo-300 hover:text-indigo-100 hover:bg-indigo-900 transition-colors flex items-center"
+            >
+              <ChevronLeft className="mr-2 h-4 w-4" />
+              Back to Materials
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleBookmark}
+              className="text-gray-400 hover:text-yellow-400"
+            >
+              {bookmarked ? (
+                <BookmarkCheck className="h-5 w-5 text-yellow-400" />
+              ) : (
+                <Bookmark className="h-5 w-5" />
+              )}
+            </Button>
+          </div>
 
-        <Card className="bg-gray-800 bg-opacity-50 backdrop-blur-md border-gray-700 mb-6">
-          <CardHeader className="pb-3">
-            <div className="flex justify-between items-start">
+          <Card className="bg-gray-800 bg-opacity-50 backdrop-blur-md border-gray-700">
+            <CardHeader className="pb-3">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-full bg-indigo-900 flex items-center justify-center">
                   {renderMaterialTypeIcon()}
@@ -197,65 +208,51 @@ export default function MaterialViewClient({ courseCode, materialId }: { courseC
                   </p>
                 </div>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleBookmark}
-                className="text-gray-400 hover:text-yellow-400"
-              >
-                {bookmarked ? (
-                  <BookmarkCheck className="h-5 w-5 text-yellow-400" />
-                ) : (
-                  <Bookmark className="h-5 w-5" />
-                )}
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="bg-gray-900 bg-opacity-50 rounded-md p-6 prose prose-invert max-w-none">
-              <ReactMarkdown
-                rehypePlugins={[rehypeRaw]}
-                components={{
-                  a: ({ node, ...props }) => (
-                    <a
-                      {...props}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-indigo-300 hover:text-indigo-200 underline flex items-center"
-                    >
-                      {props.children}
-                      <ExternalLink className="ml-1 h-3 w-3" />
-                    </a>
-                  ),
-                  iframe: ({ node, ...props }) => (
-                    <div className="my-6 aspect-video w-full">
-                      <iframe
-                        {...props}
-                        className="w-full h-full rounded-md"
-                        allowFullScreen
-                      />
+            </CardHeader>
+            <CardContent>
+              <Tabs defaultValue="content" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 bg-gray-900 bg-opacity-50">
+                  <TabsTrigger value="content">Content</TabsTrigger>
+                  <TabsTrigger value="resources">Resources & Downloads</TabsTrigger>
+                </TabsList>
+                <TabsContent value="content">
+                  <ScrollArea className="bg-gray-900 bg-opacity-50 rounded-md p-6 h-[60vh]">
+                    <div className="prose prose-invert max-w-none">
+                      <div className="space-y-4">
+                        {material.type === 'video' && material.url && (
+                          <div className="aspect-video w-full mb-6">
+                            <iframe
+                              src={material.url}
+                              className="w-full h-full rounded-md"
+                              allowFullScreen
+                            />
+                          </div>
+                        )}
+                        <div dangerouslySetInnerHTML={{ __html: material.content }} />
+                      </div>
                     </div>
-                  ),
-                }}
-              >
-                {material.content}
-              </ReactMarkdown>
-            </div>
-          </CardContent>
-          <div className="px-6 pb-6">
-            <div className="flex justify-between">
-              <Button
-                variant="outline"
-                className="text-indigo-300 border-indigo-600 hover:bg-indigo-900"
-                onClick={() => router.push(`/courses/${courseCode}/discussions`)}
-              >
-                <MessageSquare className="mr-2 h-4 w-4" />
-                Discuss This Material
-              </Button>
-              {renderDownloadButton()}
-            </div>
-          </div>
-        </Card>
+                  </ScrollArea>
+                </TabsContent>
+                <TabsContent value="resources">
+                  <div className="bg-gray-900 bg-opacity-50 rounded-md p-6">
+                    {renderDownloadSection()}
+                    <div className="mt-6">
+                      <h3 className="text-lg font-semibold text-indigo-300 mb-3">Related Resources</h3>
+                      <Button
+                        variant="outline"
+                        className="text-indigo-300 border-indigo-600 hover:bg-indigo-900 w-full mb-3"
+                        onClick={() => router.push(`/courses/${courseCode}/discussions`)}
+                      >
+                        <MessageSquare className="mr-2 h-4 w-4" />
+                        Join Discussion
+                      </Button>
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     </div>
   )

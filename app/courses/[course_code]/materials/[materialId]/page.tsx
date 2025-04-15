@@ -10,13 +10,11 @@ export async function generateMetadata({
   try {
     const { course_code, materialId } = await params;
     
-    // Extract material type and resource identifier
     const [materialType, resourceId] = materialId.split('-');
     
     const course = await getCourse(course_code);
     let materialTitle = '';
     
-    // Set title based on material type
     switch (materialType) {
       case 'lecture':
         materialTitle = 'Video Lecture';
@@ -41,7 +39,6 @@ export async function generateMetadata({
       title: `${title} | NPTELPrep`,
       description,
       keywords: [
-        course.title,
         course.course_name,
         materialTitle,
         `${course.title} ${materialTitle.toLowerCase()}`,

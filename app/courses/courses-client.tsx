@@ -60,7 +60,7 @@ export default function CourseListClient({ initialCourses }: CourseListClientPro
 
   useEffect(() => {
     const results = courses.filter(course =>
-      (course.course_name || course.title).toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (course.course_name || course.course_name).toLowerCase().includes(searchTerm.toLowerCase()) ||
       course.course_code.includes(searchTerm)
     )
     setFilteredCourses(results)

@@ -9,19 +9,19 @@ export async function generateMetadata({
 }, parent: ResolvingMetadata): Promise<Metadata> {
   try {
     const { course_code } = await params;
-    
     const course = await getCourse(course_code);
+    const courseName = course.title || course.course_name;
     
-    const title = `Study Materials - ${course.title || course.course_name}`;
-    const description = `Access lecture videos, transcripts, books, and reference materials for ${course.title || course.course_name}.`;
+    const title = `Study Materials - ${courseName}`;
+    const description = `Access lecture videos, transcripts, books, and reference materials for ${courseName}.`;
 
     return {
       title: `${title} | NPTELPrep`,
       description,
       keywords: [
-        course.title,
+        courseName,
         course.course_name,
-        `${course.title} study materials`,
+        `${courseName} study materials`,
         `${course.course_name} lectures`,
         `${course.course_code} resources`,
         "NPTEL course materials",

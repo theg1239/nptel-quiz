@@ -12,7 +12,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'; // Import ScrollArea
 import { QuizType } from '@/types/quiz'
 import { stripOptionLabels, initializeQuestionsWithFixedOrder, Question } from '@/lib/quizUtils'
 
-function cleanQuestionText(question: string): string {
+const cleanQuestionText = (question: string): string => {
   return question.replace(/^\s*\d+[\).:\-]\s*/, '');
 }
 
@@ -131,6 +131,13 @@ const QuizContent = ({
               ))}
             </div>
           )}
+          {quizType === 'practice' && (
+            <div className="flex space-x-2">
+              {[...Array(lives)].map((_, i) => (
+                <Heart key={i} className="h-6 w-6 text-red-500" />
+              ))}
+            </div>
+          )}
         </div>
         <div className="grid grid-cols-1 gap-4 mt-4">
           {displayOptions.map((option, index) => {
@@ -139,8 +146,7 @@ const QuizContent = ({
             const isSelected = selectedOptions.includes(index);
             const currentQuestion = questions[currentQuestionIndex];
             const correctAnswerLabels = currentQuestion.answer.map(ans => ans.toUpperCase());
-            const optionLabel = labelMatch ? labelMatch[1].toUpperCase() : '';
-            const isCorrect = correctAnswerLabels.includes(optionLabel);
+            const isCorrect = correctAnswerLabels.includes(label);
             const showCorrect = feedback && !feedback.correct && isCorrect;
 
             return (
@@ -160,15 +166,17 @@ const QuizContent = ({
                     ? 'ring-2 ring-white'
                     : 'bg-gray-800 text-gray-200 hover:bg-blue-700 hover:text-white'
                 } ${
-                  isAnswerLocked ? 'cursor-not-allowed opacity-50' : ''
+                  isAnswerLocked ? 'cursor-not-allowed' : ''
                 } ${
                   showCorrect ? 'bg-green-600 text-white ring-2 ring-green-400' : ''
+                } ${
+                  feedback && isAnswerLocked && isSelected && !isCorrect ? 'bg-red-600 text-white' : ''
                 }`}
                 disabled={isAnswerLocked}
               >
                 {option}
               </Button>
-            )
+            );
           })}
         </div>
       </CardContent>
