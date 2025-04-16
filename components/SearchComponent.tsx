@@ -1,5 +1,3 @@
-// components/SearchComponent.tsx
-
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
@@ -86,7 +84,6 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ courses }) => {
         <Button
           className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-md transition-colors duration-300"
           onClick={() => {
-            // Optional: Handle search button click
             if (suggestions.length > 0) {
               handleCourseSelection(suggestions[0])
             }

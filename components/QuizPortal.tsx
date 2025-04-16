@@ -112,8 +112,6 @@ export default function Component(
     },
   ]
 
-  // Updated learning features:
-  // For the Discussion Forum, we remove the onClick navigation and update the label to indicate it's under construction.
   const learningFeatures = [
     {
       icon: BookOpen,
@@ -153,7 +151,6 @@ export default function Component(
         </Button>
   
         <div className="text-center flex-1">
-          {/* Display the course name; if course.title is missing, use course.course_name */}
           <h1 className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-violet-400">
             {course.title || course.course_name}
           </h1>

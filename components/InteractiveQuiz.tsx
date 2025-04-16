@@ -196,7 +196,6 @@ const Quiz = ({
   const router = useRouter()
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [score, setScore] = useState(0)
-  // Initialize lives to 0 for practice mode; otherwise 3.
   const [lives, setLives] = useState(quizType === 'practice' ? 0 : 3)
   const [timeLeft, setTimeLeft] = useState(quizType === 'timed' || quizType === 'quick' ? quizTime * 60 : 0)
   const [powerUps, setPowerUps] = useState<PowerUpType[]>([])

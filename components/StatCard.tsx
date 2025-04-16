@@ -1,5 +1,3 @@
-// components/StatCard.tsx
-
 'use client'
 
 import { motion } from 'framer-motion'
