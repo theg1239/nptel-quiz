@@ -77,19 +77,20 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ courses }) => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onFocus={() => setIsSearchFocused(true)}
-            className="w-full p-4 bg-white/5 backdrop-blur-sm border-none text-white placeholder-gray-400 focus:outline-none focus:ring-0 text-lg"
+            className="w-full p-4 bg-white/5 backdrop-blur-sm border-none text-white placeholder-gray-400 focus:outline-none focus:ring-0 text-lg pr-28"
           />
-          <Button
-            className="absolute right-1 h-10 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg transition-all duration-300 flex items-center gap-1"
-            onClick={() => {
-              if (suggestions.length > 0) {
-                handleCourseSelection(suggestions[0])
-              }
-            }}
-          >
-            <Search className="h-5 w-5" />
-            <span className="hidden sm:inline">Search</span>
-          </Button>
+          <div className="absolute right-0 top-0 bottom-0 flex items-center">
+            <div className="h-full bg-gradient-to-r from-indigo-600 to-purple-600 px-5 flex items-center gap-2 group hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 cursor-pointer"
+              onClick={() => {
+                if (suggestions.length > 0) {
+                  handleCourseSelection(suggestions[0])
+                }
+              }}
+            >
+              <Search className="h-5 w-5 text-white" />
+              <span className="hidden sm:inline text-white font-medium">Search</span>
+            </div>
+          </div>
         </div>
         
         <AnimatePresence>

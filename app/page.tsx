@@ -110,14 +110,14 @@ export default async function Page() {
         )}
 
         <div className="mt-16 text-center">
-          <h2 className="text-3xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
+          <h2 className="text-3xl font-bold mb-4 text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
           </h2>
-          <p className="text-xl text-blue-300 mb-8">
+          {/* <p className="text-xl text-blue-300 mb-8">
             Choose a course, take quizzes, and enhance your learning experience
-          </p>
+          </p> */}
           <Link href="/courses">
             <Button
-              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full text-lg font-semibold transition-colors duration-300 shadow-lg hover:shadow-blue-500/50"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full text-sm font-semibold transition-colors duration-300 shadow-lg hover:shadow-blue-500/50"
             >
               Explore Courses
             </Button>
