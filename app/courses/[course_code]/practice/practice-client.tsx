@@ -295,7 +295,7 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
             onClick={() => router.back()}
           >
             <ChevronLeft className="mr-2 h-4 w-4" />
-            Back to Quiz Portal
+            Back to Course
           </Button>
           <Button
             variant="ghost"

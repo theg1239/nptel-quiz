@@ -18,6 +18,8 @@ const scrollbarHideStyles = `
 }
 `
 
+const placeholderThumbnail = "https://sdmntprwestus.oaiusercontent.com/files/00000000-7e38-6230-a298-8c91b4a8a7d4/raw?se=2025-04-16T02%3A34%3A55Z&sp=r&sv=2024-08-04&sr=b&scid=217b454a-87e5-5b0c-a27d-80dca3c00ea5&skoid=51916beb-8d6a-49b8-8b29-ca48ed86557e&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-04-15T08%3A46%3A43Z&ske=2025-04-16T08%3A46%3A43Z&sks=b&skv=2024-08-04&sig=PLI8r1cHOW8hIh%2BfNmbnpxrvfl2IN0U9CgV5nzXMoUA%3D";
+
 export default function VideosClient({ courseCode, courseName }: { courseCode: string; courseName: string }) {
   const [loading, setLoading] = useState(true)
   const [videos, setVideos] = useState<StudyMaterial[]>([])
@@ -31,7 +33,18 @@ export default function VideosClient({ courseCode, courseName }: { courseCode: s
       try {
         setLoading(true)
         const allMaterials = await getCourseMaterials(courseCode)
+        // Filter for video materials
         const videoMaterials = allMaterials.filter(material => material.type === 'video')
+        // Sort videos by week number (if weekNumber is null, place them at the end)
+        videoMaterials.sort((a, b) => {
+          if (a.weekNumber != null && b.weekNumber != null) {
+            return a.weekNumber - b.weekNumber
+          }
+          if (a.weekNumber == null) return 1
+          if (b.weekNumber == null) return -1
+          return 0
+        })
+
         setVideos(videoMaterials)
         if (videoMaterials.length > 0) {
           setSelectedVideo(videoMaterials[0])
@@ -90,7 +103,7 @@ export default function VideosClient({ courseCode, courseName }: { courseCode: s
 
   const getVideoThumbnail = (url: string) => {
     const videoId = getVideoId(url);
-    return videoId ? `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg` : null;
+    return videoId ? `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg` : placeholderThumbnail;
   };
 
   return (
@@ -154,10 +167,6 @@ export default function VideosClient({ courseCode, courseName }: { courseCode: s
                               <span>Week {selectedVideo.weekNumber}</span>
                             </div>
                           )}
-                          {/* <div className="flex items-center">
-                            <Clock className="h-4 w-4 mr-1" />
-                            <span>{`${Math.floor(Math.random() * 30) + 20} mins`}</span>
-                          </div> */}
                         </div>
                         <p className="text-gray-300 text-sm">{selectedVideo.description}</p>
                       </div>
@@ -173,8 +182,8 @@ export default function VideosClient({ courseCode, courseName }: { courseCode: s
                     <div className={`flex-1 overflow-y-auto ${isAnimating ? 'overflow-hidden' : 'scrollbar-hide'}`}>
                       <div className="p-3 space-y-2">
                         {currentVideos.map((video, index) => {
-                          const thumbnail = getVideoThumbnail(video.url || '');
-                          const isSelected = selectedVideo?.id === video.id;
+                          const thumbnail = getVideoThumbnail(video.url || '')
+                          const isSelected = selectedVideo?.id === video.id
                           
                           return (
                             <motion.div
@@ -194,14 +203,12 @@ export default function VideosClient({ courseCode, courseName }: { courseCode: s
                                 >
                                   <div className="flex items-start">
                                     <div className="w-32 h-20 flex-shrink-0 bg-gray-900 rounded overflow-hidden relative group">
-                                      {thumbnail && (
-                                        <img 
-                                          src={thumbnail}
-                                          alt={video.title}
-                                          className="w-full h-full object-cover"
-                                          loading="lazy"
-                                        />
-                                      )}
+                                      <img 
+                                        src={thumbnail}
+                                        alt={video.title}
+                                        className="w-full h-full object-cover"
+                                        loading="lazy"
+                                      />
                                       <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <Play className="h-6 w-6 text-white" />
                                       </div>
@@ -215,10 +222,6 @@ export default function VideosClient({ courseCode, courseName }: { courseCode: s
                                             <span>Week {video.weekNumber}</span>
                                           </div>
                                         )}
-                                        {/* <div className="flex items-center">
-                                          <Clock className="h-3 w-3 mr-1" />
-                                          <span>{`${Math.floor(Math.random() * 30) + 15} mins`}</span>
-                                        </div> */}
                                       </div>
                                     </div>
                                   </div>

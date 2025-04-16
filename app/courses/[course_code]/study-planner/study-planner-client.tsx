@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Calendar, CheckCircle, Clock, AlertCircle, Plus, Trash2, Edit, Save, X } from 'lucide-react'
+import { Calendar, CheckCircle, Clock, AlertCircle, Plus, Trash2, Edit, Save, X, ChevronLeft } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
@@ -163,6 +163,16 @@ export default function StudyPlannerClient({ courseCode, courseName }: { courseC
           transition={{ duration: 0.5 }}
           className="mb-8"
         >
+          <div className="flex items-center mb-4">
+            <Button
+              variant="ghost"
+              onClick={() => window.location.href = `/courses/${courseCode}`}
+              className="text-indigo-300 hover:text-indigo-100 hover:bg-indigo-900 transition-colors flex items-center mr-4"
+            >
+              <ChevronLeft className="h-4 w-4 mr-2" />
+              Back to Course
+            </Button>
+          </div>
           <h1 className="text-4xl font-bold text-white mb-2">{courseName}</h1>
           <p className="text-indigo-200 text-lg">Study Planner</p>
         </motion.div>
