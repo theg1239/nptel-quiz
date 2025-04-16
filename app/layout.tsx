@@ -3,8 +3,6 @@ import localFont from "next/font/local";
 import { Suspense } from "react";
 import SpaceLoader from "@/components/SpaceLoader";
 import "./globals.css";
-import { Analytics } from "@vercel/analytics/react";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -181,7 +179,6 @@ export default function RootLayout({
           }}
         />
 
-        {/* Additional Meta Tags */}
         {additionalMetaTags.map((meta: MetaTag, index: number) => (
           <meta key={index} name={meta.name} content={meta.content} />
         ))}
@@ -198,8 +195,6 @@ export default function RootLayout({
         >
           {children}
         </Suspense>
-        <SpeedInsights />
-        <Analytics />
       </body>
     </html>
   );
