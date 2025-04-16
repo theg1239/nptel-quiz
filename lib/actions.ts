@@ -121,7 +121,7 @@ export interface StudyMaterial {
 export async function getCourse(courseCode: string): Promise<Course> {
   try {
     const res = await fetch(`${API_BASE_URL}/courses/${courseCode}`, { 
-      cache: 'no-store',
+      next: { revalidate: 3600 } // Revalidate every hour
     });
     
     if (!res.ok) {
@@ -140,12 +140,10 @@ export async function getCourse(courseCode: string): Promise<Course> {
     
     const data = await res.json();
     
-    // Transform assignments into weeks format for backward compatibility
     const weeks = data.assignments?.map((assignment: Assignment) => ({
       name: `Week ${assignment.week_number}`,
       questions: assignment.questions.map((q: ApiQuestion) => ({
         question: q.question_text,
-        // Preserve option_number and option_text for each option
         options: q.options.map(opt => ({
           option_number: opt.option_number,
           option_text: opt.option_text
@@ -215,10 +213,11 @@ export async function getStats(): Promise<Stats> {
   }
 }
 
-// Updated getCourseMaterials – simply read the "materials" field from the course endpoint.
 export async function getCourseMaterials(courseCode: string): Promise<StudyMaterial[]> {
   try {
-    const res = await fetch(`${API_BASE_URL}/courses/${courseCode}`, { cache: 'no-store' });
+    const res = await fetch(`${API_BASE_URL}/courses/${courseCode}`, { 
+      next: { revalidate: 3600 }
+    });
     
     if (!res.ok) {
       console.warn(`Failed to fetch course materials for ${courseCode}, using empty array`);

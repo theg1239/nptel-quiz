@@ -9,7 +9,7 @@ export default function robots(): MetadataRoute.Robots {
         disallow: [
           '/api/',
           '/private/',
-          '/*?*', // Disallow duplicate content from query parameters
+          '/*?*',
         ]
       },
       {
