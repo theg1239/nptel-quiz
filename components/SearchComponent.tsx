@@ -77,7 +77,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ courses }) => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onFocus={() => setIsSearchFocused(true)}
-            className="w-full p-4 bg-white/5 backdrop-blur-sm border-none text-white placeholder-gray-400 focus:outline-none focus:ring-0 text-lg pr-28"
+            className="w-full p-4 bg-white/5 backdrop-blur-sm border-none text-white placeholder-gray-400 focus:outline-none focus:ring-0 text-sm pr-28"
           />
           <div className="absolute right-0 top-0 bottom-0 flex items-center">
             <div className="h-full bg-gradient-to-r from-indigo-600 to-purple-600 px-5 flex items-center gap-2 group hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 cursor-pointer"
