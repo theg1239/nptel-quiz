@@ -68,7 +68,12 @@ export default async function QuizPage({
     
     const questions = course.assignments?.reduce<Question[]>((allQuestions, assignment) => {
       if (assignment.questions && Array.isArray(assignment.questions)) {
-        const transformedQuestions = assignment.questions.map(q => ({
+        const validQuestions = assignment.questions.filter(q => 
+          q && q.question_text && q.correct_option && q.options && Array.isArray(q.options) && 
+          q.options.every(opt => opt && opt.option_number && opt.option_text)
+        );
+
+        const transformedQuestions = validQuestions.map(q => ({
           question: q.question_text,
           options: q.options.map(opt => ({
             option_number: opt.option_number,
