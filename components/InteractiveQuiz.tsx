@@ -87,7 +87,7 @@ const QuizContent = ({
   questions,
 }: {
   question: string;
-  options: (string | { option_number: string, option_text: string })[];
+  options: { option_number: string, option_text: string }[];
   onAnswer: (newSelectedOptions: number[]) => void;
   timeLeft: number;
   maxTime: number;
@@ -103,8 +103,6 @@ const QuizContent = ({
   feedback: { correct: boolean; selectedIndexes: number[] } | null;
   questions: Question[];
 }) => {
-  const displayOptions = options;
-
   return (
     <Card className="bg-gray-800 bg-opacity-50 backdrop-blur-sm border-2 border-blue-500 shadow-lg">
       <CardHeader className="flex justify-between items-center">
@@ -131,7 +129,6 @@ const QuizContent = ({
               ))}
             </div>
           )}
-          {/* Only show lives for timed and quick modes */}
           {(quizType === 'timed' || quizType === 'quick') && (
             <div className="flex space-x-2">
               {[...Array(lives)].map((_, i) => (
@@ -140,69 +137,43 @@ const QuizContent = ({
             </div>
           )}
         </div>
-        <div className="grid grid-cols-1 gap-4 mt-4">
-          {displayOptions.map((option, index) => {
-            let label = "";
-            let optionText = "";
-            if (typeof option === 'object' && 'option_number' in option) {
-              label = option.option_number;
-              optionText = option.option_text;
-            } else if (typeof option === 'string') {
-              const labelMatch = option.match(/^([A-Z])[).:-]?\s*/i);
-              label = labelMatch ? labelMatch[1].toUpperCase() : '';
-              optionText = option.replace(/^([A-Z])[).:-]?\s*/i, '').trim();
-            }
-            
+        
+        <div className="space-y-4">
+          {options.map((option, index) => {
             const isSelected = selectedOptions.includes(index);
             const currentQuestion = questions[currentQuestionIndex];
-            const correctAnswers = currentQuestion.answer.map(ans => ans.toUpperCase());
-            const isCorrect = correctAnswers.includes(label.toUpperCase());
-            // Show correct answers in green when feedback exists and it's practice mode
+            const isCorrect = currentQuestion.answer.includes(option.option_number.toUpperCase());
             const showCorrect = (feedback && quizType === 'practice' && isCorrect) || 
                               (feedback && !feedback.correct && isCorrect);
-
+            
             return (
-              <Button
+              <button
                 key={index}
-                onClick={() => {
-                  if (!isAnswerLocked) {
-                    const newSelectedOptions = isSelected
-                      ? selectedOptions.filter((i) => i !== index)
-                      : [...selectedOptions, index];
-                    onAnswer(newSelectedOptions);
-                  }
-                }}
-                variant={isSelected ? "outline" : "default"}
-                className={`relative text-left transition-colors duration-300 p-4 h-auto ${
-                  isSelected
-                    ? 'ring-2 ring-white'
-                    : 'bg-gray-800 text-gray-200 hover:bg-blue-700 hover:text-white'
-                } ${
-                  isAnswerLocked ? 'cursor-not-allowed' : ''
-                } ${
-                  showCorrect ? 'bg-green-600 text-white ring-2 ring-green-400' : ''
-                } ${
-                  feedback && isAnswerLocked && isSelected && !isCorrect ? 'bg-red-600 text-white' : ''
-                }`}
+                onClick={() => !isAnswerLocked && onAnswer([index])}
                 disabled={isAnswerLocked}
+                className={`w-full p-4 rounded-lg text-left transition-all duration-200 ${
+                  isAnswerLocked
+                    ? isSelected
+                      ? isCorrect
+                        ? 'bg-green-600 bg-opacity-20 border-2 border-green-500 text-green-300'
+                        : 'bg-red-600 bg-opacity-20 border-2 border-red-500 text-red-300'
+                      : showCorrect
+                      ? 'bg-green-600 bg-opacity-20 border-2 border-green-500 text-green-300'
+                      : 'bg-gray-700 bg-opacity-50 border-2 border-gray-600 text-gray-400'
+                    : isSelected
+                    ? 'bg-blue-600 bg-opacity-20 border-2 border-blue-500 text-blue-300 hover:bg-blue-600 hover:bg-opacity-30'
+                    : 'bg-gray-700 bg-opacity-50 border-2 border-gray-600 text-gray-300 hover:bg-gray-600 hover:border-gray-500'
+                }`}
               >
-                <span className="inline-block font-bold mr-3 px-2 py-1 rounded bg-gray-700 text-blue-300 align-middle">
-                  {label}
-                </span>
-                <span className="align-middle">{optionText}</span>
-              </Button>
+                <div className="flex items-center">
+                  <span className="text-lg font-semibold mr-2">{option.option_number}.</span>
+                  <span>{option.option_text}</span>
+                </div>
+              </button>
             );
           })}
         </div>
       </CardContent>
-      <CardFooter className="justify-between">
-        <div className="text-sm text-gray-400">
-          Question {currentQuestionIndex + 1} of {totalQuestions}
-        </div>
-        {(quizType === 'timed' || quizType === 'quick') && (
-          <div className="text-sm text-gray-400">Time left: {timeLeft}s</div>
-        )}
-      </CardFooter>
     </Card>
   );
 };
@@ -335,35 +306,17 @@ const Quiz = ({
 
   const saveAnswers = useCallback(() => {
     const currentQuestion = questions[currentQuestionIndex];
-    
     const displayedOptions = currentQuestion.options.filter((_, idx) => availableOptions.includes(idx));
-
+    const selectedLabels = selectedOptions.map(idx => displayedOptions[idx].option_number.toUpperCase());
     const correctLabels = currentQuestion.answer.map(ans => ans.toUpperCase());
-
-    const selectedLabels = selectedOptions.map(idx => {
-      const option = displayedOptions[idx];
-      if (typeof option === 'object' && option.option_number) {
-        return option.option_number.toUpperCase();
-      } else if (typeof option === 'string') {
-        const match = option.match(/^([A-Z])[).:-]/i);
-        return match ? match[1].toUpperCase() : '';
-      }
-      return '';
-    });
-
-    console.log(`Correct Labels: ${correctLabels}`);
-    console.log(`Selected Labels: ${selectedLabels}`);
 
     const isCorrect =
       selectedLabels.length === correctLabels.length &&
       selectedLabels.every(label => correctLabels.includes(label));
 
-    console.log(`Is Correct: ${isCorrect}`);
-
     if (isCorrect) {
       setScore(prev => prev + 1);
     } else {
-      // In non-practice modes, subtract a life if wrong.
       if (quizType !== "practice") {
         setLives(prev => {
           const newLives = prev - 1;
@@ -381,13 +334,11 @@ const Quiz = ({
       return newAnswers;
     });
 
-    // Always provide feedback in practice mode to show the correct answer.
     if (quizType === "practice") {
       setFeedback({ correct: isCorrect, selectedIndexes: selectedOptions });
     }
 
     setTimeout(() => {
-      // Auto-advance if the answer is correct or if not in practice mode.
       if (isCorrect || quizType !== "practice") {
         if (currentQuestionIndex < questions.length - 1) {
           goToNextQuestion();
@@ -417,13 +368,7 @@ const Quiz = ({
       const correctLabels = currentQuestion.answer.map(ans => ans.toUpperCase());
       
       const correctIndexes = currentQuestion.options.map((opt, idx) => {
-        let label = "";
-        if (typeof opt === 'object' && opt.option_number) {
-          label = opt.option_number.toUpperCase();
-        } else if (typeof opt === 'string') {
-          const labelMatch = opt.match(/^([A-Z])[).:-]/i);
-          label = labelMatch ? labelMatch[1].toUpperCase() : '';
-        }
+        const label = opt.option_number.toUpperCase();
         return correctLabels.includes(label) ? idx : -1;
       }).filter(idx => idx !== -1);
       

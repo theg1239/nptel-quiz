@@ -9,28 +9,11 @@ export async function generateMetadata({
 }, parent: ResolvingMetadata): Promise<Metadata> {
   try {
     const { course_code, materialId } = await params;
-    
-    const [materialType, resourceId] = materialId.split('-');
-    
     const course = await getCourse(course_code);
-    let materialTitle = '';
+    const materials = await getCourseMaterials(course_code);
+    const material = materials.find(m => m.id === materialId);
     
-    switch (materialType) {
-      case 'lecture':
-        materialTitle = 'Video Lecture';
-        break;
-      case 'transcript':
-        materialTitle = 'Lecture Transcript';
-        break;
-      case 'book':
-        materialTitle = 'Course Book';
-        break;
-      case 'audio':
-        materialTitle = 'Audio Lecture';
-        break;
-      default:
-        materialTitle = 'Study Material';
-    }
+    let materialTitle = material ? material.type.charAt(0).toUpperCase() + material.type.slice(1) : 'Study Material';
     
     const title = `${materialTitle} - ${course.title || course.course_name}`;
     const description = `Access and study ${materialTitle.toLowerCase()} for ${course.title || course.course_name} course material.`;

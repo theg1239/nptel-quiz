@@ -40,7 +40,6 @@ export default function StudyPlannerClient({ courseCode, courseName }: { courseC
   })
   const [showAddForm, setShowAddForm] = useState(false)
 
-  // Load materials and existing study plan
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -68,7 +67,7 @@ export default function StudyPlannerClient({ courseCode, courseName }: { courseC
 
   const handleAddTask = async () => {
     if (!newTask.materialId || !newTask.title || !newTask.dueDate) {
-      return // Validation
+      return
     }
     
     const task: StudyTask = {
@@ -83,7 +82,6 @@ export default function StudyPlannerClient({ courseCode, courseName }: { courseC
     const updatedTasks = [...tasks, task]
     setTasks(updatedTasks)
     
-    // Reset form
     setNewTask({
       materialId: '',
       title: '',
@@ -92,7 +90,6 @@ export default function StudyPlannerClient({ courseCode, courseName }: { courseC
     })
     setShowAddForm(false)
     
-    // Save to server
     await saveStudyPlan(courseCode, updatedTasks)
   }
 
@@ -131,19 +128,16 @@ export default function StudyPlannerClient({ courseCode, courseName }: { courseC
     await saveStudyPlan(courseCode, updatedTasks)
   }
 
-  // Filter tasks into upcoming and completed
   const upcomingTasks = tasks.filter(task => !task.completed)
     .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
   
   const completedTasks = tasks.filter(task => task.completed)
     .sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime())
 
-  // Calculate progress
   const progressPercentage = tasks.length > 0 
     ? Math.round((completedTasks.length / tasks.length) * 100) 
     : 0
 
-  // Group materials by type for dropdown
   const materialsByType: Record<string, Material[]> = {}
   materials.forEach(material => {
     if (!materialsByType[material.type]) {

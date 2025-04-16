@@ -113,40 +113,42 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
     const fetchCourseData = async () => {
       try {
         setLoading(true)
-        const data = await getCourse(courseCode)
-
-        // Transform assignments into weeks format
-        const weeks = data.assignments?.map(assignment => {
-          const questions = assignment.questions.map(q => ({
-            question: q.question_text,
-            options: q.options.map(opt => opt.option_text),
-            answer: [q.correct_option]
+        const response = await getCourse(courseCode)
+        
+        // Transform the API response to match our Course type
+        const transformedCourse: Course = {
+          course_code: response.course_code,
+          course_name: response.course_name,
+          title: response.course_name,
+          request_count: response.request_count || 0,
+          question_count: response.assignments?.reduce((total, assignment) => total + assignment.questions.length, 0) || 0,
+          weeks: response.weeks.map(week => ({
+            name: week.name,
+            questions: week.questions.map(q => ({
+              question: q.question,
+              options: q.options.map((opt, index) => ({
+                option_number: (index + 1).toString(),
+                option_text: opt
+              })),
+              answer: q.answer
+            }))
           }))
-
-          return {
-            name: `Week ${assignment.week_number}`,
-            questions
-          }
-        }) || []
-
-        const courseData = {
-          ...data,
-          weeks,
-          title: data.course_name,
-          request_count: data.request_count || 0,
-          question_count: data.assignments?.reduce((total, assignment) => total + assignment.questions.length, 0) || 0
         }
-
-        const courseMetadata = {
-          totalWeeks: weeks.length,
-          courseName: data.course_name,
+        
+        const courseMetadata: {
+          totalWeeks: number;
+          courseName: string;
+          lastUpdated: string;
+        } = {
+          totalWeeks: transformedCourse.weeks.length,
+          courseName: transformedCourse.course_name,
           lastUpdated: new Date().toISOString()
         }
         localStorage.setItem(`courseData_${courseCode}`, JSON.stringify(courseMetadata))
 
-        setCourse(courseData)
-        if (weeks.length > 0) {
-          setSelectedWeek(weeks[0].name)
+        setCourse(transformedCourse)
+        if (transformedCourse.weeks.length > 0) {
+          setSelectedWeek(transformedCourse.weeks[0].name)
         }
       } catch (error) {
         console.error('Error fetching course data:', error)

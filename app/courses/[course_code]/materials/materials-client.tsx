@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
-import { Video, FileText, Book, Music, ChevronRight, ChevronLeft, Bookmark, BookmarkCheck, Search } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Video, FileText, Book, Music, ChevronRight, ChevronLeft, Bookmark, BookmarkCheck, Search, X, Download } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import SpaceLoader from '@/components/SpaceLoader'
 import { getCourseMaterials, StudyMaterial } from '@/lib/actions'
 
@@ -18,6 +19,7 @@ export default function MaterialsClient({ courseCode, courseName }: { courseCode
   const [searchTerm, setSearchTerm] = useState('')
   const [bookmarks, setBookmarks] = useState<string[]>([])
   const [filter, setFilter] = useState('all')
+  const [selectedMaterial, setSelectedMaterial] = useState<StudyMaterial | null>(null)
 
   useEffect(() => {
     const fetchMaterials = async () => {
@@ -56,16 +58,61 @@ export default function MaterialsClient({ courseCode, courseName }: { courseCode
     }
   }
 
-  const toggleBookmark = (materialId: string) => {
+  const toggleBookmark = (materialId: number) => {
     setBookmarks(prev => {
-      const newBookmarks = prev.includes(materialId)
-        ? prev.filter(id => id !== materialId)
-        : [...prev, materialId]
+      const newBookmarks = prev.includes(materialId.toString())
+        ? prev.filter(id => id !== materialId.toString())
+        : [...prev, materialId.toString()]
       
       localStorage.setItem(`bookmarks_${courseCode}`, JSON.stringify(newBookmarks))
       return newBookmarks
     })
   }
+
+  const renderDownloadSection = (material: StudyMaterial) => {
+    const downloads = [];
+
+    if (material.url) {
+      downloads.push({
+        type: material.type,
+        url: material.url,
+        label: material.type === 'video' ? 'Download Video' : 'Download Book'
+      });
+    }
+
+    if (material.languages) {
+      material.languages.forEach(lang => {
+        if (lang.url) {
+          downloads.push({
+            type: material.type,
+            url: lang.url,
+            label: `Download ${material.type === 'transcript' ? 'Transcript' : 'Audio'} (${lang.language})`
+          });
+        }
+      });
+    }
+
+    if (downloads.length === 0) return null;
+
+    return (
+      <div className="bg-gray-800 bg-opacity-40 rounded-lg p-4 mt-6">
+        <h3 className="text-lg font-semibold text-indigo-300 mb-3">Downloads</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {downloads.map((download, index) => (
+            <Button
+              key={index}
+              variant="outline"
+              className="text-indigo-300 border-indigo-600 hover:bg-indigo-900 w-full"
+              onClick={() => window.open(download.url, '_blank')}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              {download.label}
+            </Button>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   const filteredMaterials = materials
     .filter(material => {
@@ -73,7 +120,7 @@ export default function MaterialsClient({ courseCode, courseName }: { courseCode
         material.type.toLowerCase().includes(searchTerm.toLowerCase())
       
       if (filter === 'bookmarked') {
-        return matchesSearch && bookmarks.includes(material.id)
+        return matchesSearch && bookmarks.includes(material.id.toString())
       }
       if (filter === 'videos') {
         return matchesSearch && material.type === 'video'
@@ -100,7 +147,7 @@ export default function MaterialsClient({ courseCode, courseName }: { courseCode
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 text-gray-100 p-4">
-      <div className="container mx-auto max-w-5xl">
+      <div className="container mx-auto max-w-7xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -144,66 +191,139 @@ export default function MaterialsClient({ courseCode, courseName }: { courseCode
             </div>
           </div>
 
-          <ScrollArea className="h-[calc(100vh-12rem)]">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {filteredMaterials.map((material) => (
-                <Card
-                  key={material.id}
-                  className="bg-gray-800 bg-opacity-50 backdrop-blur-md border-gray-700 hover:border-indigo-500 transition-colors cursor-pointer group"
-                  onClick={() => router.push(`/courses/${courseCode}/materials/${material.id}`)}
-                >
-                  <div className="p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-3">
-                        <div className="mt-1">
-                          {getMaterialTypeIcon(material.type)}
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-indigo-300 group-hover:text-indigo-200 mb-1">
-                            {material.title}
-                          </h3>
-                          <p className="text-sm text-gray-400">
-                            {material.weekNumber && `Week ${material.weekNumber} • `}
-                            {material.type.charAt(0).toUpperCase() + material.type.slice(1)}
-                          </p>
+          <div className="flex gap-6">
+            <div className={`flex-1 transition-all duration-300 ${selectedMaterial ? 'md:w-1/2' : 'w-full'}`}>
+              <ScrollArea className="h-[calc(100vh-12rem)]">
+                <div className="grid grid-cols-1 gap-4">
+                  {filteredMaterials.map((material) => (
+                    <Card
+                      key={material.id}
+                      className={`bg-gray-800 bg-opacity-50 backdrop-blur-md border-gray-700 hover:border-indigo-500 transition-colors cursor-pointer group ${selectedMaterial?.id === material.id ? 'border-indigo-500' : ''}`}
+                      onClick={() => setSelectedMaterial(material)}
+                    >
+                      <div className="p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-start gap-3">
+                            <div className="mt-1">
+                              {getMaterialTypeIcon(material.type)}
+                            </div>
+                            <div>
+                              <h3 className="font-semibold text-indigo-300 group-hover:text-indigo-200 mb-1">
+                                {material.title}
+                              </h3>
+                              <p className="text-sm text-gray-400">
+                                {material.weekNumber && `Week ${material.weekNumber} • `}
+                                {material.type.charAt(0).toUpperCase() + material.type.slice(1)}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                toggleBookmark(Number(material.id))
+                              }}
+                              className="text-gray-400 hover:text-yellow-400"
+                            >
+                              {bookmarks.includes(material.id.toString()) ? (
+                                <BookmarkCheck className="h-4 w-4 text-yellow-400" />
+                              ) : (
+                                <Bookmark className="h-4 w-4" />
+                              )}
+                            </Button>
+                            <ChevronRight className="h-4 w-4 text-gray-500 group-hover:text-indigo-300 transition-colors" />
+                          </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
+                    </Card>
+                  ))}
+                </div>
+              </ScrollArea>
+
+              {filteredMaterials.length === 0 && (
+                <div className="text-center py-12">
+                  <p className="text-gray-400">
+                    {searchTerm 
+                      ? 'No materials found matching your search.'
+                      : filter === 'bookmarked'
+                        ? 'No bookmarked materials yet.'
+                        : 'No materials available.'}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <AnimatePresence>
+              {selectedMaterial && (
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.3 }}
+                  className="hidden md:block w-1/2 relative"
+                >
+                  <Card className="bg-gray-800 bg-opacity-50 backdrop-blur-md border-gray-700 sticky top-4">
+                    <div className="p-4">
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-full bg-indigo-900 flex items-center justify-center">
+                            {getMaterialTypeIcon(selectedMaterial.type)}
+                          </div>
+                          <div>
+                            <h2 className="text-xl font-semibold text-indigo-300">{selectedMaterial.title}</h2>
+                            <p className="text-sm text-gray-400">
+                              {selectedMaterial.weekNumber && `Week ${selectedMaterial.weekNumber} • `}
+                              {selectedMaterial.type.charAt(0).toUpperCase() + selectedMaterial.type.slice(1)}
+                            </p>
+                          </div>
+                        </div>
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            toggleBookmark(material.id)
-                          }}
-                          className="text-gray-400 hover:text-yellow-400"
+                          onClick={() => setSelectedMaterial(null)}
+                          className="text-gray-400 hover:text-gray-200"
                         >
-                          {bookmarks.includes(material.id) ? (
-                            <BookmarkCheck className="h-4 w-4 text-yellow-400" />
-                          ) : (
-                            <Bookmark className="h-4 w-4" />
-                          )}
+                          <X className="h-5 w-5" />
                         </Button>
-                        <ChevronRight className="h-4 w-4 text-gray-500 group-hover:text-indigo-300 transition-colors" />
                       </div>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </ScrollArea>
 
-          {filteredMaterials.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-gray-400">
-                {searchTerm 
-                  ? 'No materials found matching your search.'
-                  : filter === 'bookmarked'
-                    ? 'No bookmarked materials yet.'
-                    : 'No materials available.'}
-              </p>
-            </div>
-          )}
+                      <Tabs defaultValue="content" className="w-full">
+                        <TabsList className="grid w-full grid-cols-2 bg-gray-900 bg-opacity-50">
+                          <TabsTrigger value="content">Content</TabsTrigger>
+                          <TabsTrigger value="resources">Downloads</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="content">
+                          <ScrollArea className="bg-gray-900 bg-opacity-50 rounded-md p-6 h-[60vh]">
+                            <div className="prose prose-invert max-w-none">
+                              <div className="space-y-4">
+                                {selectedMaterial.type === 'video' && selectedMaterial.url && (
+                                  <div className="aspect-video w-full mb-6">
+                                    <iframe
+                                      src={selectedMaterial.url}
+                                      className="w-full h-full rounded-md"
+                                      allowFullScreen
+                                    />
+                                  </div>
+                                )}
+                                <div dangerouslySetInnerHTML={{ __html: selectedMaterial.content }} />
+                              </div>
+                            </div>
+                          </ScrollArea>
+                        </TabsContent>
+                        <TabsContent value="resources">
+                          <div className="bg-gray-900 bg-opacity-50 rounded-md p-6">
+                            {renderDownloadSection(selectedMaterial)}
+                          </div>
+                        </TabsContent>
+                      </Tabs>
+                    </div>
+                  </Card>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </motion.div>
       </div>
     </div>

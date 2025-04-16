@@ -61,11 +61,11 @@ export default function MaterialViewClient({ courseCode, materialId }: { courseC
       let bookmarks: string[] = savedBookmarks ? JSON.parse(savedBookmarks) : []
       
       if (newState) {
-        if (!bookmarks.includes(material.id)) {
-          bookmarks.push(material.id)
+        if (!bookmarks.includes(material.id.toString())) {
+          bookmarks.push(material.id.toString())
         }
       } else {
-        bookmarks = bookmarks.filter(id => id !== material.id)
+        bookmarks = bookmarks.filter(id => id !== material.id.toString())
       }
       
       localStorage.setItem(`bookmarks_${courseCode}`, JSON.stringify(bookmarks))
@@ -91,16 +91,16 @@ export default function MaterialViewClient({ courseCode, materialId }: { courseC
   }
 
   const renderDownloadSection = () => {
-    if (!material) return null;
+    if (!material) return null
 
-    const downloads = [];
+    const downloads = []
 
     if (material.url) {
       downloads.push({
         type: material.type,
         url: material.url,
         label: material.type === 'video' ? 'Download Video' : 'Download Book'
-      });
+      })
     }
 
     if (material.languages) {
@@ -110,12 +110,12 @@ export default function MaterialViewClient({ courseCode, materialId }: { courseC
             type: material.type,
             url: lang.url,
             label: `Download ${material.type === 'transcript' ? 'Transcript' : 'Audio'} (${lang.language})`
-          });
+          })
         }
-      });
+      })
     }
 
-    if (downloads.length === 0) return null;
+    if (downloads.length === 0) return null
 
     return (
       <div className="bg-gray-800 bg-opacity-40 rounded-lg p-4 mt-6">
@@ -134,8 +134,8 @@ export default function MaterialViewClient({ courseCode, materialId }: { courseC
           ))}
         </div>
       </div>
-    );
-  };
+    )
+  }
 
   if (loading) {
     return (
