@@ -49,7 +49,7 @@ export async function generateMetadata(
         type: 'article',
         url: `https://nptelprep.in/courses/${course_code}/materials/${materialId}`,
         images: [{
-          url: '/og-image.jpg',
+          url: '/og-image.png',
           width: 1200,
           height: 630,
           alt: `${courseName} NPTEL ${materialTypeName}`
