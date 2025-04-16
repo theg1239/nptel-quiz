@@ -17,7 +17,7 @@ interface SearchCourse {
 }
 
 export const metadata: Metadata = {
-  title: 'NPTEL Prep',
+  title: 'NPTELPrep',
   description: 'A comprehensive learning platform for NPTEL courses with quizzes, study materials, discussion forums, and more.',
 }
 
@@ -37,6 +37,7 @@ export default async function Page() {
     total_courses_from_json: 2987,
     total_assignments: 11212,
     total_questions: 114546,
+    total_study_materials: 150750,
   }
 
   let courses: SearchCourse[] = []
@@ -63,7 +64,8 @@ export default async function Page() {
     if (
       typeof fetchedStatsData.total_courses_from_json === 'number' &&
       typeof fetchedStatsData.total_assignments === 'number' &&
-      typeof fetchedStatsData.total_questions === 'number'
+      typeof fetchedStatsData.total_questions === 'number' &&
+      typeof fetchedStatsData.total_study_materials === 'number'
     ) {
       statsData = fetchedStatsData
     } else {

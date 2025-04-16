@@ -62,7 +62,8 @@ const FALLBACK_COURSES = [
 const FALLBACK_STATS = {
   total_courses_from_json: 987,
   total_assignments: 4500,
-  total_questions: 35000
+  total_questions: 35000,
+  total_study_materials: 12000,
 };
 
 export interface ApiQuestion {
@@ -102,6 +103,7 @@ export interface Stats {
   total_courses_from_json: number;
   total_assignments: number;
   total_questions: number;
+  total_study_materials: number;
 }
 
 export interface StudyMaterial {
