@@ -10,7 +10,20 @@ import { Input } from '@/components/ui/Input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import SpaceLoader from '@/components/SpaceLoader'
+import ReactMarkdown, { Components } from 'react-markdown'
 import { getCourseMaterials, StudyMaterial } from '@/lib/actions'
+
+const MarkdownLink = ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => {
+  return (
+    <a href={href} {...props} className="text-blue-500 hover:underline">
+      {children}
+    </a>
+  )
+}
+
+const markdownComponents: Components = {
+  a: MarkdownLink
+}
 
 export default function MaterialsClient({ courseCode, courseName }: { courseCode: string; courseName: string }) {
   const router = useRouter()
@@ -20,6 +33,16 @@ export default function MaterialsClient({ courseCode, courseName }: { courseCode
   const [bookmarks, setBookmarks] = useState<string[]>([])
   const [filter, setFilter] = useState('all')
   const [selectedMaterial, setSelectedMaterial] = useState<StudyMaterial | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const updateMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    updateMobile()
+    window.addEventListener('resize', updateMobile)
+    return () => window.removeEventListener('resize', updateMobile)
+  }, [])
 
   useEffect(() => {
     const fetchMaterials = async () => {
@@ -69,15 +92,16 @@ export default function MaterialsClient({ courseCode, courseName }: { courseCode
     })
   }
 
+  // Updated download section; button rendered in blue.
   const renderDownloadSection = (material: StudyMaterial) => {
-    const downloads = [];
+    const downloads = []
 
     if (material.url) {
       downloads.push({
         type: material.type,
         url: material.url,
         label: material.type === 'video' ? 'Download Video' : 'Download Book'
-      });
+      })
     }
 
     if (material.languages) {
@@ -87,12 +111,12 @@ export default function MaterialsClient({ courseCode, courseName }: { courseCode
             type: material.type,
             url: lang.url,
             label: `Download ${material.type === 'transcript' ? 'Transcript' : 'Audio'} (${lang.language})`
-          });
+          })
         }
-      });
+      })
     }
 
-    if (downloads.length === 0) return null;
+    if (downloads.length === 0) return null
 
     return (
       <div className="bg-gray-800 bg-opacity-40 rounded-lg p-4 mt-6">
@@ -101,8 +125,8 @@ export default function MaterialsClient({ courseCode, courseName }: { courseCode
           {downloads.map((download, index) => (
             <Button
               key={index}
-              variant="outline"
-              className="text-indigo-300 border-indigo-600 hover:bg-indigo-900 w-full"
+              variant="default"
+              className="bg-blue-600 text-white hover:bg-blue-700 w-full"
               onClick={() => window.open(download.url, '_blank')}
             >
               <Download className="mr-2 h-4 w-4" />
@@ -111,14 +135,15 @@ export default function MaterialsClient({ courseCode, courseName }: { courseCode
           ))}
         </div>
       </div>
-    );
-  };
+    )
+  }
 
   const filteredMaterials = materials
     .filter(material => {
-      const matchesSearch = material.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      const matchesSearch =
+        material.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         material.type.toLowerCase().includes(searchTerm.toLowerCase())
-      
+
       if (filter === 'bookmarked') {
         return matchesSearch && bookmarks.includes(material.id.toString())
       }
@@ -181,8 +206,8 @@ export default function MaterialsClient({ courseCode, courseName }: { courseCode
                   key={filterType}
                   variant={filter === filterType ? 'default' : 'outline'}
                   onClick={() => setFilter(filterType)}
-                  className={filter === filterType 
-                    ? 'bg-indigo-600 hover:bg-indigo-700' 
+                  className={filter === filterType
+                    ? 'bg-indigo-600 hover:bg-indigo-700'
                     : 'text-indigo-300 border-indigo-600 hover:bg-indigo-900'}
                 >
                   {filterType.charAt(0).toUpperCase() + filterType.slice(1)}
@@ -245,7 +270,7 @@ export default function MaterialsClient({ courseCode, courseName }: { courseCode
               {filteredMaterials.length === 0 && (
                 <div className="text-center py-12">
                   <p className="text-gray-400">
-                    {searchTerm 
+                    {searchTerm
                       ? 'No materials found matching your search.'
                       : filter === 'bookmarked'
                         ? 'No bookmarked materials yet.'
@@ -255,14 +280,16 @@ export default function MaterialsClient({ courseCode, courseName }: { courseCode
               )}
             </div>
 
-            <AnimatePresence>
-              {selectedMaterial && (
+            {/* Desktop inline details panel */}
+            {!isMobile && selectedMaterial && (
+              <AnimatePresence>
                 <motion.div
+                  key="desktop-detail"
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
                   transition={{ duration: 0.3 }}
-                  className="hidden md:block w-1/2 relative"
+                  className="md:block w-1/2 relative"
                 >
                   <Card className="bg-gray-800 bg-opacity-50 backdrop-blur-md border-gray-700 sticky top-4">
                     <div className="p-4">
@@ -307,7 +334,9 @@ export default function MaterialsClient({ courseCode, courseName }: { courseCode
                                     />
                                   </div>
                                 )}
-                                <div dangerouslySetInnerHTML={{ __html: selectedMaterial.content }} />
+                                <ReactMarkdown components={markdownComponents}>
+                                  {selectedMaterial.content}
+                                </ReactMarkdown>
                               </div>
                             </div>
                           </ScrollArea>
@@ -321,11 +350,83 @@ export default function MaterialsClient({ courseCode, courseName }: { courseCode
                     </div>
                   </Card>
                 </motion.div>
-              )}
-            </AnimatePresence>
+              </AnimatePresence>
+            )}
           </div>
         </motion.div>
       </div>
+
+      <AnimatePresence>
+        {isMobile && selectedMaterial && (
+          <motion.div
+            key="mobile-detail"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 bg-opacity-90 overflow-y-auto"
+          >
+            <Card className="bg-gray-800 bg-opacity-50 backdrop-blur-md border-gray-700 mx-auto max-w-2xl w-full">
+              <div className="p-4">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-indigo-900 flex items-center justify-center">
+                      {getMaterialTypeIcon(selectedMaterial.type)}
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-semibold text-indigo-300">{selectedMaterial.title}</h2>
+                      <p className="text-sm text-gray-400">
+                        {selectedMaterial.weekNumber && `Week ${selectedMaterial.weekNumber} • `}
+                        {selectedMaterial.type.charAt(0).toUpperCase() + selectedMaterial.type.slice(1)}
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedMaterial(null)}
+                    className="text-gray-400 hover:text-gray-200"
+                  >
+                    <X className="h-5 w-5" />
+                  </Button>
+                </div>
+
+                <Tabs defaultValue="content" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2 bg-gray-900 bg-opacity-50">
+                    <TabsTrigger value="content">Content</TabsTrigger>
+                    <TabsTrigger value="resources">Downloads</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="content">
+                    <ScrollArea className="bg-gray-900 bg-opacity-50 rounded-md p-6 h-[60vh]">
+                      <div className="prose prose-invert max-w-none">
+                        <div className="space-y-4">
+                          {selectedMaterial.type === 'video' && selectedMaterial.url && (
+                            <div className="aspect-video w-full mb-6">
+                              <iframe
+                                src={selectedMaterial.url}
+                                className="w-full h-full rounded-md"
+                                allowFullScreen
+                              />
+                            </div>
+                          )}
+                          <ReactMarkdown components={markdownComponents}>
+                            {selectedMaterial.content}
+                          </ReactMarkdown>
+                        </div>
+                      </div>
+                    </ScrollArea>
+                  </TabsContent>
+                  <TabsContent value="resources">
+                    <div className="bg-gray-900 bg-opacity-50 rounded-md p-6">
+                      {renderDownloadSection(selectedMaterial)}
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              </div>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
