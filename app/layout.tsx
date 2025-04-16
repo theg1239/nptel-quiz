@@ -21,75 +21,56 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "NPTELPrep - Free Practice for NPTEL Exams | Interactive Quizzes",
-  description:
-    "Ace your NPTEL exams with interactive quizzes, mock exams, and study resources tailored for NPTEL and Swayam courses. Practice and succeed with NPTELPrep's comprehensive materials, including courses like Wild Life Ecology, Data Structures, Machine Learning, and more.",
   metadataBase: new URL(process.env.SITE_URL || 'https://nptelprep.in'),
+  title: {
+    default: "NPTELPrep - Free NPTEL & Swayam Course Practice | Interactive Learning Platform",
+    template: "%s | NPTELPrep"
+  },
+  description: "Master NPTEL & Swayam courses with NPTELPrep's comprehensive learning platform. Access free practice questions, interactive quizzes, video lectures, study materials, and discussion forums. Join thousands of students preparing for NPTEL certification exams.",
   keywords: [
     "NPTEL",
     "Swayam NPTEL",
     "NPTEL courses",
-    "Swayam courses",
-    "NPTEL preparation",
-    "NPTEL practice",
-    "Swayam course practice",
-    "NPTEL mock exams",
-    "NPTEL quizzes",
-    "Free NPTEL courses",
-    "NPTEL online learning",
-    "NPTEL study resources",
-    "Swayam study materials",
+    "NPTEL practice questions",
+    "NPTEL exam preparation",
+    "NPTEL mock tests",
+    "NPTEL quiz portal",
     "NPTEL video lectures",
-    "Swayam video lectures",
-    "NPTEL assignments",
-    "Swayam assignments",
-    "NPTEL test series",
-    "Swayam test series",
-    "NPTEL certification",
-    "Swayam certification",
-    "NPTEL exam success",
-    "Swayam exam success",
-    "Best NPTEL courses",
-    "Top Swayam courses",
-    "NPTEL course list",
-    "Swayam course list",
-    "Wild Life Ecology NPTEL course",
-    "Data Structures NPTEL practice",
-    "Machine Learning NPTEL quizzes",
-    "Free Wild Life Ecology Swayam course",
-    "NPTEL Machine Learning mock exams",
-    "Swayam Data Structures study materials",
-    "NPTEL Artificial Intelligence practice",
-    "Swayam Computer Networks quizzes",
-    "Free NPTEL Economics courses",
-    "Swayam Mechanical Engineering assignments",
-    "NPTEL Digital Signal Processing test series",
-    "Swayam Thermodynamics video lectures",
-    "NPTEL Environmental Science certification",
-    "Swayam Robotics course list",
-    "NPTEL Python Programming resources",
-    "Swayam Electrical Engineering online learning",
-    "Online education platforms India",
-    "Free online courses engineering",
-    "Best online courses for NPTEL",
-    "Swayam free certification",
-    "NPTEL course transcripts",
-    "Swayam course enrollment",
-    "NPTEL course updates",
-    "Swayam course deadlines",
-    "NPTEL course reviews",
-    "Swayam course ratings",
+    "NPTEL study materials",
+    "NPTEL course materials",
+    "NPTEL discussion forum",
+    "free NPTEL resources",
+    "NPTEL certification preparation",
+    "NPTEL exam tips",
+    "NPTEL course catalog",
+    "NPTEL learning platform",
+    "best NPTEL practice",
+    "NPTEL assignment help",
+    "NPTEL weekly quiz practice",
+    "NPTEL course discussions"
   ],
   authors: [{ name: "Ishaan S", url: "https://nptelprep.in" }],
   creator: "Ishaan S",
   publisher: "NPTELPrep",
-  applicationName: "NPTELPrep",
-  referrer: "origin-when-cross-origin",
-  robots: "index, follow",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   openGraph: {
-    title: "NPTELPrep - Your Free NPTEL Practice Hub",
-    description:
-      "Get free interactive questions, quizzes, and resources for NPTEL and Swayam course success. Join NPTELPrep for engaging and effective learning in courses like Wild Life Ecology, Data Structures, Machine Learning, and more.",
+    title: "NPTELPrep - Your Free NPTEL & Swayam Practice Hub",
+    description: "Transform your NPTEL learning experience with our comprehensive practice platform. Access free interactive questions, video lectures, study materials, and discussion forums for all NPTEL courses.",
     url: "https://nptelprep.in",
     siteName: "NPTELPrep",
     images: [
@@ -97,7 +78,7 @@ export const metadata: Metadata = {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "NPTELPrep - Practice Made Easy",
+        alt: "NPTELPrep - Your Ultimate NPTEL Learning Companion",
       },
     ],
     locale: "en_US",
@@ -105,16 +86,14 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "NPTELPrep - Free NPTEL Practice and Quizzes",
-    description:
-      "Interactive NPTEL and Swayam quizzes and resources for exam success. Join NPTELPrep today for courses like Wild Life Ecology, Data Structures, Machine Learning, and more!",
+    title: "NPTELPrep - Free NPTEL Practice & Study Materials",
+    description: "Access free interactive quizzes, video lectures, and study materials for all NPTEL courses. Join the largest NPTEL learning community today!",
     images: ["/twitter-image.jpg"],
     creator: "@img2pdf",
   },
-  icons: {
-    icon: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
-  },
+  other: {
+    "google-site-verification": process.env.GOOGLE_SITE_VERIFICATION || ''
+  }
 };
 
 export const generateViewport = () => ({
@@ -147,15 +126,45 @@ export default function RootLayout({
     },
   ];
 
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@type": "EducationalOrganization",
-    name: "NPTELPrep",
-    url: "https://nptelprep.in",
-    logo: "https://nptelprep.in/logo.png",
-    description:
-      "NPTELPrep provides free interactive quizzes, mock exams, and study resources for NPTEL and Swayam courses to help students excel in their exams.",
-  };
+  const structuredData = [
+    {
+      "@context": "https://schema.org",
+      "@type": "EducationalOrganization",
+      name: "NPTELPrep",
+      url: "https://nptelprep.in",
+      logo: "https://nptelprep.in/logo.png",
+      description:
+        "NPTELPrep provides free interactive quizzes, mock exams, and study resources for NPTEL and Swayam courses to help students excel in their exams.",
+      sameAs: [
+        "https://twitter.com/img2pdf"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: "NPTELPrep",
+      url: "https://nptelprep.in",
+      potentialAction: {
+        "@type": "SearchAction",
+        target: {
+          "@type": "EntryPoint",
+          urlTemplate: "https://nptelprep.in/courses?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      name: "NPTELPrep",
+      url: "https://nptelprep.in",
+      logo: "https://nptelprep.in/logo.png",
+      contactPoint: {
+        "@type": "ContactPoint",
+        contactType: "customer support"
+      }
+    }
+  ];
 
   return (
     <html lang="en">

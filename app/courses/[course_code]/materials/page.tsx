@@ -12,34 +12,63 @@ export async function generateMetadata({
     const course = await getCourse(course_code);
     const courseName = course.title || course.course_name;
     
-    const title = `Study Materials - ${courseName}`;
-    const description = `Access lecture videos, transcripts, books, and reference materials for ${courseName}.`;
+    const title = `${courseName} NPTEL Study Materials - Video Lectures & Resources`;
+    const description = `Access comprehensive study materials for ${courseName}. Watch video lectures, download transcripts, lecture notes, and reference materials. Enhance your NPTEL course learning experience.`;
+
+    const materialKeywords = [
+      courseName,
+      course.course_name,
+      `${courseName} study materials`,
+      `${courseName} video lectures`,
+      `${courseName} lecture notes`,
+      `${courseName} transcripts`,
+      `${course.course_code} resources`,
+      `${courseName} reference materials`,
+      `${courseName} course materials`,
+      `NPTEL ${courseName} lectures`,
+      'NPTEL course materials',
+      'NPTEL video lectures',
+      'NPTEL lecture notes',
+      'NPTEL study resources',
+      'free NPTEL materials'
+    ];
 
     return {
-      title: `${title} | NPTELPrep`,
+      title,
       description,
-      keywords: [
-        courseName,
-        course.course_name,
-        `${courseName} study materials`,
-        `${course.course_name} lectures`,
-        `${course.course_code} resources`,
-        "NPTEL course materials",
-        "lecture videos",
-        "course transcripts",
-        "educational resources"
-      ],
-      openGraph: {
-        title,
-        description,
-        type: 'website',
-        url: `https://nptelprep.in/courses/${course_code}/materials`,
+      keywords: materialKeywords,
+      alternates: {
+        canonical: `https://nptelprep.in/courses/${course_code}/materials`
       },
+      openGraph: {
+        title: `${courseName} - NPTEL Study Materials & Lectures`,
+        description: `Access free video lectures, transcripts, and study materials for ${courseName}. Comprehensive NPTEL course resources to enhance your learning.`,
+        type: 'article',
+        url: `https://nptelprep.in/courses/${course_code}/materials`,
+        images: [{
+          url: '/og-image.jpg',
+          width: 1200,
+          height: 630,
+          alt: `${courseName} NPTEL Study Materials`
+        }]
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: `${courseName} NPTEL Study Materials`,
+        description: `Access video lectures and study materials for ${courseName}. Get comprehensive NPTEL course resources.`
+      }
     };
   } catch (error) {
     return {
-      title: "Study Materials | NPTELPrep",
-      description: "Access lecture videos, transcripts, books, and other course materials to enhance your learning experience.",
+      title: "NPTEL Study Materials | NPTELPrep",
+      description: "Access comprehensive NPTEL course materials including video lectures, transcripts, and reference materials.",
+      keywords: [
+        'NPTEL study materials',
+        'NPTEL video lectures',
+        'NPTEL course resources',
+        'NPTEL lecture notes',
+        'free NPTEL materials'
+      ]
     };
   }
 }

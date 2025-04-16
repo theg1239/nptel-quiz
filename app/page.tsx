@@ -17,8 +17,23 @@ interface SearchCourse {
 }
 
 export const metadata: Metadata = {
-  title: 'NPTELPrep',
-  description: 'A comprehensive learning platform for NPTEL courses with quizzes, study materials, discussion forums, and more.',
+  title: 'NPTELPrep - Free NPTEL Practice Questions & Study Materials',
+  description: 'Master NPTEL courses with our comprehensive learning platform. Access free practice quizzes, study materials, video lectures, discussion forums, and mock tests for all NPTEL courses.',
+  keywords: [
+    'NPTEL practice',
+    'NPTEL quiz',
+    'NPTEL study materials',
+    'NPTEL mock test',
+    'NPTEL course preparation',
+    'NPTEL exam practice',
+    'free NPTEL resources',
+    'NPTEL video lectures',
+    'NPTEL discussion forum',
+    'NPTEL course materials'
+  ],
+  alternates: {
+    canonical: 'https://nptelprep.in'
+  }
 }
 
 const Logo = () => (

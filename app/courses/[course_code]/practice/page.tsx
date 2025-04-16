@@ -9,7 +9,6 @@ export async function generateMetadata({
 }, parent: ResolvingMetadata): Promise<Metadata> {
   try {
     const { course_code } = await params;
-    
     const course = await getCourse(course_code);
     
     const totalQuestions = course.weeks.reduce(
@@ -17,33 +16,50 @@ export async function generateMetadata({
       0
     );
 
-    const title = `Practice ${course.title || course.course_name} Questions`;
-    const description = `Practice ${totalQuestions}+ questions for ${course.title || course.course_name}. Interactive practice mode with week-by-week progression and read-aloud feature.`;
+    const title = `Practice ${course.title || course.course_name} NPTEL Questions & Quiz`;
+    const description = `💡 Access ${totalQuestions}+ practice questions for ${course.title || course.course_name}. Interactive weekly quizzes, instant feedback, and personalized progress tracking. Master your NPTEL course with our comprehensive practice platform.`;
 
     return {
-      title: `${title} | NPTELPrep`,
+      title,
       description,
       keywords: [
         course.course_name,
         `${course.title} practice`,
-        `${course.course_name} questions`,
-        `${course.course_code} practice mode`,
-        `NPTEL ${course.course_name} practice`,
-        "NPTEL practice questions",
-        "NPTEL exam preparation",
-        "interactive practice mode"
+        `${course.course_name} quiz`,
+        `${course.course_code} practice questions`,
+        `NPTEL ${course.course_name} quiz`,
+        'NPTEL practice questions',
+        'NPTEL exam preparation',
+        'NPTEL mock test',
+        'NPTEL weekly quiz',
+        'NPTEL interactive practice',
+        'free NPTEL quiz'
       ],
+      alternates: {
+        canonical: `https://nptelprep.in/courses/${course_code}/practice`
+      },
       openGraph: {
-        title,
-        description,
+        title: `Practice ${course.title || course.course_name} - Interactive NPTEL Quiz Portal`,
+        description: `📚 Master ${course.title || course.course_name} with ${totalQuestions}+ practice questions. Personalized feedback, progress tracking, and comprehensive explanations. Start practicing now!`,
         type: 'article',
         url: `https://nptelprep.in/courses/${course_code}/practice`,
+        images: [{
+          url: '/og-image.jpg',
+          width: 1200,
+          height: 630,
+          alt: `Practice ${course.title || course.course_name} NPTEL Quiz`
+        }]
       },
+      twitter: {
+        card: 'summary_large_image',
+        title: `Practice ${course.title || course.course_name} NPTEL Quiz`,
+        description: `✨ Interactive practice mode with ${totalQuestions}+ questions. Master your NPTEL course with our comprehensive quiz platform.`
+      }
     };
   } catch (error) {
     return {
       title: "NPTEL Practice Questions | NPTELPrep",
-      description: "Practice NPTEL course questions in an interactive, week-by-week format. Prepare for your exams effectively.",
+      description: "Practice NPTEL course questions in an interactive, week-by-week format. Get instant feedback and track your progress. Prepare effectively for your NPTEL exams.",
     };
   }
 }
