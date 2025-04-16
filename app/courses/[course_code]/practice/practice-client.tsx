@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, useRef, use } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight, Menu, CheckCircle2, Volume2 } from 'lucide-react'
@@ -78,6 +78,8 @@ const StatCard: React.FC<StatCardProps> = ({ icon, title, value }) => (
   </motion.div>
 )
 
+// Function to extract label and text from an option.
+// If the option is an object, we use its keys; otherwise we use RegEx to get the letter and text.
 const getLabelAndText = (option: string | { option_number: string; option_text: string }) => {
   if (typeof option === 'object' && option !== null) {
     return {
@@ -126,10 +128,17 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
             name: week.name,
             questions: week.questions.map(q => ({
               question: q.question,
-              options: q.options.map((opt, index) => ({
-                option_number: (index + 1).toString(),
-                option_text: opt
-              })),
+              options: q.options.map((opt, index) => {
+                // If the option is already an object, return it untouched.
+                if (typeof opt === 'object' && opt !== null) {
+                  return opt;
+                } else {
+                  return {
+                    option_number: (index + 1).toString(),
+                    option_text: opt
+                  };
+                }
+              }),
               answer: q.answer
             }))
           }))
