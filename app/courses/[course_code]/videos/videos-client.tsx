@@ -116,7 +116,8 @@ export default function VideosClient({ courseCode, courseName }: { courseCode: s
               <Link href={`/courses/${courseCode}`}>
                 <Button variant="ghost" className="text-gray-300 hover:bg-gray-800">
                   <ChevronLeft className="mr-2 h-4 w-4" />
-                  Back to Course
+                  {/* On mobile, hide the text and only show the icon */}
+                  <span className="hidden md:inline">Back to Course</span>
                 </Button>
               </Link>
               <h1 className="text-xl md:text-2xl font-bold truncate">{courseName}</h1>
@@ -125,7 +126,8 @@ export default function VideosClient({ courseCode, courseName }: { courseCode: s
           </div>
         </div>
 
-        <div className="flex-1 overflow-hidden">
+        {/* Changed overflow-hidden to overflow-y-auto to enable scrolling */}
+        <div className="flex-1 overflow-y-auto">
           <div className="h-full max-w-[1400px] mx-auto">
             {videos.length === 0 ? (
               <div className="h-full flex items-center justify-center p-4">
