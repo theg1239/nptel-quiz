@@ -22,6 +22,9 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/api/']
       }
     ],
-    sitemap: 'https://nptelprep.in/sitemap.xml',
+    sitemap: [
+      'https://nptelprep.in/sitemap.xml',
+      'https://nptelprep.in/server-sitemap.xml'
+    ],
   }
 }
