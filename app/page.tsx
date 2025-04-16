@@ -98,8 +98,8 @@ export default async function Page() {
             />
             <StatCard
               icon={<FileText className="h-10 w-10 text-green-400" />}
-              title="Total Assignments"
-              value={statsData.total_assignments}
+              title="Total Study Materials"
+              value={statsData.total_study_materials}
             />
             <StatCard
               icon={<HelpCircle className="h-10 w-10 text-yellow-400" />}
