@@ -88,9 +88,6 @@ export const metadata: Metadata = {
     description: "Access free interactive quizzes, video lectures, and study materials for all NPTEL courses. Join the largest NPTEL learning community today!",
     images: ["/twitter-image.jpg"],
     creator: "@img2pdf",
-  },
-  other: {
-    "google-site-verification": process.env.GOOGLE_SITE_VERIFICATION || ''
   }
 };
 
