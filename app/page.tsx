@@ -94,7 +94,7 @@ export default async function Page() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-gray-100 flex flex-col items-center justify-center p-4 relative overflow-hidden">
-      <ParticleBackground />
+      {/* <ParticleBackground /> */}
       <div className="w-full max-w-6xl z-10">
         <div className="text-center mb-12">
           <Logo />
