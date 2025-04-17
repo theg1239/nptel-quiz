@@ -52,6 +52,10 @@ export default function Component(
   }, [course_code, totalQuestions])
 
   const handleStartQuiz = () => {
+    if (totalQuestions === 0) {
+      alert('No questions available for this course.')
+      return
+    }
     if (!VALID_QUIZ_TYPES.includes(selectedQuiz || "")) {
       console.error("Invalid quiz type selected.")
       return
@@ -191,6 +195,7 @@ export default function Component(
             <Button
               className="w-full bg-emerald-600 hover:bg-emerald-700 flex items-center justify-center text-sm"
               onClick={handleStartPracticeMode}
+              disabled={totalQuestions === 0}
             >
               Start Practice <ArrowRight className="ml-2 h-4 w-4" />
             </Button>

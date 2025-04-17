@@ -82,7 +82,8 @@ export default function CourseListClient({ initialCourses }: CourseListClientPro
   }
 
   const handleCourseSelection = (course: Course) => {
-    if (course.question_count === 0) {
+    const totalAssets = Number(course.question_count) + Number(course.video_count) + Number(course.transcript_count)
+    if (totalAssets === 0) {
       setShowModal(true) 
     } else {
       router.push(`/courses/${course.course_code}`)

@@ -66,5 +66,23 @@ export async function generateMetadata({
 
 export default async function PracticePage({ params }: { params: Promise<{ course_code: string }> }) {
   const { course_code } = await params;
+  const course = await getCourse(course_code);
+  const totalQuestions = course.weeks.reduce((sum, week) => sum + (week.questions?.length || 0), 0);
+  if (totalQuestions === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 flex items-center justify-center">
+        <div className="bg-gray-800 bg-opacity-50 backdrop-blur-md p-8 rounded-lg text-center">
+          <h1 className="text-2xl font-bold text-indigo-300 mb-4">No Questions Available</h1>
+          <p className="text-gray-300 mb-6">This course does not have any practice questions yet.</p>
+          <a
+            href={`/courses/${course_code}`}
+            className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg transition-colors"
+          >
+            Return to Course
+          </a>
+        </div>
+      </div>
+    );
+  }
   return <PracticeClient courseCode={course_code} />;
 }
