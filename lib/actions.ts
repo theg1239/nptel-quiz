@@ -9,6 +9,8 @@ const FALLBACK_COURSES = [
     course_code: "DSA101",
     request_count: 150,
     question_count: 240,
+    video_count: 0,
+    transcript_count: 0,
     assignments: [],
     weeks: [
       {
@@ -27,6 +29,8 @@ const FALLBACK_COURSES = [
     course_code: "ML202",
     request_count: 200,
     question_count: 180,
+    video_count: 0,
+    transcript_count: 0,
     assignments: [],
     weeks: [
       {
@@ -45,6 +49,8 @@ const FALLBACK_COURSES = [
     course_code: "WEB303",
     request_count: 175,
     question_count: 160,
+    video_count: 0,
+    transcript_count: 0,
     assignments: [],
     weeks: [
       {
@@ -85,10 +91,12 @@ export interface Assignment {
 export interface Course {
   course_code: string;
   course_name: string;
+  question_count: number;
+  request_count: number;
+  video_count: number;
+  transcript_count: number;
   assignments: Assignment[];
   title?: string;
-  request_count: string | number;
-  question_count?: number;
   weeks: {
     name: string;
     questions: {
@@ -132,6 +140,8 @@ export async function getCourse(courseCode: string): Promise<Course> {
         course_code: courseCode,
         request_count: 0,
         question_count: 0,
+        video_count: 0,
+        transcript_count: 0,
         assignments: [],
         weeks: []
       };
@@ -184,6 +194,8 @@ export async function getCourse(courseCode: string): Promise<Course> {
       course_code: courseCode,
       request_count: 0,
       question_count: 0,
+      video_count: 0,
+      transcript_count: 0,
       assignments: [],
       weeks: []
     };

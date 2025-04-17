@@ -60,7 +60,7 @@ export default function CourseListClient({ initialCourses }: CourseListClientPro
 
   useEffect(() => {
     const results = courses.filter(course =>
-      (course.course_name || course.course_name).toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (course.course_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       course.course_code.includes(searchTerm)
     )
     setFilteredCourses(results)
@@ -154,7 +154,8 @@ export default function CourseListClient({ initialCourses }: CourseListClientPro
                   </CardHeader>
                   <CardContent>
                     <p className="text-gray-300">Questions: {course.question_count}</p>
-                    <p className="text-gray-300">Weeks: {course.weeks?.length || 0}</p>
+                    <p className="text-gray-300">Videos: {course.video_count}</p>
+                    <p className="text-gray-300">Transcripts: {course.transcript_count}</p>
                   </CardContent>
                   <CardFooter className="mt-auto">
                     <Button 
@@ -202,4 +203,4 @@ export default function CourseListClient({ initialCourses }: CourseListClientPro
       </div>
     </div>
   )
-} 
+}

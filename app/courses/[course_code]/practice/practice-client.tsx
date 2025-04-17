@@ -78,8 +78,6 @@ const StatCard: React.FC<StatCardProps> = ({ icon, title, value }) => (
   </motion.div>
 )
 
-// Function to extract label and text from an option.
-// If the option is an object, we use its keys; otherwise we use RegEx to get the letter and text.
 const getLabelAndText = (option: string | { option_number: string; option_text: string }) => {
   if (typeof option === 'object' && option !== null) {
     return {
@@ -117,7 +115,6 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
         setLoading(true)
         const response = await getCourse(courseCode)
         
-        // Transform the API response to match our Course type
         const transformedCourse: Course = {
           course_code: response.course_code,
           course_name: response.course_name,
@@ -129,7 +126,6 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
             questions: week.questions.map(q => ({
               question: q.question,
               options: q.options.map((opt, index) => {
-                // If the option is already an object, return it untouched.
                 if (typeof opt === 'object' && opt !== null) {
                   return opt;
                 } else {
@@ -236,7 +232,6 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
         const question = weekQuestions[index]
         if (!question) return
 
-        // Get the correct option(s)
         const correctOptionIndices = question.answer.map(ans => {
           const index = question.options.findIndex(option => {
             const { label } = getLabelAndText(option);
@@ -254,7 +249,7 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
         const textToSpeak = `Question ${index + 1}: ${question.question}. ${correctOptionsText}.`;
 
         utteranceRef.current = new SpeechSynthesisUtterance(textToSpeak)
-        utteranceRef.current.rate = 1.2; // Increase the rate to make it faster
+        utteranceRef.current.rate = 1.2;
         utteranceRef.current.onend = () => {
           setIsSpeaking(false)
           if (index + 1 < weekQuestions.length) {
