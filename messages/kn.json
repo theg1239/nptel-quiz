@@ -1,0 +1,81 @@
+{
+  "Index": {
+    "title": "NPTELPrep – ಉಚಿತ NPTEL ಅಭ್ಯಾಸ ಪ್ರಶ್ನೆಗಳು ಮತ್ತು ಅಧ್ಯಯನ ಸಂಪನ್ಮೂಲಗಳು",
+    "exploreCoursesButton": "ಕೋರ್ಸ್ಗಳನ್ನು ಅನ್ವೇಷಿಸಿ",
+    "aboutButton": "ವಿಷಯದಲ್ಲಿ",
+    "stats": {
+      "totalCourses": "ಮೊತ್ತದ ಕೋರ್ಸುಗಳು",
+      "totalStudyMaterials": "ಮೊತ್ತದ ಅಧ್ಯಯನ ಸಂಪನ್ಮೂಲಗಳು",
+      "totalQuestions": "ಒಟ್ಟು ಪ್ರಶ್ನೆಗಳು"
+    },
+    "subtitle": "ಉಚಿತ NPTEL ಅಭ್ಯಾಸ ಪ್ರಶ್ನೆಗಳು ಮತ್ತು ಅಧ್ಯಯನ ಸಂಪನ್ಮೂಲಗಳು"
+  },
+  "Common": {
+    "loading": "ಲೋಡಾಗುತ್ತಿದೆ…",
+    "search": "ಹುಡುಕು",
+    "searchPlaceholder": "ಕೋರ್ಸ್ಗಳಿಗಾಗಿ ಹುಡುಕು…",
+    "noResults": "ಯಾವುದೇ ಫಲಿತಾಂಶಗಳಿಲ್ಲ",
+    "viewAll": "ಎಲ್ಲವನ್ನು ನೋಡಿ",
+    "readMore": "ಇನ್ನಷ್ಟು ಓದಿ",
+    "backToTop": "ಮೇಲಿಂದ ಹಿಂದಿರುಗಿ",
+    "submit": "ಸಲ್ಲಿಸು",
+    "cancel": "ರದ್ದುಗೊಳಿಸು",
+    "save": "ಉಳಿಸು",
+    "delete": "ಅಳಿಸು",
+    "edit": "ತಿದ್ದುಪಡಿ ಮಾಡು",
+    "close": "ಮುಚ್ಚಿ",
+    "language": "ಭಾಷೆ",
+    "selectLanguage": "ಭಾಷೆ ಆಯ್ಕೆಮಾಡಿ",
+    "suggestTranslation": "ಉತ್ತಮ ಅನುವಾದವನ್ನು ಸೂಚಿಸಿ",
+    "suggestBetterTranslation": "ಉತ್ತಮ ಅನುವಾದವನ್ನು ಸೂಚಿಸಿ",
+    "helpUsImproveTranslations": "ಅನುಕೂಲವಾಗುವ ಪರ್ಯಾಯಗಳನ್ನು ಸೂಚಿಸಿ, ನಮ್ಮ ಅನುವಾದಗಳನ್ನು ಸುಧಾರಿಸಲು ಸಹಾಯ ಮಾಡಿ.",
+    "currentTranslation": "ಪ್ರಸ್ತುತ ಅನುವಾದ",
+    "yourSuggestion": "ನಿಮ್ಮ ಸೂಚನೆ",
+    "enterBetterTranslation": "ಈ ಭಾಷೆಯಲ್ಲಿ ಉತ್ತಮ ಅನುವಾದವನ್ನು ನಮೂದಿಸಿ",
+    "submitSuggestion": "ಸೂಚನೆ ಸಲ್ಲಿಸು",
+    "thankYouForSuggestion": "ನಿಮ್ಮ ಸೂಚನೆಗೆ ಧನ್ಯವಾದಗಳು!",
+    "translationImprovement": "ನಿಮ್ಮ ಅಭಿಪ್ರಾಯ ನಮ್ಮ ಅನುವಾದಗಳನ್ನು ಸುಧಾರಿಸಲು ಸಹಾಯ ಮಾಡುತ್ತದೆ."
+  },
+  "Navigation": {
+    "home": "ಮುಖಪುಟ",
+    "courses": "ಕೋರ್ಸುಗಳು",
+    "about": "ವಿಷಯದಲ್ಲಿ",
+    "practice": "ಅಭ್ಯಾಸ",
+    "materials": "ಸಂಪನ್ಮೂಲಗಳು",
+    "videos": "ವೀಡಿಯೊಗಳು",
+    "discussions": "ಚರ್ಚೆಗೂಳು",
+    "quiz": "ಪ್ರಶ್ನೋತ್ತರ",
+    "studyPlanner": "ಅಧ್ಯಯನ ಯೋಜಕ"
+  },
+  "Footer": {
+    "copyright": "© {year} NPTELPrep. ಎಲ್ಲಾ ಹಕ್ಕುಗಳನ್ನು ಕಾಯ್ದಿರಿಸಲಾಗಿದೆ.",
+    "about": "ವಿಷಯದಲ್ಲಿ",
+    "privacy": "ಗೋಪ್ಯತಾ ನೀತಿ",
+    "terms": "ನಿಯಮಗಳು"
+  },
+  "Courses": {
+    "allCourses": "ಎಲ್ಲಾ ಕೋರ್ಸುಗಳು",
+    "courseDetails": "ಕೋರ್ಸಿನ ವಿವರಗಳು",
+    "week": "ವಾರ",
+    "weeks": "ವಾರಗಳು",
+    "noCoursesFound": "ಯಾವುದೇ ಕೋರ್ಸುಗಳು ಕಂಡುಬಂದಿಲ್ಲ",
+    "courseCode": "ಕೋರ್ಸು ಕೋಡ್",
+    "courseName": "ಕೋರ್ಸು ಹೆಸರು"
+  },
+  "About": {
+    "title": "NPTELPrep ಬಗ್ಗೆ",
+    "description": "NPTELPrep ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ಅಭ್ಯಾಸ ಪ್ರಶ್ನೆಗಳು, ಅಧ್ಯಯನ ಸಂಪನ್ಮೂಲಗಳು ಮತ್ತು ಇತರದ ಮೂಲಕ NPTEL ಕೋರ್ಸುಗಳಿಗೆ ಸಿದ್ಧತೆ ಪಡೆಯಲು ಸಹಾಯ ಮಾಡುವ ಉಚಿತ ವೇದಿಕೆ.",
+    "ourMission": "ನಮ್ಮ ಧ್ಯೇಯ",
+    "missionText": "NPTEL ಕೋರ್ಸುಗಳಿಗೆ ಉಚಿತ ಸಂಪನ್ಮೂಲಗಳನ್ನು ಒದಗಿಸುವ ಮೂಲಕ ಗುಣಮಟ್ಟದ ಶಿಕ್ಷಣವನ್ನು ಎಲ್ಲರಿಗೂ ಲಭ್ಯವಾಗುವಂತೆ ಮಾಡುವುದು.",
+    "contactUs": "ಸಂಪರ್ಕಿಸಿ"
+  },
+  "LanguageSelector": {
+    "selectLanguage": "ಭಾಷೆ ಆಯ್ಕೆಮಾಡಿ",
+    "commonLanguages": "ಪ್ರಚಲಿತ ಭಾಷೆಗಳು",
+    "indicLanguages": "ಭಾರತೀಯ ಭಾಷೆಗಳು"
+  },
+  "FeatureAnnounce": {
+    "title": "ಹೊಸ ಭಾಷಾ ಬೆಂಬಲ",
+    "description": "ನಾವು 23 ಭಾಷೆಗಳಿಗೆ, ಆಮೇಲೆ ಅನೇಕ ಭಾರತೀಯ ಭಾಷೆಗಳಿಗೆ ಬೆಂಬಲವನ್ನು ಸೇರಿಸಿದ್ದೇವೆ! ಕೆಳಗಿನ ಆಯ್ಕೆ ಪಟ್ಟಿಯಿಂದ ನಿಮ್ಮ ಇಚ್ಛಿತ ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ."
+  }
+}

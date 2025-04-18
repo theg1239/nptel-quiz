@@ -1,0 +1,81 @@
+{
+  "Index": {
+    "title": "NPTELPrep – NPTEL 연습 문제 및 학습 자료 무료 제공",
+    "exploreCoursesButton": "강좌 탐색하기",
+    "aboutButton": "소개",
+    "stats": {
+      "totalCourses": "전체 강좌 수",
+      "totalStudyMaterials": "전체 학습 자료 수",
+      "totalQuestions": "전체 문제 수"
+    },
+    "subtitle": "NPTEL 강좌를 위한 무료 연습 문제 및 학습 자료"
+  },
+  "Common": {
+    "loading": "로딩 중…",
+    "search": "검색",
+    "searchPlaceholder": "강좌 검색…",
+    "noResults": "결과가 없습니다",
+    "viewAll": "전체 보기",
+    "readMore": "더 보기",
+    "backToTop": "맨 위로 이동",
+    "submit": "제출",
+    "cancel": "취소",
+    "save": "저장",
+    "delete": "삭제",
+    "edit": "편집",
+    "close": "닫기",
+    "language": "언어",
+    "selectLanguage": "언어 선택",
+    "suggestTranslation": "더 나은 번역 제안하기",
+    "suggestBetterTranslation": "더 나은 번역 제안하기",
+    "helpUsImproveTranslations": "더 정확한 대안을 제안하여 번역 품질 개선에 도움을 주세요.",
+    "currentTranslation": "현재 번역",
+    "yourSuggestion": "제안 내용",
+    "enterBetterTranslation": "이 언어로 더 나은 번역을 입력하세요",
+    "submitSuggestion": "제안 제출",
+    "thankYouForSuggestion": "제안해 주셔서 감사합니다!",
+    "translationImprovement": "여러분의 의견은 번역 개선에 도움이 됩니다."
+  },
+  "Navigation": {
+    "home": "홈",
+    "courses": "강좌",
+    "about": "소개",
+    "practice": "연습 문제",
+    "materials": "학습 자료",
+    "videos": "비디오",
+    "discussions": "토론",
+    "quiz": "퀴즈",
+    "studyPlanner": "학습 계획"
+  },
+  "Footer": {
+    "copyright": "© {year} NPTELPrep. 모든 권리 보유.",
+    "about": "소개",
+    "privacy": "개인정보 처리방침",
+    "terms": "이용 약관"
+  },
+  "Courses": {
+    "allCourses": "전체 강좌",
+    "courseDetails": "강좌 세부 정보",
+    "week": "주차",
+    "weeks": "주차",
+    "noCoursesFound": "강좌를 찾을 수 없습니다",
+    "courseCode": "강좌 코드",
+    "courseName": "강좌명"
+  },
+  "About": {
+    "title": "NPTELPrep 소개",
+    "description": "NPTELPrep는 학생들이 연습 문제, 학습 자료 등을 통해 NPTEL 강좌를 준비할 수 있도록 돕는 무료 플랫폼입니다.",
+    "ourMission": "우리의 사명",
+    "missionText": "NPTEL 강좌를 위한 무료 자료를 제공하여 누구나 양질의 교육에 접근할 수 있도록 합니다.",
+    "contactUs": "문의하기"
+  },
+  "LanguageSelector": {
+    "selectLanguage": "언어 선택",
+    "commonLanguages": "일반 언어",
+    "indicLanguages": "인도 언어"
+  },
+  "FeatureAnnounce": {
+    "title": "새 언어 지원",
+    "description": "인도 언어를 포함한 23개 언어에 대한 지원을 추가했습니다! 아래 선택기에서 원하는 언어를 선택하세요."
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "Index": {
+    "title": "NPTELPrep - Free NPTEL Practice Questions & Study Materials",
+    "subtitle": "Free NPTEL Practice Questions & Study Materials",
+    "exploreCoursesButton": "Explore Courses",
+    "aboutButton": "About",
+    "stats": {
+      "totalCourses": "Total Courses",
+      "totalStudyMaterials": "Total Study Materials",
+      "totalQuestions": "Total Questions"
+    }
+  },
+  "Navigation": {
+    "home": "Home",
+    "courses": "Courses",
+    "about": "About",
+    "practice": "Practice",
+    "materials": "Materials",
+    "videos": "Videos",
+    "discussions": "Discussions",
+    "quiz": "Quiz",
+    "studyPlanner": "Study Planner"
+  },
+  "Footer": {
+    "copyright": "© {year} NPTELPrep. All rights reserved.",
+    "about": "About",
+    "privacy": "Privacy",
+    "terms": "Terms"
+  },
+  "Common": {
+    "loading": "Loading...",
+    "search": "Search",
+    "searchPlaceholder": "Search for courses...",
+    "noResults": "No results found",
+    "viewAll": "View All",
+    "readMore": "Read More",
+    "backToTop": "Back to Top",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "language": "Language",
+    "selectLanguage": "Select Language",
+    "suggestTranslation": "Suggest a better translation",
+    "suggestBetterTranslation": "Suggest a better translation",
+    "helpUsImproveTranslations": "Help us improve our translations by suggesting more accurate alternatives.",
+    "currentTranslation": "Current translation",
+    "yourSuggestion": "Your suggestion",
+    "enterBetterTranslation": "Enter a better translation in this language",
+    "submitSuggestion": "Submit suggestion",
+    "thankYouForSuggestion": "Thank you for your suggestion!",
+    "translationImprovement": "Your input helps us improve our translations."
+  },
+  "Courses": {
+    "allCourses": "All Courses",
+    "courseDetails": "Course Details",
+    "week": "Week",
+    "weeks": "Weeks",
+    "noCoursesFound": "No courses found",
+    "courseCode": "Course Code",
+    "courseName": "Course Name"
+  },
+  "About": {
+    "title": "About NPTELPrep",
+    "description": "NPTELPrep is a free platform to help students prepare for NPTEL courses with practice questions, study materials, and more.",
+    "ourMission": "Our Mission",
+    "missionText": "To make quality education accessible to everyone by providing free resources for NPTEL courses.",
+    "contactUs": "Contact Us"
+  },
+  "LanguageSelector": {
+    "selectLanguage": "Select Language",
+    "commonLanguages": "Common Languages",
+    "indicLanguages": "Indic Languages"
+  },
+  "FeatureAnnounce": {
+    "title": "New Language Support",
+    "description": "We've added support for 23 languages, including many Indic languages! Choose your preferred language from the selector below."
+  }
+}

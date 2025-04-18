@@ -1,0 +1,81 @@
+{
+  "Index": {
+    "title": "NPTELPrep - Бесплатные практические вопросы и учебные материалы NPTEL",
+    "exploreCoursesButton": "Изучить курсы",
+    "aboutButton": "О нас",
+    "stats": {
+      "totalCourses": "Всего курсов",
+      "totalStudyMaterials": "Всего учебных материалов",
+      "totalQuestions": "Всего вопросов"
+    },
+    "subtitle": "Бесплатные практические вопросы и учебные материалы NPTEL"
+  },
+  "Common": {
+    "loading": "Загрузка...",
+    "search": "Поиск",
+    "searchPlaceholder": "Поиск курсов...",
+    "noResults": "Результаты не найдены",
+    "viewAll": "Просмотреть все",
+    "readMore": "Читать далее",
+    "backToTop": "Вернуться к началу",
+    "submit": "Отправить",
+    "cancel": "Отмена",
+    "save": "Сохранить",
+    "delete": "Удалить",
+    "edit": "Редактировать",
+    "close": "Закрыть",
+    "language": "Язык",
+    "selectLanguage": "Выбрать язык",
+    "suggestTranslation": "Предложить лучший перевод",
+    "suggestBetterTranslation": "Предложить лучший перевод",
+    "helpUsImproveTranslations": "Помогите нам улучшить наши переводы, предлагая более точные альтернативы.",
+    "currentTranslation": "Текущий перевод",
+    "yourSuggestion": "Ваше предложение",
+    "enterBetterTranslation": "Введите лучший перевод на этом языке",
+    "submitSuggestion": "Отправить предложение",
+    "thankYouForSuggestion": "Спасибо за ваше предложение!",
+    "translationImprovement": "Ваш вклад помогает нам улучшить наши переводы."
+  },
+  "Navigation": {
+    "home": "Главная",
+    "courses": "Курсы",
+    "about": "О нас",
+    "practice": "Практика",
+    "materials": "Материалы",
+    "videos": "Видео",
+    "discussions": "Обсуждения",
+    "quiz": "Тесты",
+    "studyPlanner": "Планировщик обучения"
+  },
+  "Footer": {
+    "copyright": "© {year} NPTELPrep. Все права защищены.",
+    "about": "О нас",
+    "privacy": "Конфиденциальность",
+    "terms": "Условия использования"
+  },
+  "Courses": {
+    "allCourses": "Все курсы",
+    "courseDetails": "Детали курса",
+    "week": "Неделя",
+    "weeks": "Недели",
+    "noCoursesFound": "Курсы не найдены",
+    "courseCode": "Код курса",
+    "courseName": "Название курса"
+  },
+  "About": {
+    "title": "О NPTELPrep",
+    "description": "NPTELPrep - это бесплатная платформа, помогающая студентам подготовиться к курсам NPTEL с помощью практических вопросов, учебных материалов и многого другого.",
+    "ourMission": "Наша миссия",
+    "missionText": "Сделать качественное образование доступным для всех, предоставляя бесплатные ресурсы для курсов NPTEL.",
+    "contactUs": "Связаться с нами"
+  },
+  "LanguageSelector": {
+    "selectLanguage": "Выбрать язык",
+    "commonLanguages": "Распространенные языки",
+    "indicLanguages": "Индийские языки"
+  },
+  "FeatureAnnounce": {
+    "title": "Новая языковая поддержка",
+    "description": "Мы добавили поддержку 23 языков, включая многие индийские языки! Выберите предпочитаемый язык из селектора ниже."
+  }
+}

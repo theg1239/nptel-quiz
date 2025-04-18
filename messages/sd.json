@@ -1,0 +1,81 @@
+{
+  "Index": {
+    "title": "NPTELPrep — NPTEL لاءِ مفت مشقي سوال ۽ پڙهائي جا مواد",
+    "exploreCoursesButton": "ڪورسز ڳوليو",
+    "aboutButton": "اسان بابت",
+    "stats": {
+      "totalCourses": "مجموعي ڪورسز",
+      "totalStudyMaterials": "مجموعي مطالعي جا مواد",
+      "totalQuestions": "مجموعي سوال"
+    },
+    "subtitle": "NPTEL لاءِ مفت مشقي سوال ۽ پڙهائي جا مواد"
+  },
+  "Common": {
+    "loading": "لوڊ ٿي رهيو آهي...",
+    "search": "ڳولا",
+    "searchPlaceholder": "ڪورسز لاءِ ڳولا ڪريو...",
+    "noResults": "ڪو نتيجو نه مليو",
+    "viewAll": "سڀ ڏسو",
+    "readMore": "وڌيڪ پڙهو",
+    "backToTop": "مٿين ڏانهن واپس",
+    "submit": "جمع ڪر",
+    "cancel": "منسوخ",
+    "save": "محفوظ ڪريو",
+    "delete": "حذف ڪريو",
+    "edit": "ترميم ڪريو",
+    "close": "بند ڪريو",
+    "language": "ٻولي",
+    "selectLanguage": "ٻولي چونڊيو",
+    "suggestTranslation": "بهتر ترجمو تجويز ڪريو",
+    "suggestBetterTranslation": "بهتر ترجمو تجويز ڪريو",
+    "helpUsImproveTranslations": " وڌيڪ صحيح متبادلن جي تجويز سان اسان جي ترجمن کي بهتر بڻائڻ ۾ مدد ڪريو.",
+    "currentTranslation": "موجوده ترجمو",
+    "yourSuggestion": "توهان جي تجويز",
+    "enterBetterTranslation": "هن ٻوليءَ ۾ بهتر ترجمو داخل ڪريو",
+    "submitSuggestion": "تجويز جمع ڪر",
+    "thankYouForSuggestion": "توهان جي تجويز لاءِ مهرباني!",
+    "translationImprovement": "توهان جي راءِ اسان کي ترجمن کي بهتر بڻائڻ ۾ مدد ڪري ٿي."
+  },
+  "Navigation": {
+    "home": "گهر",
+    "courses": "ڪورسز",
+    "about": "اسان بابت",
+    "practice": "مشق",
+    "materials": "مواد",
+    "videos": "وڊيوز",
+    "discussions": "بحث",
+    "quiz": "ڪوئز",
+    "studyPlanner": "مطالعو منصوبو"
+  },
+  "Footer": {
+    "copyright": "© {year} NPTELPrep. سڀ حق محفوظ.",
+    "about": "اسان بابت",
+    "privacy": "رازداري",
+    "terms": "شرائط"
+  },
+  "Courses": {
+    "allCourses": "سڀ ڪورسز",
+    "courseDetails": "ڪورس جون تفصيل",
+    "week": "هفتو",
+    "weeks": "هفتا",
+    "noCoursesFound": "ڪو ڪورس نه مليو",
+    "courseCode": "ڪورس ڪوڊ",
+    "courseName": "ڪورس جو نالو"
+  },
+  "About": {
+    "title": "NPTELPrep بابت",
+    "description": "NPTELPrep هڪ مفت پليٽفارم آهي جيڪو شاگردن کي NPTEL ڪورسز لاءِ عملي سوالن، مطالعي جي مواد، ۽ وڌيڪ سان تيار ڪرڻ ۾ مدد ڪري ٿو.",
+    "ourMission": "اسانجو مشن",
+    "missionText": "NPTEL ڪورسز لاءِ مفت وسيلن مهيا ڪري معياري تعليم سڀني لاءِ دستياب بڻائڻ.",
+    "contactUs": "اسان سان رابطو ڪريو"
+  },
+  "LanguageSelector": {
+    "selectLanguage": "ٻولي چونڊيو",
+    "commonLanguages": "عام ٻوليون",
+    "indicLanguages": "هندستاني ٻوليون"
+  },
+  "FeatureAnnounce": {
+    "title": "نئين ٻولي جي حمايت",
+    "description": "اسان 23 ٻولين جي حمايت شامل ڪئي آهي، جنهن ۾ ڪيترائي هندستاني ٻوليون شامل آهن! هيٺ ڏنل سيليڪٽر مان پنهنجي پسنديده ٻولي چونڊيو."
+  }
+}

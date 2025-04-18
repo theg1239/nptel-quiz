@@ -1,0 +1,81 @@
+{
+  "Index": {
+    "title": "NPTELPrep – मोफत NPTEL सराव प्रश्न आणि अभ्यास साहित्य",
+    "exploreCoursesButton": "कोर्स एक्सप्लोर करा",
+    "aboutButton": "बद्दल",
+    "stats": {
+      "totalCourses": "एकूण कोर्सेस",
+      "totalStudyMaterials": "एकूण अभ्यास साहित्य",
+      "totalQuestions": "एकूण प्रश्न"
+    },
+    "subtitle": "मोफत NPTEL सराव प्रश्न आणि अभ्यास साहित्य"
+  },
+  "Common": {
+    "loading": "लोड करत आहे...",
+    "search": "शोधा",
+    "searchPlaceholder": "कोर्सेससाठी शोधा...",
+    "noResults": "कोणतेही निकाल आढळले नाहीत",
+    "viewAll": "सर्व पहा",
+    "readMore": "अधिक वाचा",
+    "backToTop": "वर परत जा",
+    "submit": "सबमिट करा",
+    "cancel": "रद्द करा",
+    "save": "जतन करा",
+    "delete": "काढून टाका",
+    "edit": "संपादित करा",
+    "close": "बंद करा",
+    "language": "भाषा",
+    "selectLanguage": "भाषा निवडा",
+    "suggestTranslation": "उत्तम अनुवाद सुचवा",
+    "suggestBetterTranslation": "उत्तम अनुवाद सुचवा",
+    "helpUsImproveTranslations": "अधिक अचूक पर्याय सुचवून आमचे अनुवाद सुधारण्यात मदत करा.",
+    "currentTranslation": "सध्याचा अनुवाद",
+    "yourSuggestion": "आपले सुचवण",
+    "enterBetterTranslation": "या भाषेत उत्तम अनुवाद प्रविष्ट करा",
+    "submitSuggestion": "सुचवण सबमिट करा",
+    "thankYouForSuggestion": "आपल्या सुचवणीबद्दल धन्यवाद!",
+    "translationImprovement": "आपला इनपुट आमच्या अनुवाद सुधारण्यात मदत करतो."
+  },
+  "Navigation": {
+    "home": "मुख्यपृष्ठ",
+    "courses": "कोर्सेस",
+    "about": "बद्दल",
+    "practice": "सराव",
+    "materials": "साहित्य",
+    "videos": "व्हिडिओ",
+    "discussions": "चर्चा",
+    "quiz": "क्विझ",
+    "studyPlanner": "अभ्यास नियोजक"
+  },
+  "Footer": {
+    "copyright": "© {year} NPTELPrep. सर्व हक्क राखीव.",
+    "about": "बद्दल",
+    "privacy": "गोपनीयता",
+    "terms": "अटी"
+  },
+  "Courses": {
+    "allCourses": "सर्व कोर्सेस",
+    "courseDetails": "कोर्स तपशील",
+    "week": "आठवडा",
+    "weeks": "आठवडे",
+    "noCoursesFound": "कोणतेही कोर्स आढळले नाहीत",
+    "courseCode": "कोर्स कोड",
+    "courseName": "कोर्सचे नाव"
+  },
+  "About": {
+    "title": "NPTELPrep बद्दल",
+    "description": "NPTELPrep हा एक मोफत प्लॅटफॉर्म आहे जो विद्यार्थ्यांना सराव प्रश्न, अभ्यास साहित्य आणि अधिकाद्वारे NPTEL कोर्ससाठी तयार होण्यास मदत करतो.",
+    "ourMission": "आमचे उद्दिष्ट",
+    "missionText": "NPTEL कोर्ससाठी मोफत संसाधने प्रदान करून दर्जेदार शिक्षण सर्वांसाठी उपलब्ध करणे.",
+    "contactUs": "आमच्याशी संपर्क साधा"
+  },
+  "LanguageSelector": {
+    "selectLanguage": "भाषा निवडा",
+    "commonLanguages": "सामान्य भाषा",
+    "indicLanguages": "भारतीय भाषा"
+  },
+  "FeatureAnnounce": {
+    "title": "नवीन भाषांसाठी समर्थन",
+    "description": "आम्ही 23 भाषांसाठी समर्थन जोडले आहे, ज्यात अनेक भारतीय भाषा समाविष्ट आहेत! खालील सिलेक्टरमधून आपल्या पसंतीची भाषा निवडा."
+  }
+}

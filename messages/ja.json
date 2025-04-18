@@ -1,0 +1,81 @@
+{
+  "Index": {
+    "title": "NPTELPrep - 無料のNPTEL練習問題と学習教材",
+    "exploreCoursesButton": "コースを探索",
+    "aboutButton": "詳細",
+    "stats": {
+      "totalCourses": "コース総数",
+      "totalStudyMaterials": "学習教材総数",
+      "totalQuestions": "問題総数"
+    },
+    "subtitle": "無料のNPTEL練習問題と学習教材"
+  },
+  "Common": {
+    "loading": "読み込み中...",
+    "search": "検索",
+    "searchPlaceholder": "コースを検索...",
+    "noResults": "結果が見つかりません",
+    "viewAll": "すべて表示",
+    "readMore": "続きを読む",
+    "backToTop": "トップに戻る",
+    "submit": "送信",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "delete": "削除",
+    "edit": "編集",
+    "close": "閉じる",
+    "language": "言語",
+    "selectLanguage": "言語を選択",
+    "suggestTranslation": "より良い翻訳を提案",
+    "suggestBetterTranslation": "より良い翻訳を提案",
+    "helpUsImproveTranslations": "より正確な代替案を提案して、翻訳の向上にご協力ください。",
+    "currentTranslation": "現在の翻訳",
+    "yourSuggestion": "あなたの提案",
+    "enterBetterTranslation": "この言語でより良い翻訳を入力してください",
+    "submitSuggestion": "提案を送信",
+    "thankYouForSuggestion": "ご提案ありがとうございます！",
+    "translationImprovement": "あなたの入力は翻訳の改善に役立ちます。"
+  },
+  "Navigation": {
+    "home": "ホーム",
+    "courses": "コース",
+    "about": "詳細",
+    "practice": "練習",
+    "materials": "教材",
+    "videos": "ビデオ",
+    "discussions": "ディスカッション",
+    "quiz": "クイズ",
+    "studyPlanner": "学習プランナー"
+  },
+  "Footer": {
+    "copyright": "© {year} NPTELPrep. 全著作権所有。",
+    "about": "詳細",
+    "privacy": "プライバシー",
+    "terms": "利用規約"
+  },
+  "Courses": {
+    "allCourses": "すべてのコース",
+    "courseDetails": "コース詳細",
+    "week": "週",
+    "weeks": "週間",
+    "noCoursesFound": "コースが見つかりません",
+    "courseCode": "コースコード",
+    "courseName": "コース名"
+  },
+  "About": {
+    "title": "NPTELPrepについて",
+    "description": "NPTELPrepは、練習問題、学習教材などを通じて学生がNPTELコースの準備をするのを支援する無料プラットフォームです。",
+    "ourMission": "私たちの使命",
+    "missionText": "NPTELコースの無料リソースを提供することで、質の高い教育をすべての人にアクセス可能にすること。",
+    "contactUs": "お問い合わせ"
+  },
+  "LanguageSelector": {
+    "selectLanguage": "言語を選択",
+    "commonLanguages": "一般的な言語",
+    "indicLanguages": "インド言語"
+  },
+  "FeatureAnnounce": {
+    "title": "新しい言語サポート",
+    "description": "多くのインド言語を含む23の言語のサポートを追加しました！下のセレクターから希望の言語を選択してください。"
+  }
+}

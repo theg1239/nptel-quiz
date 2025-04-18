@@ -1,0 +1,81 @@
+{
+  "Index": {
+    "title": "NPTELPrep – বিনামূল্যে NPTEL অনুশীলন প্রশ্ন ও অধ্যয়ন সামগ্রী",
+    "exploreCoursesButton": "কোর্স এক্সপ্লোর করুন",
+    "aboutButton": "সম্পর্কে",
+    "stats": {
+      "totalCourses": "মোট কোর্স",
+      "totalStudyMaterials": "মোট অধ্যয়ন সামগ্রী",
+      "totalQuestions": "মোট প্রশ্ন"
+    },
+    "subtitle": "বিনামূল্যে NPTEL অনুশীলন প্রশ্ন ও অধ্যয়ন সামগ্রী"
+  },
+  "Common": {
+    "loading": "লোড হচ্ছে…",
+    "search": "অনুসন্ধান",
+    "searchPlaceholder": "কোর্স অনুসন্ধান করুন…",
+    "noResults": "কোনো ফলাফল পাওয়া যায়নি",
+    "viewAll": "সব দেখুন",
+    "readMore": "আরও পড়ুন",
+    "backToTop": "উপর ফিরে যান",
+    "submit": "জমা করুন",
+    "cancel": "বাতিল",
+    "save": "সংরক্ষণ",
+    "delete": "মুছুন",
+    "edit": "সম্পাদনা",
+    "close": "বন্ধ",
+    "language": "ভাষা",
+    "selectLanguage": "ভাষা নির্বাচন করুন",
+    "suggestTranslation": "ভাল অনুবাদের প্রস্তাব দিন",
+    "suggestBetterTranslation": "ভাল অনুবাদের প্রস্তাব দিন",
+    "helpUsImproveTranslations": "সঠিক বিকল্প প্রস্তাব করে আমাদের অনুবাদ উন্নত করতে সাহায্য করুন।",
+    "currentTranslation": "বর্তমান অনুবাদ",
+    "yourSuggestion": "আপনার প্রস্তাব",
+    "enterBetterTranslation": "এই ভাষায় একটি ভালো অনুবাদ লিখুন",
+    "submitSuggestion": "প্রস্তাব পাঠান",
+    "thankYouForSuggestion": "আপনার প্রস্তাবের জন্য ধন্যবাদ!",
+    "translationImprovement": "আপনার পরামর্শ আমাদের অনুবাদ উন্নত করতে সাহায্য করে।"
+  },
+  "Navigation": {
+    "home": "হোম",
+    "courses": "কোর্স",
+    "about": "সম্পর্কে",
+    "practice": "অভ্যাস",
+    "materials": "সামগ্রী",
+    "videos": "ভিডিও",
+    "discussions": "আলোচনা",
+    "quiz": "কুইজ",
+    "studyPlanner": "অধ্যয়ন পরিকল্পক"
+  },
+  "Footer": {
+    "copyright": "© {year} NPTELPrep। সর্বস্বত্ব সংরক্ষিত।",
+    "about": "সম্পর্কে",
+    "privacy": "গোপনীয়তা",
+    "terms": "শর্তাবলী"
+  },
+  "Courses": {
+    "allCourses": "সব কোর্স",
+    "courseDetails": "কোর্স বিবরণ",
+    "week": "সপ্তাহ",
+    "weeks": "সপ্তাহ",
+    "noCoursesFound": "কোনো কোর্স পাওয়া যায়নি",
+    "courseCode": "কোর্স কোড",
+    "courseName": "কোর্স নাম"
+  },
+  "About": {
+    "title": "NPTELPrep সম্পর্কে",
+    "description": "NPTELPrep একটি বিনামূল্যে প্ল্যাটফর্ম যা অনুশীলন প্রশ্ন, অধ্যয়ন সামগ্রী এবং আরও অনেক কিছু দিয়ে ছাত্রদের NPTEL কোর্সের প্রস্তুতিতে সাহায্য করে।",
+    "ourMission": "আমাদের লক্ষ্য",
+    "missionText": "NPTEL কোর্সের জন্য বিনামূল্যে সম্পদ সরবরাহ করে সবার জন্য উচ্চমানের শিক্ষা সুগম করা।",
+    "contactUs": "যোগাযোগ করুন"
+  },
+  "LanguageSelector": {
+    "selectLanguage": "ভাষা নির্বাচন করুন",
+    "commonLanguages": "সাধারণ ভাষা",
+    "indicLanguages": "ইন্ডিক ভাষা"
+  },
+  "FeatureAnnounce": {
+    "title": "নতুন ভাষা সমর্থন",
+    "description": "আমরা ২৩টি ভাষার সমর্থন যোগ করেছি, যার মধ্যে অনেক ইন্ডিক ভাষাও রয়েছে! নীচের সিলেক্টর থেকে আপনার পছন্দের ভাষা বেছে নিন।"
+  }
+}

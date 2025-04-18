@@ -1,0 +1,82 @@
+{
+    "Index": {
+      "title": "NPTELPrep – Preguntas de práctica gratuitas y materiales de estudio de NPTEL",
+      "exploreCoursesButton": "Explorar cursos",
+      "aboutButton": "Acerca de",
+      "stats": {
+        "totalCourses": "Cursos totales",
+        "totalStudyMaterials": "Materiales de estudio totales",
+        "totalQuestions": "Preguntas totales"
+      },
+      "subtitle": "Preguntas de práctica gratuitas y materiales de estudio de NPTEL"
+    },
+    "Common": {
+      "loading": "Cargando...",
+      "search": "Buscar",
+      "searchPlaceholder": "Buscar cursos...",
+      "noResults": "No se encontraron resultados",
+      "viewAll": "Ver todo",
+      "readMore": "Leer más",
+      "backToTop": "Volver arriba",
+      "submit": "Enviar",
+      "cancel": "Cancelar",
+      "save": "Guardar",
+      "delete": "Eliminar",
+      "edit": "Editar",
+      "close": "Cerrar",
+      "language": "Idioma",
+      "selectLanguage": "Seleccionar idioma",
+      "suggestTranslation": "Sugerir una mejor traducción",
+      "suggestBetterTranslation": "Sugerir una mejor traducción",
+      "helpUsImproveTranslations": "Ayúdanos a mejorar nuestras traducciones sugiriendo alternativas más precisas.",
+      "currentTranslation": "Traducción actual",
+      "yourSuggestion": "Tu sugerencia",
+      "enterBetterTranslation": "Ingresa una mejor traducción en este idioma",
+      "submitSuggestion": "Enviar sugerencia",
+      "thankYouForSuggestion": "¡Gracias por tu sugerencia!",
+      "translationImprovement": "Tu aporte nos ayuda a mejorar nuestras traducciones."
+    },
+    "Navigation": {
+      "home": "Inicio",
+      "courses": "Cursos",
+      "about": "Acerca de",
+      "practice": "Práctica",
+      "materials": "Materiales",
+      "videos": "Videos",
+      "discussions": "Discusiones",
+      "quiz": "Cuestionario",
+      "studyPlanner": "Planificador de estudios"
+    },
+    "Footer": {
+      "copyright": "© {year} NPTELPrep. Todos los derechos reservados.",
+      "about": "Acerca de",
+      "privacy": "Privacidad",
+      "terms": "Términos"
+    },
+    "Courses": {
+      "allCourses": "Todos los cursos",
+      "courseDetails": "Detalles del curso",
+      "week": "Semana",
+      "weeks": "Semanas",
+      "noCoursesFound": "No se encontraron cursos",
+      "courseCode": "Código del curso",
+      "courseName": "Nombre del curso"
+    },
+    "About": {
+      "title": "Acerca de NPTELPrep",
+      "description": "NPTELPrep es una plataforma gratuita que ayuda a los estudiantes a prepararse para los cursos de NPTEL con preguntas de práctica, materiales de estudio y más.",
+      "ourMission": "Nuestra misión",
+      "missionText": "Hacer que la educación de calidad sea accesible para todos proporcionando recursos gratuitos para los cursos de NPTEL.",
+      "contactUs": "Contáctanos"
+    },
+    "LanguageSelector": {
+      "selectLanguage": "Seleccionar idioma",
+      "commonLanguages": "Idiomas comunes",
+      "indicLanguages": "Idiomas indígenas"
+    },
+    "FeatureAnnounce": {
+      "title": "Nuevo soporte de idioma",
+      "description": "Hemos agregado soporte para 23 idiomas, ¡incluidos muchos idiomas indígenas! Elige tu idioma preferido del selector a continuación."
+    }
+  }
+  

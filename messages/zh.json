@@ -1,0 +1,81 @@
+{
+  "Index": {
+    "title": "NPTELPrep – 免费的 NPTEL 练习题及学习资料",
+    "exploreCoursesButton": "浏览课程",
+    "aboutButton": "关于",
+    "stats": {
+      "totalCourses": "全部课程",
+      "totalStudyMaterials": "全部学习资料",
+      "totalQuestions": "全部题目"
+    },
+    "subtitle": "免费 NPTEL 练习题及学习资料"
+  },
+  "Common": {
+    "loading": "加载中…",
+    "search": "搜索",
+    "searchPlaceholder": "搜索课程…",
+    "noResults": "未找到结果",
+    "viewAll": "查看全部",
+    "readMore": "阅读更多",
+    "backToTop": "回到顶部",
+    "submit": "提交",
+    "cancel": "取消",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑",
+    "close": "关闭",
+    "language": "语言",
+    "selectLanguage": "选择语言",
+    "suggestTranslation": "建议更好的翻译",
+    "suggestBetterTranslation": "建议更好的翻译",
+    "helpUsImproveTranslations": "通过建议更准确的翻译，帮助我们改进内容。",
+    "currentTranslation": "当前翻译",
+    "yourSuggestion": "您的建议",
+    "enterBetterTranslation": "在此语言中输入更好的翻译",
+    "submitSuggestion": "提交建议",
+    "thankYouForSuggestion": "感谢您的建议！",
+    "translationImprovement": "您的反馈有助于我们改进翻译。"
+  },
+  "Navigation": {
+    "home": "首页",
+    "courses": "课程",
+    "about": "关于",
+    "practice": "练习",
+    "materials": "资料",
+    "videos": "视频",
+    "discussions": "讨论",
+    "quiz": "测验",
+    "studyPlanner": "学习计划"
+  },
+  "Footer": {
+    "copyright": "© {year} NPTELPrep。保留所有权利。",
+    "about": "关于",
+    "privacy": "隐私",
+    "terms": "条款"
+  },
+  "Courses": {
+    "allCourses": "所有课程",
+    "courseDetails": "课程详情",
+    "week": "周",
+    "weeks": "周数",
+    "noCoursesFound": "未找到课程",
+    "courseCode": "课程代码",
+    "courseName": "课程名称"
+  },
+  "About": {
+    "title": "关于 NPTELPrep",
+    "description": "NPTELPrep 是一个免费平台，帮助学生通过练习题、学习资料等准备 NPTEL 课程。",
+    "ourMission": "我们的使命",
+    "missionText": "通过为 NPTEL 课程提供免费资源，让优质教育惠及每个人。",
+    "contactUs": "联系我们"
+  },
+  "LanguageSelector": {
+    "selectLanguage": "选择语言",
+    "commonLanguages": "常用语言",
+    "indicLanguages": "印度语言"
+  },
+  "FeatureAnnounce": {
+    "title": "新增语言支持",
+    "description": "我们已新增对23种语言的支持，包括多种印度语言！请从下方选择器中选择您的偏好语言。"
+  }
+}

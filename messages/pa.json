@@ -1,0 +1,81 @@
+{
+  "Index": {
+    "title": "NPTELPrep – NPTEL ਲਈ ਮੁਫ਼ਤ ਅਭਿਆਸ ਸਵਾਲ ਅਤੇ ਅਧਿਐਨ ਸਮੱਗਰੀ",
+    "exploreCoursesButton": "ਕੋਰਸ ਵੇਖੋ",
+    "aboutButton": "ਬਾਰੇ",
+    "stats": {
+      "totalCourses": "ਕੁੱਲ ਕੋਰਸ",
+      "totalStudyMaterials": "ਕੁੱਲ ਅਧਿਐਨ ਸਮੱਗਰੀ",
+      "totalQuestions": "ਕੁੱਲ ਸਵਾਲ"
+    },
+    "subtitle": "NPTEL ਲਈ ਮੁਫ਼ਤ ਅਭਿਆਸ ਸਵਾਲ ਅਤੇ ਅਧਿਐਨ ਸਮੱਗਰੀ"
+  },
+  "Common": {
+    "loading": "ਲੋਡ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ...",
+    "search": "ਖੋਜ",
+    "searchPlaceholder": "ਕੋਰਸਾਂ ਲਈ ਖੋਜ ਕਰੋ...",
+    "noResults": "ਕੋਈ ਨਤੀਜਾ ਨਹੀਂ ਮਿਲਿਆ",
+    "viewAll": "ਸਭ ਦੇਖੋ",
+    "readMore": "ਹੋਰ ਪੜ੍ਹੋ",
+    "backToTop": "ਉਪਰ ਵਾਪਸ",
+    "submit": "ਜਮ੍ਹਾਂ ਕਰੋ",
+    "cancel": "ਰੱਦ ਕਰੋ",
+    "save": "ਸੰਭਾਲੋ",
+    "delete": "ਹਟਾਓ",
+    "edit": "ਸੰਪਾਦਨ ਕਰੋ",
+    "close": "ਬੰਦ ਕਰੋ",
+    "language": "ਭਾਸ਼ਾ",
+    "selectLanguage": "ਭਾਸ਼ਾ ਚੁਣੋ",
+    "suggestTranslation": "ਇਕ ਵਧੀਆ ਅਨੁਵਾਦ ਸੁਝਾਓ",
+    "suggestBetterTranslation": "ਇਕ ਵਧੀਆ ਅਨੁਵਾਦ ਸੁਝਾਓ",
+    "helpUsImproveTranslations": "ਬਿਹਤਰ ਵਿਕਲਪ ਸੁਝਾ ਕੇ ਸਾਡੇ ਅਨੁਵਾਦ ਸੁਧਾਰਨ ਵਿੱਚ ਮਦਦ ਕਰੋ।",
+    "currentTranslation": "ਮੌਜੂਦਾ ਅਨੁਵਾਦ",
+    "yourSuggestion": "ਤੁਹਾਡਾ ਸੁਝਾਅ",
+    "enterBetterTranslation": "ਇਸ ਭਾਸ਼ਾ ਵਿੱਚ ਵਧੀਆ ਅਨੁਵਾਦ ਦਰਜ ਕਰੋ",
+    "submitSuggestion": "ਸੁਝਾਅ ਜਮ੍ਹਾਂ ਕਰੋ",
+    "thankYouForSuggestion": "ਤੁਹਾਡੇ ਸੁਝਾਅ ਲਈ ਧੰਨਵਾਦ!",
+    "translationImprovement": "ਤੁਹਾਡੀ ਰਾਏ ਸਾਡੇ ਅਨੁਵਾਦ ਸੁਧਾਰਨ ਵਿੱਚ ਸਹਾਇਕ ਹੈ।"
+  },
+  "Navigation": {
+    "home": "ਘਰ",
+    "courses": "ਕੋਰਸ",
+    "about": "ਬਾਰੇ",
+    "practice": "ਅਭਿਆਸ",
+    "materials": "ਸਮੱਗਰੀ",
+    "videos": "ਵੀਡੀਓ",
+    "discussions": "ਚਰਚਾ",
+    "quiz": "ਕੁਇਜ਼",
+    "studyPlanner": "ਅਧਿਐਨ ਯੋਜਕ"
+  },
+  "Footer": {
+    "copyright": "© {year} NPTELPrep. ਸਾਰੇ ਹੱਕ ਰਾਖਵੇਂ।",
+    "about": "ਬਾਰੇ",
+    "privacy": "ਪਰਦੇਦਾਰੀ",
+    "terms": "ਸ਼ਰਤਾਂ"
+  },
+  "Courses": {
+    "allCourses": "ਸਾਰੇ ਕੋਰਸ",
+    "courseDetails": "ਕੋਰਸ ਵੇਰਵੇ",
+    "week": "ਹਫ਼ਤਾ",
+    "weeks": "ਹਫ਼ਤੇ",
+    "noCoursesFound": "ਕੋਈ ਕੋਰਸ ਨਹੀਂ ਮਿਲਿਆ",
+    "courseCode": "ਕੋਰਸ ਕੋਡ",
+    "courseName": "ਕੋਰਸ ਨਾਮ"
+  },
+  "About": {
+    "title": "NPTELPrep ਬਾਰੇ",
+    "description": "NPTELPrep ਇੱਕ ਮੁਫ਼ਤ ਪਲੇਟਫਾਰਮ ਹੈ ਜੋ ਵਿਦਿਆਰਥੀਆਂ ਨੂੰ ਅਭਿਆਸ ਸਵਾਲ, ਅਧਿਐਨ ਸਮੱਗਰੀ ਅਤੇ ਹੋਰ ਨਾਲ NPTEL ਕੋਰਸਾਂ ਲਈ ਤਿਆਰੀ ਵਿੱਚ ਮਦਦ ਕਰਦਾ ਹੈ।",
+    "ourMission": "ਸਾਡਾ ਮਿਸ਼ਨ",
+    "missionText": "NPTEL ਕੋਰਸਾਂ ਲਈ ਮੁਫ਼ਤ ਸਰੋਤ ਉਪਲੱਬਧ ਕਰਵਾ ਕੇ ਉੱਚ ਗੁਣਵੱਤਾ ਵਾਲੀ ਸਿੱਖਿਆ ਹਰ ਇੱਕ ਲਈ ਪਹੁੰਚਯੋਗ ਬਣਾਉਣਾ।",
+    "contactUs": "ਸੰਪਰਕ ਕਰੋ"
+  },
+  "LanguageSelector": {
+    "selectLanguage": "ਭਾਸ਼ਾ ਚੁਣੋ",
+    "commonLanguages": "ਆਮ ਭਾਸ਼ਾਵਾਂ",
+    "indicLanguages": "ਭਾਰਤੀ ਭਾਸ਼ਾਵਾਂ"
+  },
+  "FeatureAnnounce": {
+    "title": "ਨਵੀਂ ਭਾਸ਼ਾ ਦੀ ਸਹਾਇਤਾ",
+    "description": "ਅਸੀਂ 23 ਭਾਸ਼ਾਵਾਂ ਲਈ ਸਹਾਇਤਾ ਸ਼ਾਮਲ ਕੀਤੀ ਹੈ, ਜਿਸ ਵਿੱਚ ਕਈ ਭਾਰਤੀ ਭਾਸ਼ਾਵਾਂ ਵੀ ਸ਼ਾਮਲ ਹਨ! ਹੇਠਾਂੋਂ ਆਪਣੀ ਪਸੰਦੀਦਾ ਭਾਸ਼ਾ ਚੁਣੋ।"
+  }
+}

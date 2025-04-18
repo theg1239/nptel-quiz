@@ -1,0 +1,81 @@
+{
+  "Index": {
+    "title": "NPTELPrep - أسئلة تدريبية مجانية ومواد دراسية لـ NPTEL",
+    "exploreCoursesButton": "استكشاف الدورات",
+    "aboutButton": "حول",
+    "stats": {
+      "totalCourses": "إجمالي الدورات",
+      "totalStudyMaterials": "إجمالي المواد الدراسية",
+      "totalQuestions": "إجمالي الأسئلة"
+    },
+    "subtitle": "أسئلة تدريبية مجانية ومواد دراسية لـ NPTEL"
+  },
+  "Common": {
+    "loading": "جاري التحميل...",
+    "search": "بحث",
+    "searchPlaceholder": "ابحث عن الدورات...",
+    "noResults": "لم يتم العثور على نتائج",
+    "viewAll": "عرض الكل",
+    "readMore": "قراءة المزيد",
+    "backToTop": "العودة إلى الأعلى",
+    "submit": "إرسال",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "close": "إغلاق",
+    "language": "اللغة",
+    "selectLanguage": "اختيار اللغة",
+    "suggestTranslation": "اقتراح ترجمة أفضل",
+    "suggestBetterTranslation": "اقتراح ترجمة أفضل",
+    "helpUsImproveTranslations": "ساعدنا في تحسين ترجماتنا من خلال اقتراح بدائل أكثر دقة.",
+    "currentTranslation": "الترجمة الحالية",
+    "yourSuggestion": "اقتراحك",
+    "enterBetterTranslation": "أدخل ترجمة أفضل بهذه اللغة",
+    "submitSuggestion": "إرسال الاقتراح",
+    "thankYouForSuggestion": "شكرًا على اقتراحك!",
+    "translationImprovement": "مساهمتك تساعدنا في تحسين ترجماتنا."
+  },
+  "Navigation": {
+    "home": "الرئيسية",
+    "courses": "الدورات",
+    "about": "حول",
+    "practice": "تدريب",
+    "materials": "المواد الدراسية",
+    "videos": "الفيديوهات",
+    "discussions": "المناقشات",
+    "quiz": "اختبار",
+    "studyPlanner": "مخطط الدراسة"
+  },
+  "Footer": {
+    "copyright": "© {year} NPTELPrep. جميع الحقوق محفوظة.",
+    "about": "حول",
+    "privacy": "الخصوصية",
+    "terms": "الشروط"
+  },
+  "Courses": {
+    "allCourses": "جميع الدورات",
+    "courseDetails": "تفاصيل الدورة",
+    "week": "أسبوع",
+    "weeks": "أسابيع",
+    "noCoursesFound": "لم يتم العثور على دورات",
+    "courseCode": "رمز الدورة",
+    "courseName": "اسم الدورة"
+  },
+  "About": {
+    "title": "حول NPTELPrep",
+    "description": "NPTELPrep هو منصة مجانية لمساعدة الطلاب في التحضير لدورات NPTEL من خلال أسئلة تدريبية ومواد دراسية والمزيد.",
+    "ourMission": "مهمتنا",
+    "missionText": "جعل التعليم الجيد متاحًا للجميع من خلال توفير موارد مجانية لدورات NPTEL.",
+    "contactUs": "اتصل بنا"
+  },
+  "LanguageSelector": {
+    "selectLanguage": "اختيار اللغة",
+    "commonLanguages": "اللغات الشائعة",
+    "indicLanguages": "اللغات الهندية"
+  },
+  "FeatureAnnounce": {
+    "title": "دعم لغة جديد",
+    "description": "لقد أضفنا دعمًا لـ 23 لغة، بما في ذلك العديد من اللغات الهندية! اختر لغتك المفضلة من القائمة أدناه."
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "Index": {
+    "title": "NPTELPrep – বিনামূলীয়া NPTEL অনুশীলনী প্ৰশ্নসমূহ আৰু অধ্যয়ন সামগ্ৰী",
+    "exploreCoursesButton": "কোর্সসমূহ এক্সপ্লোৰ কৰক",
+    "aboutButton": "সম্বন্ধে",
+    "stats": {
+      "totalCourses": "মুঠ কোর্স",
+      "totalStudyMaterials": "মুঠ অধ্যয়ন সামগ্ৰী",
+      "totalQuestions": "মুঠ প্ৰশ্ন"
+    },
+    "subtitle": "বিনামূলীয়া NPTEL অনুশীলনী প্ৰশ্নসমূহ আৰু অধ্যয়ন সামগ্ৰী"
+  },
+  "Common": {
+    "loading": "পঢ়ি আছে…",
+    "search": "অনুসন্ধান",
+    "searchPlaceholder": "কোর্সসমূহৰ বাবে অনুসন্ধান কৰক…",
+    "noResults": "কোনো ফলাফল নাপায়",
+    "viewAll": "সকলো চাওক",
+    "readMore": "অধিক পঢ়ক",
+    "backToTop": "মাথোঁলৈ উভতি যাওক",
+    "submit": "জমা কৰক",
+    "cancel": "বাতিল কৰক",
+    "save": "সংৰক্ষণ কৰক",
+    "delete": "মচি দিয়ক",
+    "edit": "সম্পাদনা কৰক",
+    "close": "বন্ধ কৰক",
+    "language": "ভাষা",
+    "selectLanguage": "ভাষা নিৰ্বাচন কৰক",
+    "suggestTranslation": "এটি ভাল অনুবাদ প্ৰস্তাৱ কৰক",
+    "suggestBetterTranslation": "এটি ভাল অনুবাদ প্ৰস্তাৱ কৰক",
+    "helpUsImproveTranslations": "অধিক সঠিক বিকল্প প্ৰস্তাৱ কৰি আমাৰ অনুবাদ উন্নত কৰাত সহায় কৰক।",
+    "currentTranslation": "বতর্মান অনুবাদ",
+    "yourSuggestion": "আপোনাৰ প্ৰস্তাব",
+    "enterBetterTranslation": "এই ভাষাত এটা ভাল অনুবাদ লিখক",
+    "submitSuggestion": "প্ৰস্তাব জমা কৰক",
+    "thankYouForSuggestion": "আপোনাৰ প্ৰস্তাবৰ বাবে ধন্যবাদ!",
+    "translationImprovement": "আপোনাৰ প্ৰদানকৃত তথ্যই আমাৰ অনুবাদ উন্নত কৰাত সহায় কৰে।"
+  },
+  "Navigation": {
+    "home": "হোম",
+    "courses": "কোর্সসমূহ",
+    "about": "সম্বন্ধে",
+    "practice": "অনুশীলন",
+    "materials": "সামগ্ৰী",
+    "videos": "ভিডিঅ’",
+    "discussions": "আলোচনা",
+    "quiz": "কুইজ",
+    "studyPlanner": "পঢ়া পৰিকল্পক"
+  },
+  "Footer": {
+    "copyright": "© {year} NPTELPrep. সকলো ধৰণৰ অধিকাৰ সংৰক্ষিত।",
+    "about": "সম্বন্ধে",
+    "privacy": "গোপনীয়তা নীতি",
+    "terms": "শর্তসমূহ"
+  },
+  "Courses": {
+    "allCourses": "সকলো কোর্স",
+    "courseDetails": "কোর্সৰ বিৱৰণ",
+    "week": "সপ্তাহ",
+    "weeks": "সপ্তাহসমূহ",
+    "noCoursesFound": "কোনো কোর্স পোৱা নগল",
+    "courseCode": "কোর্স কোড",
+    "courseName": "কোর্সৰ নাম"
+  },
+  "About": {
+    "title": "NPTELPrep সম্বন্ধে",
+    "description": "NPTELPrep এটা বিনামূলীয়া প্লেটফৰ্ম যি ছাত্ৰ-ছাত্ৰীৰ NPTEL কোর্সসমূহৰ বাবে অনুশীলনী প্ৰশ্ন, অধ্যয়ন সামগ্ৰী, আৰু আনুসংগিক সহায় প্ৰদান কৰে।",
+    "ourMission": "আমাৰ লক্ষ্য",
+    "missionText": "NPTEL কোর্সসমূহৰ বাবে বিনামূলীয়া সম্পদ প্ৰদান কৰি মানসম্পন্ন শিক্ষা সকলোকে উপলব্ধ কৰোৱা।",
+    "contactUs": "আমাৰ সৈতে যোগাযোগ কৰক"
+  },
+  "LanguageSelector": {
+    "selectLanguage": "ভাষা নিৰ্বাচন কৰক",
+    "commonLanguages": "প্ৰচলিত ভাষাসমূহ",
+    "indicLanguages": "ভাৰতীয় ভাষাসমূহ"
+  },
+  "FeatureAnnounce": {
+    "title": "নতুন ভাষা সমৰ্থন",
+    "description": "আমিয়ে ২৩টা ভাষা, য’ত বহু ভাৰতীয় ভাষাও আছে, সমৰ্থিত কৰিছো! তলৰ তালিকা পৰা আপোনাৰ পছন্দৰ ভাষা নিৰ্বাচন কৰক।"
+  }
+}

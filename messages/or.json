@@ -1,0 +1,81 @@
+{
+  "Index": {
+    "title": "NPTELPrep – ମାଗଣା NPTEL ଅଭ୍ୟାସ ପ୍ରଶ୍ନ ଏବଂ ଅଧ୍ୟୟନ ସାମଗ୍ରୀ",
+    "exploreCoursesButton": "କୋର୍ସ ଖୋଜନ୍ତୁ",
+    "aboutButton": "ବିଷୟରେ",
+    "stats": {
+      "totalCourses": "ମୋଟ କୋର୍ସ",
+      "totalStudyMaterials": "ମୋଟ ଅଧ୍ୟୟନ ସାମଗ୍ରୀ",
+      "totalQuestions": "ମୋଟ ପ୍ରଶ୍ନ"
+    },
+    "subtitle": "ମାଗଣା NPTEL ଅଭ୍ୟାସ ପ୍ରଶ୍ନ ଏବଂ ଅଧ୍ୟୟନ ସାମଗ୍ରୀ"
+  },
+  "Common": {
+    "loading": "ଲୋଡ୍ ହେଉଛି…",
+    "search": "ଖୋଜନ୍ତୁ",
+    "searchPlaceholder": "କୋର୍ସ ପାଇଁ ଖୋଜନ୍ତୁ…",
+    "noResults": "କ poolଳାଫଳ ମିଳୁନି",
+    "viewAll": "ସବୁ ଦେଖନ୍ତୁ",
+    "readMore": "ଅଧିକ ପଢ଼ନ୍ତୁ",
+    "backToTop": "ଉପରକୁ ଯାଆନ୍ତୁ",
+    "submit": "ଉପସ୍ଥାପନ କରନ୍ତୁ",
+    "cancel": "ବାତିଲ କରନ୍ତୁ",
+    "save": "ସଂରକ୍ଷଣ କରନ୍ତୁ",
+    "delete": "ମିଟାନ୍ତୁ",
+    "edit": "ସମ୍ପାଦନା କରନ୍ତୁ",
+    "close": "ବନ୍ଦ କରନ୍ତୁ",
+    "language": "ଭାଷା",
+    "selectLanguage": "ଭାଷା ଚୟନ କରନ୍ତୁ",
+    "suggestTranslation": "ଭଲ ଅନୁବାଦ ପ୍ରସ୍ତାବ କରନ୍ତୁ",
+    "suggestBetterTranslation": "ଭଲ ଅନୁବାଦ ପ୍ରସ୍ତାବ କରନ୍ତୁ",
+    "helpUsImproveTranslations": "ଅଧିକ ସଠିକ ବିକଳ୍ପ ପ୍ରସ୍ତାବ କରି ଆମ ଅନୁବାଦଗୁଡିକୁ ସୁଧାରିବାରେ ସାହାଯ୍ୟ କରନ୍ତୁ।",
+    "currentTranslation": "ବର୍ତ୍ତମାନ ଅନୁବାଦ",
+    "yourSuggestion": "ଆପଣଙ୍କର ପ୍ରସ୍ତାବ",
+    "enterBetterTranslation": "ଏହି ଭାଷାରେ ଭଲ ଅନୁବାଦ ଲେଖନ୍ତୁ",
+    "submitSuggestion": "ପ୍ରସ୍ତାବ ଦାଖଲ କରନ୍ତୁ",
+    "thankYouForSuggestion": "ଆପଣଙ୍କର ପ୍ରସ୍ତାବ ପାଇଁ ଧନ୍ୟବାଦ!",
+    "translationImprovement": "ଆପଣଙ୍କର ମତାମତ ଆମକୁ ଅନୁବାଦଗୁଡିକୁ ସୁଧାରିବାରେ ସାହାଯ୍ୟ କରେ।"
+  },
+  "Navigation": {
+    "home": "ମୁଖ୍ୟ ପୃଷ୍ଠା",
+    "courses": "କୋର୍ସ",
+    "about": "ବିଷୟରେ",
+    "practice": "ଅଭ୍ୟାସ",
+    "materials": "ସାମଗ୍ରୀ",
+    "videos": "ଭିଡିଓ",
+    "discussions": "ଆଲୋଚନା",
+    "quiz": "କ୍ୱିଜ୍",
+    "studyPlanner": "ଅଧ୍ୟୟନ ଯୋଜନା"
+  },
+  "Footer": {
+    "copyright": "© {year} NPTELPrep. ସମସ୍ତ ଅଧିକାର ସଂରକ୍ଷିତ।",
+    "about": "ବିଷୟରେ",
+    "privacy": "ଗୋପନୀୟତା",
+    "terms": "ସର୍ତ୍ତାବଳୀ"
+  },
+  "Courses": {
+    "allCourses": "ସମସ୍ତ କୋର୍ସ",
+    "courseDetails": "କୋର୍ସ ବିବରଣୀ",
+    "week": "ସପ୍ତାହ",
+    "weeks": "ସପ୍ତାହଗୁଡିକ",
+    "noCoursesFound": "କୌଣସି କୋର୍ସ ମିଳିଲା ନାହିଁ",
+    "courseCode": "କୋର୍ସ କୋଡ୍",
+    "courseName": "କୋର୍ସ ନାମ"
+  },
+  "About": {
+    "title": "NPTELPrep ବିଷୟରେ",
+    "description": "NPTELPrep ଏକ ମାଗଣା ମଞ୍ଚ ଯାହା ଛାତ୍ରଛାତ୍ରୀଙ୍କୁ ପ୍ରଶ୍ନାଭ୍ୟାସ, ଅଧ୍ୟୟନ ସାମଗ୍ରୀ ଏବଂ ଅନ୍ୟାନ୍ୟ ଉପାଦାନ ମାଧ୍ୟମରେ NPTEL କୋର୍ସ ପାଇଁ ପ୍ରସ୍ତୁତି ନେବାରେ ସାହାଯ୍ୟ କରେ।",
+    "ourMission": "ଆମର ଲକ୍ଷ୍ୟ",
+    "missionText": "NPTEL କୋର୍ସଗୁଡିକ ପାଇଁ ମାଗଣା ସାମଗ୍ରୀ ଯୋଗାଇ ଉଚ୍ଚ ଗୁଣସ୍ତରୀୟ ଶିକ୍ଷା ପ୍ରତ୍ୟେକଙ୍କ ପାଖରେ ଉପଲବ୍ଧ କରାଉଛି।",
+    "contactUs": "ଆମକୁ ସମ୍ପର୍କ କରନ୍ତୁ"
+  },
+  "LanguageSelector": {
+    "selectLanguage": "ଭାଷା ଚୟନ କରନ୍ତୁ",
+    "commonLanguages": "ସାଧାରଣ ଭାଷା",
+    "indicLanguages": "ଇଣ୍ଡିକ୍ ଭାଷା"
+  },
+  "FeatureAnnounce": {
+    "title": "ନୂତନ ଭାଷା ସହାୟତା",
+    "description": "ଆମେ 23ଟି ଭାଷା (ଅନେକ ଇଣ୍ଡିକ୍ ଭାଷା ସହିତ) ପାଇଁ ସହାୟତା ଯୋଗ କରିଛୁ! ନିମ୍ନ ଚୟନକର୍ତ୍ତାରୁ ଆପଣଙ୍କର ପସନ୍ଦ ଭାଷା ଚୟନ କରନ୍ତୁ।"
+  }
+}

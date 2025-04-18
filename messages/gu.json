@@ -1,0 +1,81 @@
+{
+  "Index": {
+    "title": "NPTELPrep - મફત NPTEL અભ્યાસ પ્રશ્નો અને અભ્યાસ સામગ્રી",
+    "exploreCoursesButton": "અભ્યાસક્રમો શોધો",
+    "aboutButton": "વિશે",
+    "stats": {
+      "totalCourses": "કુલ અભ્યાસક્રમો",
+      "totalStudyMaterials": "કુલ અભ્યાસ સામગ્રી",
+      "totalQuestions": "કુલ પ્રશ્નો"
+    },
+    "subtitle": "મફત NPTEL અભ્યાસ પ્રશ્નો અને અભ્યાસ સામગ્રી"
+  },
+  "Common": {
+    "loading": "લોડ થઈ રહ્યું છે...",
+    "search": "શોધો",
+    "searchPlaceholder": "અભ્યાસક્રમો માટે શોધો...",
+    "noResults": "કોઈ પરિણામ મળ્યું નથી",
+    "viewAll": "બધું જુઓ",
+    "readMore": "વધુ વાંચો",
+    "backToTop": "ટોચ પર પાછા જાઓ",
+    "submit": "સબમિટ કરો",
+    "cancel": "રદ કરો",
+    "save": "સાચવો",
+    "delete": "કાઢી નાખો",
+    "edit": "સંપાદિત કરો",
+    "close": "બંધ કરો",
+    "language": "ભાષા",
+    "selectLanguage": "ભાષા પસંદ કરો",
+    "suggestTranslation": "વધુ સારો અનુવાદ સૂચવો",
+    "suggestBetterTranslation": "વધુ સારો અનુવાદ સૂચવો",
+    "helpUsImproveTranslations": "વધુ સચોટ વિકલ્પો સૂચવીને અમારા અનુવાદો સુધારવામાં મદદ કરો.",
+    "currentTranslation": "વર્તમાન અનુવાદ",
+    "yourSuggestion": "તમારી સૂચના",
+    "enterBetterTranslation": "આ ભાષામાં વધુ સારો અનુવાદ દાખલ કરો",
+    "submitSuggestion": "સૂચના સબમિટ કરો",
+    "thankYouForSuggestion": "તમારી સૂચના બદલ આભાર!",
+    "translationImprovement": "તમારી ઇનપુટ અમારા અનુવાદો સુધારવામાં મદદ કરે છે."
+  },
+  "Navigation": {
+    "home": "હોમ",
+    "courses": "અભ્યાસક્રમો",
+    "about": "વિશે",
+    "practice": "પ્રેક્ટિસ",
+    "materials": "સામગ્રી",
+    "videos": "વિડિઓઝ",
+    "discussions": "ચર્ચાઓ",
+    "quiz": "ક્વિઝ",
+    "studyPlanner": "અભ્યાસ પ્લાનર"
+  },
+  "Footer": {
+    "copyright": "© {year} NPTELPrep. બધા હક્કો અમારી પાસે રાખેલ છે.",
+    "about": "વિશે",
+    "privacy": "ગોપનીયતા",
+    "terms": "શરતો"
+  },
+  "Courses": {
+    "allCourses": "બધા અભ્યાસક્રમો",
+    "courseDetails": "અભ્યાસક્રમ વિગતો",
+    "week": "સપ્તાહ",
+    "weeks": "સપ્તાહો",
+    "noCoursesFound": "કોઈ અભ્યાસક્રમો મળ્યા નથી",
+    "courseCode": "અભ્યાસક્રમ કોડ",
+    "courseName": "અભ્યાસક્રમનું નામ"
+  },
+  "About": {
+    "title": "NPTELPrep વિશે",
+    "description": "NPTELPrep એક મફત પ્લેટફોર્મ છે જે વિદ્યાર્થીઓને NPTEL અભ્યાસક્રમો માટે પ્રેક્ટિસ પ્રશ્નો, અભ્યાસ સામગ્રી અને વધુ સાથે તૈયારી કરવામાં મદદ કરે છે.",
+    "ourMission": "અમારું મિશન",
+    "missionText": "NPTEL અભ્યાસક્રમો માટે મફત સંસાધનો પ્રદાન કરીને દરેક માટે ગુણવત્તાયુક્ત શિક્ષણને સુલભ બનાવવું.",
+    "contactUs": "અમારો સંપર્ક કરો"
+  },
+  "LanguageSelector": {
+    "selectLanguage": "ભાષા પસંદ કરો",
+    "commonLanguages": "સામાન્ય ભાષાઓ",
+    "indicLanguages": "ભારતીય ભાષાઓ"
+  },
+  "FeatureAnnounce": {
+    "title": "નવી ભાષા સપોર્ટ",
+    "description": "અમે 23 ભાષાઓ માટે સપોર્ટ ઉમેર્યો છે, જેમાં ઘણી ભારતીય ભાષાઓ શામેલ છે! નીચેના સિલેક્ટરમાંથી તમારી પસંદગીની ભાષા પસંદ કરો."
+  }
+}

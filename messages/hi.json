@@ -1,0 +1,82 @@
+{
+    "Index": {
+      "title": "NPTELPrep - NPTEL अभ्यास प्रश्न और अध्ययन सामग्री मुफ्त",
+      "exploreCoursesButton": "पाठ्यक्रम देखें",
+      "aboutButton": "हमारे बारे में",
+      "stats": {
+        "totalCourses": "कुल पाठ्यक्रम",
+        "totalStudyMaterials": "कुल अध्ययन सामग्री",
+        "totalQuestions": "कुल प्रश्न"
+      },
+      "subtitle": "NPTEL के लिए मुफ्त अभ्यास प्रश्न और अध्ययन सामग्री"
+    },
+    "Common": {
+      "loading": "लोड हो रहा है...",
+      "search": "खोज",
+      "searchPlaceholder": "पाठ्यक्रम खोजें...",
+      "noResults": "कोई परिणाम नहीं मिला",
+      "viewAll": "सभी देखें",
+      "readMore": "और पढ़ें",
+      "backToTop": "शीर्ष पर वापस जाएं",
+      "submit": "जमा करें",
+      "cancel": "रद्द करें",
+      "save": "सहेजें",
+      "delete": "हटाएं",
+      "edit": "संपादित करें",
+      "close": "बंद करें",
+      "language": "भाषा",
+      "selectLanguage": "भाषा चुनें",
+      "suggestTranslation": "एक बेहतर अनुवाद सुझाएँ",
+      "suggestBetterTranslation": "एक बेहतर अनुवाद सुझाएँ",
+      "helpUsImproveTranslations": "अधिक सटीक विकल्प सुझाकर हमारे अनुवादों में सुधार करने में मदद करें।",
+      "currentTranslation": "वर्तमान अनुवाद",
+      "yourSuggestion": "आपका सुझाव",
+      "enterBetterTranslation": "इस भाषा में बेहतर अनुवाद दर्ज करें",
+      "submitSuggestion": "सुझाव भेजें",
+      "thankYouForSuggestion": "आपके सुझाव के लिए धन्यवाद!",
+      "translationImprovement": "आपका योगदान हमारे अनुवादों को बेहतर बनाने में मदद करता है।"
+    },
+    "Navigation": {
+      "home": "मुख्य पृष्ठ",
+      "courses": "पाठ्यक्रम",
+      "about": "हमारे बारे में",
+      "practice": "अभ्यास",
+      "materials": "अध्ययन सामग्री",
+      "videos": "वीडियो",
+      "discussions": "चर्चा",
+      "quiz": "क्विज़",
+      "studyPlanner": "अध्ययन योजना"
+    },
+    "Footer": {
+      "copyright": "© {year} NPTELPrep. सर्वाधिकार सुरक्षित।",
+      "about": "हमारे बारे में",
+      "privacy": "गोपनीयता नीति",
+      "terms": "उपयोग की शर्तें"
+    },
+    "Courses": {
+      "allCourses": "सभी पाठ्यक्रम",
+      "courseDetails": "पाठ्यक्रम विवरण",
+      "week": "सप्ताह",
+      "weeks": "सप्ताह",
+      "noCoursesFound": "कोई पाठ्यक्रम नहीं मिला",
+      "courseCode": "पाठ्यक्रम कोड",
+      "courseName": "पाठ्यक्रम नाम"
+    },
+    "About": {
+      "title": "NPTELPrep के बारे में",
+      "description": "NPTELPrep एक मुफ्त प्लेटफ़ॉर्म है जो छात्रों को अभ्यास प्रश्न, अध्ययन सामग्री और बहुत कुछ प्रदान करके NPTEL पाठ्यक्रमों की तैयारी में मदद करता है।",
+      "ourMission": "हमारा मिशन",
+      "missionText": "NPTEL पाठ्यक्रमों के लिए मुफ्त संसाधन प्रदान करके सभी के लिए गुणवत्तापूर्ण शिक्षा को सुलभ बनाना।",
+      "contactUs": "संपर्क करें"
+    },
+    "LanguageSelector": {
+      "selectLanguage": "भाषा चुनें",
+      "commonLanguages": "सामान्य भाषाएँ",
+      "indicLanguages": "भारतीय भाषाएँ"
+    },
+    "FeatureAnnounce": {
+      "title": "नई भाषा समर्थन",
+      "description": "हमने 23 भाषाओं के लिए समर्थन जोड़ा है, जिनमें कई भारतीय भाषाएँ शामिल हैं! नीचे चयनकर्ता से अपनी पसंदीदा भाषा चुनें।"
+    }
+  }
+  
