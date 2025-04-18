@@ -133,13 +133,21 @@ export default async function Page() {
           {/* <p className="text-xl text-blue-300 mb-8">
             Choose a course, take quizzes, and enhance your learning experience
           </p> */}
-          <Link href="/courses">
-            <Button
-              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full text-sm font-semibold transition-colors duration-300 shadow-lg hover:shadow-blue-500/50"
-            >
-              Explore Courses
-            </Button>
-          </Link>
+          <div className="flex flex-col items-center">
+            <Link href="/courses">
+              <Button
+                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full text-sm font-semibold transition-colors duration-300 shadow-lg hover:shadow-blue-500/50 mb-8"
+              >
+                Explore Courses
+              </Button>
+            </Link>
+            
+            <Link href="/about">
+              <Button variant="ghost" className="text-blue-300 hover:text-blue-100 hover:bg-blue-800/30">
+                About
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     </div>
