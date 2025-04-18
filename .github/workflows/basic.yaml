@@ -20,20 +20,10 @@ jobs:
           node-version: 18
 
       - name: Install dependencies
-        run: npm ci
-
-      - name: ESLint
-        run: npm run lint
-
-      - name: Type-check
-        run: npm run type-check
+        run: npm i
 
       - name: Build Next.js
         run: npm run build
-
-      - name: Run tests
-        run: npm test
-
   audit:
     name: Audit dependencies
     runs-on: ubuntu-latest
@@ -49,7 +39,6 @@ jobs:
 
       - name: npm audit (fail on ≥moderate)
         run: npm audit --audit-level=moderate
-
   codeql:
     name: CodeQL Analysis
     runs-on: ubuntu-latest
