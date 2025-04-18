@@ -1,0 +1,37 @@
+name: LOC
+
+on:
+  push:
+    branches:
+      - futureprep
+  pull_request:
+
+jobs:
+  count-loc:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install cloc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cloc
+
+      - name: Generate LOC reports
+        run: |
+          # Markdown summary
+          cloc --md . > cloc-report.md
+          # JSON report (for further processing if you wish)
+          cloc --json . > cloc-report.json
+
+      - name: Display LOC summary
+        run: cat cloc-report.md
+
+      - name: Upload LOC reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: loc-reports
+          path: |
+            cloc-report.md
+            cloc-report.json
