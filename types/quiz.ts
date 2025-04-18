@@ -1,4 +1,4 @@
-export type QuizType = 'practice' | 'timed' | 'quick' | 'progress';
+export type QuizType = 'practice' | 'timed' | 'quick' | 'progress' | 'weekly';
 
 export interface Option {
   option_number: string;
@@ -12,6 +12,7 @@ export interface Question {
   options: Array<Option | string>;
   answer: string[];
   shuffledOptions?: Array<Option | string>;
+  week_name?: string;
 }
 
 export interface QuestionDisplayProps {

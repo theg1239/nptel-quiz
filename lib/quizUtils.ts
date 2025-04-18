@@ -7,6 +7,7 @@ export interface Question {
   }>;
   answer: string[];
   content_type?: 'mcq' | 'text';
+  week_name?: string;
 }
 
 export function stripOptionLabels(option: string): string {
@@ -25,7 +26,9 @@ export function initializeQuestionsWithFixedOrder(questions: Question[]): Questi
   return questions.map(q => ({
     ...q,
     options: q.options || [],
-    answer: q.answer || []
+    answer: q.answer || [],
+    // Explicitly preserve the week_name if it exists
+    week_name: q.week_name || undefined
   }));
 }
 

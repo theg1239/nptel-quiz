@@ -1,8 +1,8 @@
 import { Metadata } from 'next'
 import { getCourse } from '@/lib/actions'
 import InteractiveQuiz from '@/components/InteractiveQuiz'
-import { Question } from '@/types/quiz'
-import { QuizType } from '@/types/quiz'
+import { Question as QuizQuestion, QuizType } from '@/types/quiz'
+import { Question as UtilsQuestion, normalizeQuestion } from '@/lib/quizUtils'
 
 interface Assignment {
   questions: Array<{
@@ -46,7 +46,7 @@ export default async function QuizPage({
 }) {
   const { course_code, quiz_type } = await params;
   
-  if (!['practice', 'timed', 'quick', 'progress'].includes(quiz_type)) {
+  if (!['practice', 'timed', 'quick', 'progress', 'weekly'].includes(quiz_type)) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 flex items-center justify-center">
         <div className="bg-gray-800 bg-opacity-50 backdrop-blur-md p-8 rounded-lg text-center">
@@ -66,20 +66,44 @@ export default async function QuizPage({
   try {
     const course = await getCourse(course_code);
     
-    const questions = course.weeks.reduce((allQuestions, week) => {
-      if (week?.questions && Array.isArray(week.questions)) {
-        const validQuestions = week.questions.filter((q: Question) => 
-          q && (
-            (q.question && q.answer && Array.isArray(q.answer) && q.answer.length > 0 && 
-             q.options && Array.isArray(q.options) && q.options.length >= 2) ||
-            (q.content_type === 'text' && q.question && q.question_text)
-          )
-        );
-
-        return [...allQuestions, ...validQuestions];
-      }
-      return allQuestions;
-    }, [] as Question[]);
+    let questions: QuizQuestion[] = [];
+    
+    if (quiz_type === 'weekly') {
+      questions = course.weeks.reduce((allQuestions, week) => {
+        if (week?.questions && Array.isArray(week.questions)) {
+          const validQuestions = week.questions.filter((q: any) => 
+            q && (
+              (q.question && q.answer && Array.isArray(q.answer) && q.answer.length > 0 && 
+              q.options && Array.isArray(q.options) && q.options.length >= 2) ||
+              (q.content_type === 'text' && q.question && q.question_text)
+            )
+          );
+          
+          const questionsWithWeekName = validQuestions.map((q: any) => ({
+            ...q,
+            week_name: week.name
+          }));
+          
+          return [...allQuestions, ...questionsWithWeekName];
+        }
+        return allQuestions;
+      }, [] as QuizQuestion[]);
+      
+    } else {
+      questions = course.weeks.reduce((allQuestions, week) => {
+        if (week?.questions && Array.isArray(week.questions)) {
+          const validQuestions = week.questions.filter((q: any) => 
+            q && (
+              (q.question && q.answer && Array.isArray(q.answer) && q.answer.length > 0 && 
+              q.options && Array.isArray(q.options) && q.options.length >= 2) ||
+              (q.content_type === 'text' && q.question && q.question_text)
+            )
+          );
+          return [...allQuestions, ...validQuestions];
+        }
+        return allQuestions;
+      }, [] as QuizQuestion[]);
+    }
 
     if (!questions || questions.length === 0) {
       return (
@@ -98,9 +122,40 @@ export default async function QuizPage({
       );
     }
 
+    const normalizedQuestions: UtilsQuestion[] = questions.map(q => {
+      let normalizedOptions = Array.isArray(q.options) 
+        ? q.options.map(opt => {
+            if (typeof opt === 'string') {
+              const labelMatch = opt.match(/^([A-Z])[).:-]/i);
+              const label = labelMatch ? labelMatch[1].toUpperCase() : '';
+              const text = opt.replace(/^[A-Z][).:-]\s*/i, '').trim();
+              return {
+                option_number: label,
+                option_text: text
+              };
+            } else if (opt && typeof opt === 'object' && 'option_number' in opt && 'option_text' in opt) {
+              return opt;
+            }
+            return {
+              option_number: '',
+              option_text: String(opt)
+            };
+          }) 
+        : [];
+
+      return {
+        question: q.question,
+        question_text: q.question_text || '',
+        options: normalizedOptions,
+        answer: Array.isArray(q.answer) ? q.answer : [],
+        content_type: q.content_type || 'mcq',
+        week_name: (q as any).week_name
+      } as UtilsQuestion;
+    });
+
     return (
       <InteractiveQuiz 
-        questions={questions}
+        questions={normalizedQuestions}
         courseCode={course_code}
         courseName={course.title || course.course_name}
         quizType={quiz_type as QuizType}

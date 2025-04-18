@@ -210,6 +210,7 @@ const QuizContent = ({
   const currentQuestion = questions[currentQuestionIndex];
   const isTextQuestion = currentQuestion.content_type === 'text';
   const cleanedQuestion = cleanQuestionText(question);
+  const weekName = quizType === 'weekly' ? (currentQuestion as any).week_name : null;
   
   // Determine text size based on question length
   const questionTextClass = cleanedQuestion.length > 100 
@@ -219,127 +220,136 @@ const QuizContent = ({
     : 'text-2xl sm:text-3xl';
 
   return (
-    <Card className="bg-gray-800 bg-opacity-50 backdrop-blur-sm border-2 border-blue-500 shadow-lg h-full flex flex-col">
-      <CardHeader className="flex-shrink-0 px-4 py-3">
-        <div className="flex justify-between items-center gap-2 mb-2">
-          <CardTitle className={`${questionTextClass} font-bold text-blue-300 break-words flex-1`}>
-            {currentQuestionIndex + 1}. {cleanedQuestion}
-          </CardTitle>
-        </div>
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <div className="text-blue-300 font-semibold text-sm sm:text-base">
-              Score: {currentScore} / {totalQuestions}
+    <ScrollArea className="custom-scrollbar flex-1 w-full mb-4 overflow-y-auto">
+      <div className="p-1 md:p-2">
+        <Card className="bg-gray-800 bg-opacity-50 backdrop-blur-sm border-2 border-blue-500 shadow-lg h-full flex flex-col">
+          <CardHeader className="flex-shrink-0 px-4 py-3">
+            {weekName && (
+              <div className="mb-2">
+                <span className="text-sm font-medium text-blue-400">{weekName}</span>
+              </div>
+            )}
+            <div className="flex justify-between items-center gap-2 mb-2">
+              <CardTitle className={`${questionTextClass} font-bold text-blue-300 break-words flex-1`}>
+                {currentQuestionIndex + 1}. {cleanedQuestion}
+              </CardTitle>
             </div>
-          </div>
-          {(quizType === 'timed' || quizType === 'quick') && (
-            <div className="w-32 sm:w-40">
-              <QuizTimer time={timeLeft} maxTime={maxTime} />
-            </div>
-          )}
-        </div>
-      </CardHeader>
-      
-      <CardContent className="flex-1 overflow-y-auto no-scrollbar px-4 py-2">
-        {isTextQuestion ? (
-          <div className="space-y-4">
-            <div className="bg-gray-700 bg-opacity-50 p-4 rounded-lg border-2 border-gray-600 max-h-[40vh] overflow-y-auto">
-              <p className="text-gray-200 whitespace-pre-wrap text-sm sm:text-base">
-                {currentQuestion.question_text}
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-4">
             <div className="flex justify-between items-center">
-              {quizSettings?.enablePowerUps && (
-                <div className="flex flex-wrap gap-2">
-                  {powerUps.map((powerUp, index) => (
-                    <PowerUp
-                      key={index}
-                      icon={powerUp.icon}
-                      name={powerUp.name}
-                      active={powerUp.active}
-                      onClick={() => onUsePowerUp(powerUp.type)}
-                    />
-                  ))}
+              <div className="flex items-center gap-2">
+                <div className="text-blue-300 font-semibold text-sm sm:text-base">
+                  Score: {currentScore} / {totalQuestions}
                 </div>
-              )}
-              
-              {quizSettings.enableLives && (quizType === 'timed' || quizType === 'quick' || quizType === 'progress') && (
-                <div className="flex gap-1">
-                  {[...Array(3)].map((_, i) => (
-                    <Heart
-                      key={i}
-                      className={`h-4 w-4 sm:h-6 sm:w-6 ${
-                        i < lives ? 'text-red-500 fill-red-500' : 'text-red-500/50'
-                      }`}
-                    />
-                  ))}
+              </div>
+              {(quizType === 'timed' || quizType === 'quick') && (
+                <div className="w-32 sm:w-40">
+                  <QuizTimer time={timeLeft} maxTime={maxTime} />
                 </div>
               )}
             </div>
-            
-            <div className="grid gap-2 sm:gap-3 min-h-[50vh] sm:min-h-[40vh]" role="radiogroup" aria-label="Quiz options">
-              {options.map((option, index) => {
-                const isSelected = selectedOptions.includes(index);
-                const isCorrect = currentQuestion.answer.includes(option.option_number.toUpperCase());
-                const showCorrect = (feedback && quizType === 'practice' && isCorrect) || 
-                                  (feedback && !feedback.correct && isCorrect);
-                const cleanedOptionText = cleanOptionText(option.option_text, question);
-                const optionTextClass = cleanedOptionText.length > 80 ? 'text-xs sm:text-sm' : 'text-sm sm:text-base';
-                const optionId = `option-${currentQuestionIndex}-${index}`;
+          </CardHeader>
+          
+          <CardContent className="flex-1 overflow-y-auto no-scrollbar px-4 py-2">
+            {isTextQuestion ? (
+              <div className="space-y-4">
+                <div className="bg-gray-700 bg-opacity-50 p-4 rounded-lg border-2 border-gray-600 max-h-[40vh] overflow-y-auto custom-scrollbar">
+                  <p className="text-gray-200 whitespace-pre-wrap text-sm sm:text-base">
+                    {currentQuestion.question_text}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  {quizSettings?.enablePowerUps && (
+                    <div className="flex flex-wrap gap-2">
+                      {powerUps.map((powerUp, index) => (
+                        <PowerUp
+                          key={index}
+                          icon={powerUp.icon}
+                          name={powerUp.name}
+                          active={powerUp.active}
+                          onClick={() => onUsePowerUp(powerUp.type)}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  
+                  {quizSettings.enableLives && (quizType === 'timed' || quizType === 'quick' || quizType === 'progress') && (
+                    <div className="flex gap-1">
+                      {[...Array(3)].map((_, i) => (
+                        <Heart
+                          key={i}
+                          className={`h-4 w-4 sm:h-6 sm:w-6 ${
+                            i < lives ? 'text-red-500 fill-red-500' : 'text-red-500/50'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
                 
-                return (
-                  <div key={index} className="relative">
-                    <input
-                      type="radio"
-                      id={optionId}
-                      name={`question-${currentQuestionIndex}`}
-                      checked={isSelected}
-                      onChange={() => !isAnswerLocked && onAnswer([index])}
-                      disabled={isAnswerLocked}
-                      className="sr-only peer"
-                      aria-label={`Option ${option.option_number}: ${cleanedOptionText}`}
-                    />
-                    <label
-                      htmlFor={optionId}
-                      className={`block w-full p-2.5 sm:p-4 rounded-lg text-left transition-all duration-200 cursor-pointer select-none ${
-                        isAnswerLocked
-                          ? isSelected
-                            ? isCorrect
-                              ? 'bg-green-600 bg-opacity-20 border-2 border-green-500 text-green-300'
-                              : 'bg-red-600 bg-opacity-20 border-2 border-red-500 text-red-300'
-                            : showCorrect
-                            ? 'bg-green-600 bg-opacity-20 border-2 border-green-500 text-green-300'
-                            : 'bg-gray-700 bg-opacity-50 border-2 border-gray-600 text-gray-400'
-                          : 'bg-gray-700 bg-opacity-50 border-2 border-gray-600 text-gray-300 hover:bg-gray-600 hover:border-gray-500 peer-checked:bg-blue-600 peer-checked:bg-opacity-20 peer-checked:border-blue-500 peer-checked:text-blue-300'
-                      }`}
-                    >
-                      <div className="flex items-start sm:items-center">
-                        <span className="text-base sm:text-lg font-semibold mr-2 flex-shrink-0 min-w-[1.5rem]">
-                          {option.option_number}.
-                        </span>
-                        <span className={`${optionTextClass} break-words flex-grow`}>
-                          {cleanedOptionText}
-                        </span>
-                        {isAnswerLocked && (
-                          <span className="ml-2 flex-shrink-0">
-                            {isSelected && isCorrect && <CheckCircle className="h-5 w-5 text-green-500" />}
-                            {isSelected && !isCorrect && <XCircle className="h-5 w-5 text-red-500" />}
-                            {!isSelected && showCorrect && <CheckCircle className="h-5 w-5 text-green-500" />}
-                          </span>
-                        )}
+                <div className="grid gap-2 sm:gap-3 min-h-[50vh] sm:min-h-[40vh]" role="radiogroup" aria-label="Quiz options">
+                  {options.map((option, index) => {
+                    const isSelected = selectedOptions.includes(index);
+                    const isCorrect = currentQuestion.answer.includes(option.option_number.toUpperCase());
+                    const showCorrect = (feedback && quizType === 'practice' && isCorrect) || 
+                                      (feedback && !feedback.correct && isCorrect);
+                    const cleanedOptionText = cleanOptionText(option.option_text, question);
+                    const optionTextClass = cleanedOptionText.length > 80 ? 'text-xs sm:text-sm' : 'text-sm sm:text-base';
+                    const optionId = `option-${currentQuestionIndex}-${index}`;
+                    
+                    return (
+                      <div key={index} className="relative">
+                        <input
+                          type="radio"
+                          id={optionId}
+                          name={`question-${currentQuestionIndex}`}
+                          checked={isSelected}
+                          onChange={() => !isAnswerLocked && onAnswer([index])}
+                          disabled={isAnswerLocked}
+                          className="sr-only peer"
+                          aria-label={`Option ${option.option_number}: ${cleanedOptionText}`}
+                        />
+                        <label
+                          htmlFor={optionId}
+                          className={`block w-full p-2.5 sm:p-4 rounded-lg text-left transition-all duration-200 cursor-pointer select-none ${
+                            isAnswerLocked
+                              ? isSelected
+                                ? isCorrect
+                                  ? 'bg-green-600 bg-opacity-20 border-2 border-green-500 text-green-300'
+                                  : 'bg-red-600 bg-opacity-20 border-2 border-red-500 text-red-300'
+                                : showCorrect
+                                ? 'bg-green-600 bg-opacity-20 border-2 border-green-500 text-green-300'
+                                : 'bg-gray-700 bg-opacity-50 border-2 border-gray-600 text-gray-400'
+                              : 'bg-gray-700 bg-opacity-50 border-2 border-gray-600 text-gray-300 hover:bg-gray-600 hover:border-gray-500 peer-checked:bg-blue-600 peer-checked:bg-opacity-20 peer-checked:border-blue-500 peer-checked:text-blue-300'
+                          }`}
+                        >
+                          <div className="flex items-start sm:items-center">
+                            <span className="text-base sm:text-lg font-semibold mr-2 flex-shrink-0 min-w-[1.5rem]">
+                              {option.option_number}.
+                            </span>
+                            <span className={`${optionTextClass} break-words flex-grow`}>
+                              {cleanedOptionText}
+                            </span>
+                            {isAnswerLocked && (
+                              <span className="ml-2 flex-shrink-0">
+                                {isSelected && isCorrect && <CheckCircle className="h-5 w-5 text-green-500" />}
+                                {isSelected && !isCorrect && <XCircle className="h-5 w-5 text-red-500" />}
+                                {!isSelected && showCorrect && <CheckCircle className="h-5 w-5 text-green-500" />}
+                              </span>
+                            )}
+                          </div>
+                        </label>
                       </div>
-                    </label>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </ScrollArea>
   );
 };
 
@@ -351,7 +361,7 @@ const Quiz = ({
   courseName,
   courseCode,
 }: {
-  quizType: "practice" | "timed" | "quick" | "progress"
+  quizType: QuizType
   onExit: () => void
   questions: Question[]
   quizTime: number
@@ -362,7 +372,12 @@ const Quiz = ({
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [score, setScore] = useState(0)
   const [lives, setLives] = useState(3)
-  const [timeLeft, setTimeLeft] = useState(quizType === 'timed' || quizType === 'quick' ? quizTime * 60 : 0)
+  const [timeLeft, setTimeLeft] = useState(() => {
+    if (quizType === 'timed' || quizType === 'quick' || quizType === 'weekly') {
+      return quizTime * 60;
+    }
+    return 0;
+  })
   const [powerUps, setPowerUps] = useState<PowerUpType[]>([])
   const [quizEnded, setQuizEnded] = useState(false)
   const [availableOptions, setAvailableOptions] = useState<number[]>([0, 1, 2, 3])
@@ -381,14 +396,10 @@ const Quiz = ({
     enableLives: true
   })
 
-  const [powerUpUsage, setPowerUpUsage] = useState(() => {
-    const savedUsage = localStorage.getItem(`powerUpUsage_${courseCode}`)
-    return savedUsage ? JSON.parse(savedUsage) : {}
-  })
+  // Remove powerUpUsage from localStorage dependency, make it session-only
+  const [powerUpUsage, setPowerUpUsage] = useState<Record<string, boolean>>({})
 
-  const [viewedAnswers, setViewedAnswers] = useState<{[key: number]: boolean}>({});
-
-  // Initialize power-ups for all quiz types if enabled, with persistence
+  // Initialize power-ups for all quiz types if enabled
   useEffect(() => {
     if (quizSettings.enablePowerUps) {
       setPowerUps([
@@ -416,17 +427,41 @@ const Quiz = ({
     }
   }, [quizSettings.enablePowerUps, powerUpUsage])
 
-  // Save power-up usage to localStorage when used
+  // Update powerup usage without localStorage
   const savePowerUpUsage = useCallback((type: string) => {
-    const newUsage = { ...powerUpUsage, [type]: true }
-    setPowerUpUsage(newUsage)
-    localStorage.setItem(`powerUpUsage_${courseCode}`, JSON.stringify(newUsage))
-  }, [powerUpUsage, courseCode])
+    setPowerUpUsage(prev => ({ ...prev, [type]: true }))
+  }, [])
 
-  // Set initial lives based on settings
-  useEffect(() => {
-    setLives(quizSettings.enableLives ? 3 : 0)
-  }, [quizSettings.enableLives])
+  // Reset powerups on quiz exit
+  const handleExit = useCallback(() => {
+    setPowerUpUsage({})
+    if (onExit) onExit()
+  }, [onExit])
+
+  // Group questions by week for weekly quiz
+  const [questionsByWeek] = useState(() => {
+    if (quizType === 'weekly') {
+      const grouped = questions.reduce((acc, q) => {
+        const weekName = (q as any).week_name || 'Unknown Week';
+        if (!acc[weekName]) {
+          acc[weekName] = [];
+        }
+        acc[weekName].push(q);
+        return acc;
+      }, {} as Record<string, Question[]>);
+      return grouped;
+    }
+    return null;
+  });
+
+  // Get current week name for display
+  const currentWeekName = useMemo(() => {
+    if (quizType === 'weekly' && questionsByWeek) {
+      const currentQuestion = questions[currentQuestionIndex];
+      return (currentQuestion as any).week_name || 'Unknown Week';
+    }
+    return null;
+  }, [quizType, questionsByWeek, questions, currentQuestionIndex]);
 
   const handleSettingsChange = (setting: keyof typeof quizSettings) => {
     setQuizSettings(prev => ({
@@ -541,11 +576,6 @@ const Quiz = ({
       setFeedback({ correct: isCorrect, selectedIndexes: selectedOptions })
     }
 
-    setViewedAnswers(prev => ({
-      ...prev,
-      [currentQuestionIndex]: true
-    }));
-
     if (currentQuestionIndex === questions.length - 1) {
       setTimeout(() => endQuiz(), 1500)
     } else if (isCorrect || !quizSettings.showFeedback) {
@@ -559,7 +589,6 @@ const Quiz = ({
     setLives(quizSettings.enableLives ? 3 : 0)
     setTimeLeft(quizType === 'timed' || quizType === 'quick' ? quizTime * 60 : 0)
     setPowerUpUsage({})
-    localStorage.removeItem(`powerUpUsage_${courseCode}`)
     setPowerUps((prev) => prev.map((p) => ({ ...p, active: true })))
     setQuizEnded(false)
     setAvailableOptions([0, 1, 2, 3])
@@ -621,11 +650,11 @@ const Quiz = ({
     }
   }
 
-  // Add timer effect
+  // Update timer effect to include weekly quiz
   useEffect(() => {
     let timer: NodeJS.Timeout;
     
-    if ((quizType === 'timed' || quizType === 'quick') && !quizEnded && timeLeft > 0) {
+    if ((quizType === 'timed' || quizType === 'quick' || quizType === 'weekly') && !quizEnded && timeLeft > 0) {
       timer = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
@@ -665,7 +694,7 @@ const Quiz = ({
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2">
           <Button
-            onClick={onExit}
+            onClick={handleExit}
             variant="ghost"
             className="text-blue-300 hover:bg-blue-900 transition-colors duration-300 flex items-center"
           >
@@ -677,6 +706,18 @@ const Quiz = ({
           />
         </div>
         <div className="flex items-center gap-4">
+          {quizSettings.enableLives && (
+            <div className="flex gap-1 mr-4">
+              {[...Array(3)].map((_, i) => (
+                <Heart
+                  key={i}
+                  className={`h-5 w-5 ${
+                    i < lives ? 'text-red-500 fill-red-500' : 'text-gray-600'
+                  }`}
+                />
+              ))}
+            </div>
+          )}
           <Button
             onClick={confirmQuitQuiz}
             variant="destructive"
@@ -871,7 +912,11 @@ const ResultScreen = ({
                 exit={{ height: 0, opacity: 0 }}
                 className="w-full"
               >
-                <ScrollArea className="h-[40vh] w-full mt-4 rounded-lg border border-gray-700">
+                <div className="border-b border-gray-700 pb-2">
+                  <h3 className="font-medium text-lg text-blue-300">Question Analysis</h3>
+                </div>
+                
+                <ScrollArea className="h-[40vh] w-full mt-4 rounded-lg border border-gray-700 custom-scrollbar">
                   <div className="space-y-4 p-4">
                     {questions.map((question, idx) => (
                       <div
@@ -942,6 +987,115 @@ export default function InteractiveQuiz({
   courseCode,
 }: InteractiveQuizProps) {
   const router = useRouter();
+  const [showQuiz, setShowQuiz] = useState(false);
+  const [currentPhase, setCurrentPhase] = useState<'intro' | 'quiz' | 'results'>('intro');
+  const [quizTimeValue, setQuizTimeValue] = useState(0);
+  const [questionCountValue, setQuestionCountValue] = useState(10);
+  const [score, setScore] = useState(0);
+  const [filteredQuestions, setFilteredQuestions] = useState<Question[]>([]);
+  const [userAnswers, setUserAnswers] = useState<{
+    selectedOptions: number[];
+    correct: boolean;
+    locked: boolean;
+  }[]>([]);
+
+  useEffect(() => {
+    try {
+      // Get quiz settings from localStorage
+      const storedSettings = JSON.parse(localStorage.getItem("quizSettings") || "{}");
+      
+      if (quizType === 'weekly') {
+        // For weekly quizzes, we need to filter based on selected weeks
+        const weekSelections = storedSettings.weekSelections || {};
+        const selectedWeeks = Object.keys(weekSelections).filter(week => weekSelections[week]);
+        
+        if (selectedWeeks.length === 0) {
+          console.error("No weeks selected for weekly quiz");
+          router.push(`/courses/${courseCode}`);
+          return;
+        }
+        
+        console.log("Selected weeks:", selectedWeeks);
+        console.log("Total questions before filtering:", questions.length);
+        
+        // Only include questions from selected weeks
+        const filteredByWeek = questions.filter(question => {
+          const weekName = (question as any).week_name;
+          const isIncluded = weekName && selectedWeeks.includes(weekName);
+          return isIncluded;
+        });
+        
+        console.log("Filtered questions count:", filteredByWeek.length);
+        // Convert Set to Array before logging to avoid TypeScript iteration error
+        const uniqueWeeks = Array.from(new Set(filteredByWeek.map(q => (q as any).week_name)));
+        console.log("Filtered question weeks:", uniqueWeeks);
+        
+        if (filteredByWeek.length === 0) {
+          console.error("No questions found for selected weeks");
+          router.push(`/courses/${courseCode}`);
+          return;
+        }
+        
+        // Make sure each question has the week_name property
+        const questionsWithWeekNames = filteredByWeek.map(q => 
+          q.week_name ? q : { ...q, week_name: "Unknown Week" }
+        );
+        
+        setFilteredQuestions(questionsWithWeekNames);
+        setQuestionCountValue(questionsWithWeekNames.length);
+        // Set time limit to exactly 1 minute per question
+        const timeLimit = questionsWithWeekNames.length;
+        setQuizTimeValue(timeLimit);
+      } else if (quizType === 'practice') {
+        setFilteredQuestions(initializeQuestionsWithFixedOrder(questions));
+        setQuizTimeValue(0);
+        setQuestionCountValue(questions.length);
+      } else if (quizType === 'timed') {
+        const count = storedSettings.questionCount || Math.min(50, questions.length);
+        const time = storedSettings.quizTime || 30;
+        setQuestionCountValue(count);
+        setQuizTimeValue(time);
+        
+        const shuffled = shuffleArray(questions);
+        setFilteredQuestions(shuffled.slice(0, count));
+      } else if (quizType === 'quick') {
+        const count = 10;
+        const time = 5;
+        setQuestionCountValue(count);
+        setQuizTimeValue(time);
+        
+        const shuffled = shuffleArray(questions);
+        setFilteredQuestions(shuffled.slice(0, count));
+      } else if (quizType === 'progress') {
+        // Progress quiz logic with fallback
+        const count = Math.min(20, questions.length);
+        setQuestionCountValue(count);
+        setQuizTimeValue(count);
+        
+        const shuffled = shuffleArray(questions);
+        setFilteredQuestions(shuffled.slice(0, count));
+      }
+    } catch (error) {
+      console.error("Error setting up quiz:", error);
+      // Fallback for any errors
+      setQuestionCountValue(Math.min(10, questions.length));
+      setQuizTimeValue(10);
+      setFilteredQuestions(questions.slice(0, 10));
+    }
+    
+    // Initialize userAnswers array based on filtered questions
+    setUserAnswers(prev => {
+      if (filteredQuestions.length !== prev.length) {
+        return filteredQuestions.map(() => ({ 
+          selectedOptions: [], 
+          correct: false, 
+          locked: false 
+        }));
+      }
+      return prev;
+    });
+  }, [quizType, questions, courseCode, router, filteredQuestions.length]);
+
   const handleExit = onExit || (() => router.back());
 
   const [quizSettingsLoaded, setQuizSettingsLoaded] = useState(false)
@@ -973,20 +1127,20 @@ export default function InteractiveQuiz({
     )
   ), [questions])
 
-  let questionCount = quizSettings.questionCount
-  const quizTimeValue = quizSettings.quizTime
-
-  if (quizType === "practice") {
-    questionCount = sanitizedQuestions.length;
-  } else {
-    questionCount = Math.min(questionCount, sanitizedQuestions.length);
-  }
+  // Use a different variable name here to avoid conflicts
+  const finalQuestionCount = useMemo(() => {
+    if (quizType === "practice") {
+      return sanitizedQuestions.length;
+    } else {
+      return Math.min(quizSettings.questionCount, sanitizedQuestions.length);
+    }
+  }, [quizType, sanitizedQuestions.length, quizSettings.questionCount]);
 
   const displayedQuestions = useMemo(() => {
     return quizType === "practice" || quizType === "progress" 
       ? sanitizedQuestions
-      : shuffleArray(sanitizedQuestions).slice(0, questionCount)
-  }, [sanitizedQuestions, quizType, questionCount])
+      : shuffleArray(sanitizedQuestions).slice(0, finalQuestionCount)
+  }, [sanitizedQuestions, quizType, finalQuestionCount])
 
   let progressTestQuestions: Question[] = [];
 
@@ -1049,10 +1203,10 @@ export default function InteractiveQuiz({
         <AnimatePresence mode="wait">
           {displayedQuestions ? (
             <Quiz
-              quizType={quizType as "practice" | "timed" | "quick" | "progress"}
+              quizType={quizType}
               onExit={handleExit}
               questions={quizType === "progress" ? progressTestQuestions : displayedQuestions}
-              quizTime={quizTimeValue}
+              quizTime={quizSettings.quizTime}
               courseName={courseName}
               courseCode={courseCode}
             />
