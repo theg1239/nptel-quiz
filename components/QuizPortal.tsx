@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Book, Clock, Zap, BarChart, ArrowRight, BookOpen, Award, ChevronLeft, Film, Users, Calendar, ConstructionIcon, X } from "lucide-react"
+import { Book, Clock, Zap, BarChart, ArrowRight, BookOpen, Award, ChevronLeft, Film, Users, Calendar, ConstructionIcon, X, Lightbulb } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/Button"
@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Progress } from "@/components/ui/Progress"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/Tooltip"
 import { Checkbox } from "@/components/ui/Checkbox"
+import FeatureAnnounce from "@/components/FeatureAnnounce"
 
 interface Course {
   title?: string
@@ -44,6 +45,7 @@ export default function Component(
   const [progress, setProgress] = useState<number>(0)
   const [weekSelections, setWeekSelections] = useState<Record<string, boolean>>({})
   const [showWeekSelector, setShowWeekSelector] = useState<boolean>(false)
+  const [showAnnouncement, setShowAnnouncement] = useState<boolean>(true)
 
   const totalQuestions = (course?.weeks || []).reduce(
     (acc, week) => acc + week.questions.length,
@@ -222,6 +224,16 @@ export default function Component(
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 text-gray-100 flex flex-col items-center p-4 md:p-6">
+      <FeatureAnnounce 
+        id="weekly-quiz-feature"
+        title="New Weekly Quiz Feature"
+        description="Now you can select specific weeks for focused quiz sessions"
+        buttonText="Try it now"
+        icon={<Lightbulb className="w-9 h-9 text-purple-200" />}
+        maxViews={2}
+        onClose={() => setShowAnnouncement(false)}
+      />
+      
       <div className="w-full max-w-6xl flex items-center justify-between mb-6">
         <Button
           variant="ghost"
