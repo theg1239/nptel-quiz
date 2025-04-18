@@ -114,42 +114,54 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
       try {
         setLoading(true)
         const response = await getCourse(courseCode)
-        
+
+        // Sort weeks ascending by their numeric name
+        const sortedWeeks = response.weeks
+          .slice()
+          .sort((a, b) => parseInt(a.name, 10) - parseInt(b.name, 10))
+
         const transformedCourse: Course = {
           course_code: response.course_code,
           course_name: response.course_name,
           title: response.course_name,
           request_count: response.request_count || 0,
-          question_count: response.assignments?.reduce((total, assignment) => total + assignment.questions.length, 0) || 0,
-          weeks: response.weeks.map(week => ({
+          question_count:
+            response.assignments?.reduce(
+              (total, assignment) => total + assignment.questions.length,
+              0
+            ) || 0,
+          weeks: sortedWeeks.map(week => ({
             name: week.name,
             questions: week.questions.map(q => ({
               question: q.question,
               options: q.options.map((opt, index) => {
                 if (typeof opt === 'object' && opt !== null) {
-                  return opt;
+                  return opt
                 } else {
                   return {
                     option_number: (index + 1).toString(),
                     option_text: opt
-                  };
+                  }
                 }
               }),
               answer: q.answer
             }))
           }))
         }
-        
+
         const courseMetadata: {
-          totalWeeks: number;
-          courseName: string;
-          lastUpdated: string;
+          totalWeeks: number
+          courseName: string
+          lastUpdated: string
         } = {
           totalWeeks: transformedCourse.weeks.length,
           courseName: transformedCourse.course_name,
           lastUpdated: new Date().toISOString()
         }
-        localStorage.setItem(`courseData_${courseCode}`, JSON.stringify(courseMetadata))
+        localStorage.setItem(
+          `courseData_${courseCode}`,
+          JSON.stringify(courseMetadata)
+        )
 
         setCourse(transformedCourse)
         if (transformedCourse.weeks.length > 0) {
@@ -177,32 +189,40 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
       weeks: sanitizedWeeks
     }
   }, [course])
-  
+
   useEffect(() => {
     if (selectedWeek && !loading && !error) {
       try {
-        const courseProgress = JSON.parse(localStorage.getItem("courseProgress") || "{}");
-        const weekProgress = JSON.parse(localStorage.getItem(`weekProgress_${courseCode}`) || "{}");
-        
-        weekProgress[selectedWeek] = true;
-        localStorage.setItem(`weekProgress_${courseCode}`, JSON.stringify(weekProgress));
-        
-        const totalWeeks = sanitizedCourse?.weeks.length || 0;
-        const viewedWeeks = Object.keys(weekProgress).length;
-        const viewProgress = Math.round((viewedWeeks / totalWeeks) * 40); // 40% weight for viewing content
-        
-        const quizProgress = courseProgress[courseCode] || 0;
-        const weightedQuizProgress = Math.round(quizProgress * 0.6); // 60% weight for quiz performance
-        
-        const totalProgress = Math.min(100, Math.round(viewProgress + weightedQuizProgress));
-        
-        courseProgress[courseCode] = totalProgress;
-        localStorage.setItem("courseProgress", JSON.stringify(courseProgress));
+        const courseProgress = JSON.parse(localStorage.getItem('courseProgress') || '{}')
+        const weekProgress = JSON.parse(
+          localStorage.getItem(`weekProgress_${courseCode}`) || '{}'
+        )
+
+        weekProgress[selectedWeek] = true
+        localStorage.setItem(
+          `weekProgress_${courseCode}`,
+          JSON.stringify(weekProgress)
+        )
+
+        const totalWeeks = sanitizedCourse?.weeks.length || 0
+        const viewedWeeks = Object.keys(weekProgress).length
+        const viewProgress = Math.round((viewedWeeks / totalWeeks) * 40)
+
+        const quizProgress = courseProgress[courseCode] || 0
+        const weightedQuizProgress = Math.round(quizProgress * 0.6)
+
+        const totalProgress = Math.min(
+          100,
+          Math.round(viewProgress + weightedQuizProgress)
+        )
+
+        courseProgress[courseCode] = totalProgress
+        localStorage.setItem('courseProgress', JSON.stringify(courseProgress))
       } catch (error) {
-        console.error("Error updating course progress:", error);
+        console.error('Error updating course progress:', error)
       }
     }
-  }, [selectedWeek, courseCode, loading, error, sanitizedCourse?.weeks.length]);
+  }, [selectedWeek, courseCode, loading, error, sanitizedCourse?.weeks.length])
 
   const handleWeekSelect = (weekName: string) => {
     setSelectedWeek(weekName)
@@ -210,12 +230,14 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
     setCurrentSpeechIndex(0)
   }
 
-  const currentWeekIndex = course?.weeks.findIndex(w => w.name === selectedWeek) ?? -1
+  const currentWeekIndex =
+    course?.weeks.findIndex(w => w.name === selectedWeek) ?? -1
   const totalWeeks = course?.weeks.length ?? 0
 
   const navigateWeek = (direction: 'prev' | 'next') => {
     if (!course) return
-    const newIndex = direction === 'prev' ? currentWeekIndex - 1 : currentWeekIndex + 1
+    const newIndex =
+      direction === 'prev' ? currentWeekIndex - 1 : currentWeekIndex + 1
     if (newIndex >= 0 && newIndex < course.weeks.length) {
       setSelectedWeek(course.weeks[newIndex].name)
       setCurrentSpeechIndex(0)
@@ -223,8 +245,16 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
   }
 
   useEffect(() => {
-    if (isReadAloudMode && !loading && !error && sanitizedCourse && selectedWeek) {
-      const weekQuestions = sanitizedCourse.weeks.find((week) => week.name === selectedWeek)?.questions
+    if (
+      isReadAloudMode &&
+      !loading &&
+      !error &&
+      sanitizedCourse &&
+      selectedWeek
+    ) {
+      const weekQuestions = sanitizedCourse.weeks.find(
+        week => week.name === selectedWeek
+      )?.questions
       if (!weekQuestions || weekQuestions.length === 0) return
 
       const speakQuestion = (index: number) => {
@@ -233,23 +263,27 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
         if (!question) return
 
         const correctOptionIndices = question.answer.map(ans => {
-          const index = question.options.findIndex(option => {
-            const { label } = getLabelAndText(option);
-            return label === ans;
-          });
-          return index;
-        });
+          const idx = question.options.findIndex(option => {
+            const { label } = getLabelAndText(option)
+            return label === ans
+          })
+          return idx
+        })
 
-        const correctOptionsText = correctOptionIndices.map((optionIndex) => {
-          const option = question.options[optionIndex];
-          const { optionText } = getLabelAndText(option);
-          return `Option ${optionIndex + 1}: ${optionText}`;
-        }).join('. ');
+        const correctOptionsText = correctOptionIndices
+          .map(optionIndex => {
+            const option = question.options[optionIndex]
+            const { optionText } = getLabelAndText(option)
+            return `Option ${optionIndex + 1}: ${optionText}`
+          })
+          .join('. ')
 
-        const textToSpeak = `Question ${index + 1}: ${question.question}. ${correctOptionsText}.`;
+        const textToSpeak = `Question ${index + 1}: ${
+          question.question
+        }. ${correctOptionsText}.`
 
         utteranceRef.current = new SpeechSynthesisUtterance(textToSpeak)
-        utteranceRef.current.rate = 1.2;
+        utteranceRef.current.rate = 1.2
         utteranceRef.current.onend = () => {
           setIsSpeaking(false)
           if (index + 1 < weekQuestions.length) {
@@ -269,7 +303,15 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
         setIsSpeaking(false)
       }
     }
-  }, [isReadAloudMode, currentSpeechIndex, sanitizedCourse, selectedWeek, loading, error, isSpeaking])
+  }, [
+    isReadAloudMode,
+    currentSpeechIndex,
+    sanitizedCourse,
+    selectedWeek,
+    loading,
+    error,
+    isSpeaking
+  ])
 
   const toggleReadAloudMode = () => {
     setIsReadAloudMode(!isReadAloudMode)
@@ -367,7 +409,7 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
                 transition={{ duration: 0.2 }}
                 className="flex items-center justify-center h-full"
               >
-                <SpaceLoader size={100} /> 
+                <SpaceLoader size={100} />
               </motion.div>
             ) : error ? (
               <motion.div
@@ -380,56 +422,68 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
               >
                 {error}
               </motion.div>
-            ) : selectedWeek && sanitizedCourse && (
-              <motion.div
-                key={selectedWeek}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Card className="bg-gray-900 bg-opacity-50 backdrop-blur-md border-gray-800">
-                  <CardContent className="pt-4">
-                    {sanitizedCourse.weeks
-                      .find((week) => week.name === selectedWeek)
-                      ?.questions.map((question: Question, index: number) => {
-                        return (
+            ) : (
+              selectedWeek &&
+              sanitizedCourse && (
+                <motion.div
+                  key={selectedWeek}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Card className="bg-gray-900 bg-opacity-50 backdrop-blur-md border-gray-800">
+                    <CardContent className="pt-4">
+                      {sanitizedCourse.weeks
+                        .find(week => week.name === selectedWeek)
+                        ?.questions.map((question: Question, index: number) => (
                           <div key={index} className="mb-8 last:mb-0">
                             <h3 className="text-lg md:text-xl font-semibold mb-2 text-gray-100">
-                              {index + 1}. {question.question} 
+                              {index + 1}. {question.question}
                             </h3>
                             <ul className="space-y-3">
-                              {question.options.map((option, optionIndex: number) => {
-                                const { label, optionText } = getLabelAndText(option);
-                                const isCorrect = question.answer.includes(label);
+                              {question.options.map(
+                                (option, optionIndex: number) => {
+                                  const { label, optionText } =
+                                    getLabelAndText(option)
+                                  const isCorrect = question.answer.includes(
+                                    label
+                                  )
 
-                                return (
-                                  <li
-                                    key={optionIndex}
-                                    className={`p-3 rounded-md transition-colors ${
-                                      isCorrect
-                                        ? 'bg-green-800 bg-opacity-30 border border-green-600 text-green-300'
-                                        : 'bg-gray-800 bg-opacity-30 border border-gray-700 hover:bg-gray-700'
-                                    }`}
-                                  >
-                                    <div className="flex items-center">
-                                      {isCorrect && (
-                                        <CheckCircle2 className="mr-2 h-5 w-5 text-green-400 flex-shrink-0" />
-                                      )}
-                                      <span className={isCorrect ? 'text-green-300' : 'text-gray-300'}>
-                                        {`${label}. ${optionText}`}
-                                      </span>
-                                    </div>
-                                  </li>
-                                );
-                              })}
+                                  return (
+                                    <li
+                                      key={optionIndex}
+                                      className={`p-3 rounded-md transition-colors ${
+                                        isCorrect
+                                          ? 'bg-green-800 bg-opacity-30 border border-green-600 text-green-300'
+                                          : 'bg-gray-800 bg-opacity-30 border border-gray-700 hover:bg-gray-700'
+                                      }`}
+                                    >
+                                      <div className="flex items-center">
+                                        {isCorrect && (
+                                          <CheckCircle2 className="mr-2 h-5 w-5 text-green-400 flex-shrink-0" />
+                                        )}
+                                        <span
+                                          className={
+                                            isCorrect
+                                              ? 'text-green-300'
+                                              : 'text-gray-300'
+                                          }
+                                        >
+                                          {`${label}. ${optionText}`}
+                                        </span>
+                                      </div>
+                                    </li>
+                                  )
+                                }
+                              )}
                             </ul>
                           </div>
-                        )
-                      })}
-                  </CardContent>
-                </Card>
-              </motion.div>
+                        ))}
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )
             )}
           </AnimatePresence>
         </ScrollArea>
@@ -439,17 +493,13 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm text-gray-400">Progress</span>
               <span className="text-sm text-indigo-400">
-                {selectedWeek && sanitizedCourse ? 
-                  `${currentWeekIndex + 1} / ${totalWeeks} weeks` : 
-                  '0 / 0 weeks'
-                }
+                {`${currentWeekIndex + 1} / ${totalWeeks} weeks`}
               </span>
             </div>
-            <Progress 
-              value={selectedWeek && sanitizedCourse ? 
-                Math.round(((currentWeekIndex + 1) / totalWeeks) * 100) : 
-                0
-              } 
+            <Progress
+              value={Math.round(
+                ((currentWeekIndex + 1) / totalWeeks) * 100
+              )}
               className="h-2 bg-gray-700"
             />
           </div>
