@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Heart, Zap, Clock, Shield, Award, ArrowRight, ArrowLeft, CheckCircle, XCircle, ChevronLeft } from 'lucide-react'
+import { Heart, Zap, Clock, Shield, Award, ArrowRight, ArrowLeft, CheckCircle, XCircle, ChevronLeft, Settings } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/Button"
 import { Progress } from "@/components/ui/Progress"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/Tooltip"
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { QuizType } from '@/types/quiz'
 import { initializeQuestionsWithFixedOrder, Question } from '@/lib/quizUtils'
 
@@ -45,32 +46,125 @@ const PowerUp = ({ icon: Icon, name, active, onClick }: { icon: React.ComponentT
       <TooltipTrigger asChild>
         <button
           onClick={onClick}
-          className={`p-2 rounded-full ${active ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-700 cursor-not-allowed'} transition-colors duration-300`}
+          className={`p-2 rounded-full transition-all duration-300 ${
+            active 
+              ? 'bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/50' 
+              : 'bg-gray-700 opacity-50 cursor-not-allowed'
+          }`}
           disabled={!active}
           aria-label={`Use ${name} power-up`}
         >
-          <Icon className="h-6 w-6 text-white" />
+          <Icon className={`h-6 w-6 ${active ? 'text-white' : 'text-gray-400'}`} />
         </button>
       </TooltipTrigger>
       <TooltipContent>
-        <p>{name}</p>
+        <p>{name} {!active && '(Used)'}</p>
       </TooltipContent>
     </Tooltip>
   </TooltipProvider>
 )
 
-const QuizTimer = ({ time, maxTime }: { time: number, maxTime: number }) => (
-  <div className="w-full bg-gray-700 rounded-full h-2.5 mb-4">
-    <div
-      className="bg-blue-600 h-2.5 rounded-full transition-all duration-1000 ease-linear"
-      style={{ width: `${(time / maxTime) * 100}%` }}
-      role="progressbar"
-      aria-valuenow={time}
-      aria-valuemin={0}
-      aria-valuemax={maxTime}
-    ></div>
-  </div>
-)
+const QuizTimer = ({ time, maxTime }: { time: number, maxTime: number }) => {
+  const minutes = Math.floor(time / 60);
+  const seconds = time % 60;
+  const percentage = (time / maxTime) * 100;
+
+  return (
+    <div className="w-full space-y-1">
+      <div className="flex justify-between items-center text-xs sm:text-sm">
+        <span className="text-gray-300">Time Left:</span>
+        <span className="font-medium text-blue-300">
+          {minutes}m{seconds.toString().padStart(2, '0')}s
+        </span>
+      </div>
+      <div className="w-full bg-gray-700 rounded-full h-2">
+        <div
+          className="bg-blue-600 h-2 rounded-full transition-all duration-1000 ease-linear"
+          style={{ width: `${Math.max(0, percentage)}%` }}
+          role="progressbar"
+          aria-valuenow={time}
+          aria-valuemin={0}
+          aria-valuemax={maxTime}
+        ></div>
+      </div>
+    </div>
+  );
+};
+
+const QuizSettings = ({
+  quizSettings,
+  onSettingChange,
+}: {
+  quizSettings: {
+    showFeedback: boolean;
+    enablePowerUps: boolean;
+    enableLives: boolean;
+  };
+  onSettingChange: (setting: 'showFeedback' | 'enablePowerUps' | 'enableLives') => void;
+}) => {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-9 w-9 shrink-0 border-gray-700 hover:bg-gray-700 hover:border-gray-600"
+          aria-label="Quiz Settings"
+        >
+          <Settings className="h-5 w-5" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent 
+        className="w-64 p-2 space-y-2 border border-blue-500 rounded-lg shadow-lg animate-in fade-in-0 zoom-in-95"
+        style={{ 
+          backgroundColor: 'rgba(17, 24, 39, 0.95)',
+          backdropFilter: 'blur(8px)',
+          zIndex: 50
+        }}
+        sideOffset={5}
+      >
+        <div className="space-y-2">
+          <Button
+            onClick={() => onSettingChange('showFeedback')}
+            variant={quizSettings.showFeedback ? 'default' : 'secondary'}
+            size="sm"
+            className={`w-full justify-start ${
+              quizSettings.showFeedback 
+                ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                : 'bg-gray-700 hover:bg-gray-600 text-gray-200'
+            }`}
+          >
+            {quizSettings.showFeedback ? 'Hide' : 'Show'} Feedback
+          </Button>
+          <Button
+            onClick={() => onSettingChange('enablePowerUps')}
+            variant={quizSettings.enablePowerUps ? 'default' : 'secondary'}
+            size="sm"
+            className={`w-full justify-start ${
+              quizSettings.enablePowerUps 
+                ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                : 'bg-gray-700 hover:bg-gray-600 text-gray-200'
+            }`}
+          >
+            {quizSettings.enablePowerUps ? 'Disable' : 'Enable'} Power-ups
+          </Button>
+          <Button
+            onClick={() => onSettingChange('enableLives')}
+            variant={quizSettings.enableLives ? 'default' : 'secondary'}
+            size="sm"
+            className={`w-full justify-start ${
+              quizSettings.enableLives 
+                ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                : 'bg-gray-700 hover:bg-gray-600 text-gray-200'
+            }`}
+          >
+            {quizSettings.enableLives ? 'Disable' : 'Enable'} Lives
+          </Button>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+};
 
 const QuizContent = ({
   question,
@@ -89,9 +183,10 @@ const QuizContent = ({
   isAnswerLocked,
   feedback,
   questions,
+  quizSettings,
 }: {
   question: string;
-  options: { option_number: string, option_text: string }[];
+  options: { option_number: string, option_text: string }[]; 
   onAnswer: (newSelectedOptions: number[]) => void;
   timeLeft: number;
   maxTime: number;
@@ -106,6 +201,11 @@ const QuizContent = ({
   isAnswerLocked: boolean;
   feedback: { correct: boolean; selectedIndexes: number[] } | null;
   questions: Question[];
+  quizSettings: { 
+    enablePowerUps: boolean; 
+    enableLives: boolean;
+    showFeedback: boolean;
+  };
 }) => {
   const currentQuestion = questions[currentQuestionIndex];
   const isTextQuestion = currentQuestion.content_type === 'text';
@@ -119,19 +219,28 @@ const QuizContent = ({
     : 'text-2xl sm:text-3xl';
 
   return (
-    <Card className="bg-gray-800 bg-opacity-50 backdrop-blur-sm border-2 border-blue-500 shadow-lg max-h-[calc(100vh-12rem)] overflow-y-auto">
-      <CardHeader className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
-        <CardTitle className={`${questionTextClass} font-bold text-blue-300 break-words max-w-full sm:max-w-[80%]`}>
-          {currentQuestionIndex + 1}. {cleanedQuestion}
-        </CardTitle>
-        <div className="text-blue-300 font-semibold whitespace-nowrap">
-          Score: {currentScore} / {totalQuestions}
+    <Card className="bg-gray-800 bg-opacity-50 backdrop-blur-sm border-2 border-blue-500 shadow-lg h-full flex flex-col">
+      <CardHeader className="flex-shrink-0 px-4 py-3">
+        <div className="flex justify-between items-center gap-2 mb-2">
+          <CardTitle className={`${questionTextClass} font-bold text-blue-300 break-words flex-1`}>
+            {currentQuestionIndex + 1}. {cleanedQuestion}
+          </CardTitle>
+        </div>
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <div className="text-blue-300 font-semibold text-sm sm:text-base">
+              Score: {currentScore} / {totalQuestions}
+            </div>
+          </div>
+          {(quizType === 'timed' || quizType === 'quick') && (
+            <div className="w-32 sm:w-40">
+              <QuizTimer time={timeLeft} maxTime={maxTime} />
+            </div>
+          )}
         </div>
       </CardHeader>
       
-      {(quizType === 'timed' || quizType === 'quick') && <QuizTimer time={timeLeft} maxTime={maxTime} />}
-      
-      <CardContent className="space-y-4">
+      <CardContent className="flex-1 overflow-y-auto no-scrollbar px-4 py-2">
         {isTextQuestion ? (
           <div className="space-y-4">
             <div className="bg-gray-700 bg-opacity-50 p-4 rounded-lg border-2 border-gray-600 max-h-[40vh] overflow-y-auto">
@@ -141,9 +250,9 @@ const QuizContent = ({
             </div>
           </div>
         ) : (
-          <>
-            <div className="flex flex-wrap justify-between items-center gap-2 mb-4">
-              {quizType === 'quick' && (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              {quizSettings?.enablePowerUps && (
                 <div className="flex flex-wrap gap-2">
                   {powerUps.map((powerUp, index) => (
                     <PowerUp
@@ -156,16 +265,22 @@ const QuizContent = ({
                   ))}
                 </div>
               )}
-              {(quizType === 'timed' || quizType === 'quick') && (
+              
+              {quizSettings.enableLives && (quizType === 'timed' || quizType === 'quick' || quizType === 'progress') && (
                 <div className="flex gap-1">
-                  {[...Array(lives)].map((_, i) => (
-                    <Heart key={i} className="h-4 w-4 sm:h-6 sm:w-6 text-red-500" />
+                  {[...Array(3)].map((_, i) => (
+                    <Heart
+                      key={i}
+                      className={`h-4 w-4 sm:h-6 sm:w-6 ${
+                        i < lives ? 'text-red-500 fill-red-500' : 'text-red-500/50'
+                      }`}
+                    />
                   ))}
                 </div>
               )}
             </div>
             
-            <div className="grid gap-3 sm:gap-4">
+            <div className="grid gap-2 sm:gap-3 min-h-[50vh] sm:min-h-[40vh]" role="radiogroup" aria-label="Quiz options">
               {options.map((option, index) => {
                 const isSelected = selectedOptions.includes(index);
                 const isCorrect = currentQuestion.answer.includes(option.option_number.toUpperCase());
@@ -173,39 +288,55 @@ const QuizContent = ({
                                   (feedback && !feedback.correct && isCorrect);
                 const cleanedOptionText = cleanOptionText(option.option_text, question);
                 const optionTextClass = cleanedOptionText.length > 80 ? 'text-xs sm:text-sm' : 'text-sm sm:text-base';
+                const optionId = `option-${currentQuestionIndex}-${index}`;
                 
                 return (
-                  <button
-                    key={index}
-                    onClick={() => !isAnswerLocked && onAnswer([index])}
-                    disabled={isAnswerLocked}
-                    className={`w-full p-3 sm:p-4 rounded-lg text-left transition-all duration-200 ${
-                      isAnswerLocked
-                        ? isSelected
-                          ? isCorrect
+                  <div key={index} className="relative">
+                    <input
+                      type="radio"
+                      id={optionId}
+                      name={`question-${currentQuestionIndex}`}
+                      checked={isSelected}
+                      onChange={() => !isAnswerLocked && onAnswer([index])}
+                      disabled={isAnswerLocked}
+                      className="sr-only peer"
+                      aria-label={`Option ${option.option_number}: ${cleanedOptionText}`}
+                    />
+                    <label
+                      htmlFor={optionId}
+                      className={`block w-full p-2.5 sm:p-4 rounded-lg text-left transition-all duration-200 cursor-pointer select-none ${
+                        isAnswerLocked
+                          ? isSelected
+                            ? isCorrect
+                              ? 'bg-green-600 bg-opacity-20 border-2 border-green-500 text-green-300'
+                              : 'bg-red-600 bg-opacity-20 border-2 border-red-500 text-red-300'
+                            : showCorrect
                             ? 'bg-green-600 bg-opacity-20 border-2 border-green-500 text-green-300'
-                            : 'bg-red-600 bg-opacity-20 border-2 border-red-500 text-red-300'
-                          : showCorrect
-                          ? 'bg-green-600 bg-opacity-20 border-2 border-green-500 text-green-300'
-                          : 'bg-gray-700 bg-opacity-50 border-2 border-gray-600 text-gray-400'
-                        : isSelected
-                        ? 'bg-blue-600 bg-opacity-20 border-2 border-blue-500 text-blue-300 hover:bg-blue-600 hover:bg-opacity-30'
-                        : 'bg-gray-700 bg-opacity-50 border-2 border-gray-600 text-gray-300 hover:bg-gray-600 hover:border-gray-500'
-                    }`}
-                  >
-                    <div className="flex items-start sm:items-center">
-                      <span className="text-base sm:text-lg font-semibold mr-2 flex-shrink-0">
-                        {option.option_number}.
-                      </span>
-                      <span className={`${optionTextClass} break-words`}>
-                        {cleanedOptionText}
-                      </span>
-                    </div>
-                  </button>
+                            : 'bg-gray-700 bg-opacity-50 border-2 border-gray-600 text-gray-400'
+                          : 'bg-gray-700 bg-opacity-50 border-2 border-gray-600 text-gray-300 hover:bg-gray-600 hover:border-gray-500 peer-checked:bg-blue-600 peer-checked:bg-opacity-20 peer-checked:border-blue-500 peer-checked:text-blue-300'
+                      }`}
+                    >
+                      <div className="flex items-start sm:items-center">
+                        <span className="text-base sm:text-lg font-semibold mr-2 flex-shrink-0 min-w-[1.5rem]">
+                          {option.option_number}.
+                        </span>
+                        <span className={`${optionTextClass} break-words flex-grow`}>
+                          {cleanedOptionText}
+                        </span>
+                        {isAnswerLocked && (
+                          <span className="ml-2 flex-shrink-0">
+                            {isSelected && isCorrect && <CheckCircle className="h-5 w-5 text-green-500" />}
+                            {isSelected && !isCorrect && <XCircle className="h-5 w-5 text-red-500" />}
+                            {!isSelected && showCorrect && <CheckCircle className="h-5 w-5 text-green-500" />}
+                          </span>
+                        )}
+                      </div>
+                    </label>
+                  </div>
                 );
               })}
             </div>
-          </>
+          </div>
         )}
       </CardContent>
     </Card>
@@ -250,18 +381,47 @@ const Quiz = ({
     enableLives: true
   })
 
-  // Initialize power-ups for all quiz types if enabled
+  const [powerUpUsage, setPowerUpUsage] = useState(() => {
+    const savedUsage = localStorage.getItem(`powerUpUsage_${courseCode}`)
+    return savedUsage ? JSON.parse(savedUsage) : {}
+  })
+
+  const [viewedAnswers, setViewedAnswers] = useState<{[key: number]: boolean}>({});
+
+  // Initialize power-ups for all quiz types if enabled, with persistence
   useEffect(() => {
     if (quizSettings.enablePowerUps) {
       setPowerUps([
-        { type: "fiftyFifty", icon: Zap, name: "50/50", active: true },
-        { type: "extraTime", icon: Clock, name: "Extra Time", active: true },
-        { type: "shield", icon: Shield, name: "Shield", active: true },
+        { 
+          type: "fiftyFifty", 
+          icon: Zap, 
+          name: "50/50", 
+          active: !powerUpUsage["fiftyFifty"]
+        },
+        { 
+          type: "extraTime", 
+          icon: Clock, 
+          name: "Extra Time", 
+          active: !powerUpUsage["extraTime"]
+        },
+        { 
+          type: "shield", 
+          icon: Shield, 
+          name: "Shield", 
+          active: !powerUpUsage["shield"]
+        },
       ])
     } else {
       setPowerUps([])
     }
-  }, [quizSettings.enablePowerUps])
+  }, [quizSettings.enablePowerUps, powerUpUsage])
+
+  // Save power-up usage to localStorage when used
+  const savePowerUpUsage = useCallback((type: string) => {
+    const newUsage = { ...powerUpUsage, [type]: true }
+    setPowerUpUsage(newUsage)
+    localStorage.setItem(`powerUpUsage_${courseCode}`, JSON.stringify(newUsage))
+  }, [powerUpUsage, courseCode])
 
   // Set initial lives based on settings
   useEffect(() => {
@@ -282,6 +442,7 @@ const Quiz = ({
   }
 
   const endQuiz = useCallback(() => {
+    setTimeLeft(0); // Stop the timer
     setQuizEnded(true);
     let incorrectQuestions: string[] = [];
     try {
@@ -334,7 +495,11 @@ const Quiz = ({
     setSelectedOptions(newSelectedOptions);
     setUserAnswers((prev) => {
       const newAnswers = [...prev];
-      newAnswers[currentQuestionIndex] = { selectedOptions: newSelectedOptions, correct: false, locked: false };
+      newAnswers[currentQuestionIndex] = { 
+        selectedOptions: newSelectedOptions, 
+        correct: false, 
+        locked: false 
+      };
       return newAnswers;
     });
   }, [currentQuestionIndex]);
@@ -376,6 +541,11 @@ const Quiz = ({
       setFeedback({ correct: isCorrect, selectedIndexes: selectedOptions })
     }
 
+    setViewedAnswers(prev => ({
+      ...prev,
+      [currentQuestionIndex]: true
+    }));
+
     if (currentQuestionIndex === questions.length - 1) {
       setTimeout(() => endQuiz(), 1500)
     } else if (isCorrect || !quizSettings.showFeedback) {
@@ -388,16 +558,18 @@ const Quiz = ({
     setScore(0)
     setLives(quizSettings.enableLives ? 3 : 0)
     setTimeLeft(quizType === 'timed' || quizType === 'quick' ? quizTime * 60 : 0)
+    setPowerUpUsage({})
+    localStorage.removeItem(`powerUpUsage_${courseCode}`)
     setPowerUps((prev) => prev.map((p) => ({ ...p, active: true })))
     setQuizEnded(false)
     setAvailableOptions([0, 1, 2, 3])
     setFeedback(null)
     setSelectedOptions([])
     setUserAnswers(questions.map(() => ({ selectedOptions: [], correct: false, locked: false })))
-  }, [quizTime, questions, quizType, quizSettings.enableLives])
+  }, [quizTime, questions, quizType, quizSettings.enableLives, courseCode])
 
   const usePowerUp = useCallback((type: string) => {
-    if (!quizSettings.enablePowerUps) return;
+    if (!quizSettings.enablePowerUps || powerUpUsage[type]) return;
     
     if (type === "fiftyFifty") {
       const currentQuestion = questions[currentQuestionIndex];
@@ -422,17 +594,55 @@ const Quiz = ({
       setLives(prev => prev + 1);
     }
 
+    savePowerUpUsage(type)
     setPowerUps(prev => prev.map(p => (p.type === type ? { ...p, active: false } : p)));
-  }, [currentQuestionIndex, questions, availableOptions, quizSettings.enablePowerUps]);
+  }, [currentQuestionIndex, questions, availableOptions, quizSettings.enablePowerUps, powerUpUsage, savePowerUpUsage]);
 
   const goToPreviousQuestion = () => {
     if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex((prev) => prev - 1)
-      setSelectedOptions(userAnswers[currentQuestionIndex - 1]?.selectedOptions || [])
-      setAvailableOptions([0, 1, 2, 3])
-      setFeedback(null)
+      const previousIndex = currentQuestionIndex - 1;
+      const previousAnswer = userAnswers[previousIndex];
+      
+      setCurrentQuestionIndex(previousIndex);
+      setSelectedOptions(previousAnswer?.selectedOptions || []);
+      setAvailableOptions([0, 1, 2, 3]);
+      
+      // Show feedback for previously answered questions
+      if (previousAnswer?.locked) {
+        const previousQuestion = questions[previousIndex];
+        const isCorrect = previousAnswer.correct;
+        setFeedback({
+          correct: isCorrect,
+          selectedIndexes: previousAnswer.selectedOptions
+        });
+      } else {
+        setFeedback(null);
+      }
     }
   }
+
+  // Add timer effect
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    
+    if ((quizType === 'timed' || quizType === 'quick') && !quizEnded && timeLeft > 0) {
+      timer = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            endQuiz();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (timer) {
+        clearInterval(timer);
+      }
+    };
+  }, [quizType, quizEnded, timeLeft, endQuiz]);
 
   if (quizEnded) {
     return (
@@ -451,140 +661,124 @@ const Quiz = ({
   const isAnswerLocked = userAnswers[currentQuestionIndex]?.locked
 
   return (
-    <div className="w-full max-w-4xl flex flex-col h-[calc(100vh-5rem)] overflow-hidden">
+    <div className="w-full max-w-4xl flex flex-col h-[calc(100vh-5rem)] overflow-hidden relative">
       <div className="flex justify-between items-center mb-4">
-        <Button
-          onClick={onExit}
-          variant="ghost"
-          className="text-blue-300 hover:bg-blue-900 transition-colors duration-300 flex items-center"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" /> Exit Quiz
-        </Button>
         <div className="flex items-center gap-2">
           <Button
-            onClick={() => handleSettingsChange('showFeedback')}
-            variant={quizSettings.showFeedback ? 'default' : 'secondary'}
-            size="sm"
+            onClick={onExit}
+            variant="ghost"
+            className="text-blue-300 hover:bg-blue-900 transition-colors duration-300 flex items-center"
           >
-            {quizSettings.showFeedback ? 'Hide' : 'Show'} Feedback
+            <ArrowLeft className="mr-2 h-4 w-4" /> Exit
           </Button>
-          <Button
-            onClick={() => handleSettingsChange('enablePowerUps')}
-            variant={quizSettings.enablePowerUps ? 'default' : 'secondary'}
-            size="sm"
-          >
-            {quizSettings.enablePowerUps ? 'Disable' : 'Enable'} Power-ups
-          </Button>
-          <Button
-            onClick={() => handleSettingsChange('enableLives')}
-            variant={quizSettings.enableLives ? 'default' : 'secondary'}
-            size="sm"
-          >
-            {quizSettings.enableLives ? 'Disable' : 'Enable'} Lives
-          </Button>
+          <QuizSettings
+            quizSettings={quizSettings}
+            onSettingChange={handleSettingsChange}
+          />
+        </div>
+        <div className="flex items-center gap-4">
           <Button
             onClick={confirmQuitQuiz}
             variant="destructive"
             size="sm"
+            className="whitespace-nowrap"
           >
             End Quiz
           </Button>
         </div>
       </div>
 
-      <div className="flex-1 overflow-hidden relative">
-        <AnimatePresence mode="wait">
-          {currentQuestion && (
+      <div className="flex-1 overflow-hidden">
+        {currentQuestion && (
+          <motion.div
+            key={currentQuestionIndex}
+            initial={{ opacity: 0, x: 100 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -100 }}
+            transition={{ duration: 0.3, ease: [0.42, 0, 0.58, 1] }}
+            className="h-full flex flex-col"
+          >
+            <QuizContent
+              question={currentQuestion.question}
+              options={currentQuestion.options.filter((_, idx) =>
+                availableOptions.includes(idx)
+              )}
+              onAnswer={handleAnswer}
+              timeLeft={timeLeft}
+              maxTime={quizTime * 60}
+              lives={lives}
+              powerUps={quizSettings.enablePowerUps ? powerUps : []}
+              onUsePowerUp={usePowerUp}
+              quizType={quizType}
+              currentScore={score}
+              totalQuestions={questions.length}
+              currentQuestionIndex={currentQuestionIndex}
+              selectedOptions={selectedOptions}
+              isAnswerLocked={isAnswerLocked}
+              feedback={feedback}
+              questions={questions}
+              quizSettings={quizSettings}
+            />
+          </motion.div>
+        )}
+      </div>
+
+      <div className="sticky bottom-0 left-0 right-0 bg-opacity-90 backdrop-blur-sm border-t border-gray-800 p-4 mt-4">
+        <div className="flex justify-between gap-2 max-w-4xl mx-auto">
+          <Button
+            onClick={goToPreviousQuestion}
+            disabled={currentQuestionIndex === 0}
+            className="bg-gray-600 hover:bg-gray-700 transition-colors duration-300"
+          >
+            Previous
+          </Button>
+          <Button
+            onClick={saveAnswers}
+            disabled={isAnswerLocked || selectedOptions.length === 0}
+            className="bg-blue-600 hover:bg-blue-700 transition-colors duration-300 flex-1"
+          >
+            Save Answers
+          </Button>
+          <Button
+            onClick={goToNextQuestion}
+            disabled={currentQuestionIndex === questions.length - 1}
+            className="bg-gray-600 hover:bg-gray-700 transition-colors duration-300"
+          >
+            Next
+          </Button>
+        </div>
+        
+        <AnimatePresence>
+          {feedback && (
             <motion.div
-              key={currentQuestionIndex}
-              initial={{ opacity: 0, x: 100 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -100 }}
-              transition={{
-                duration: 0.3, 
-                ease: [0.42, 0, 0.58, 1], 
-              }}
-              className="h-full flex flex-col"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              className={`mt-2 text-lg font-semibold text-center ${
+                feedback.correct ? "text-green-500" : "text-red-500"
+              }`}
             >
-              <QuizContent
-                question={currentQuestion.question}
-                options={currentQuestion.options.filter((_, idx) =>
-                  availableOptions.includes(idx)
-                )}
-                onAnswer={handleAnswer}
-                timeLeft={timeLeft}
-                maxTime={quizTime * 60}
-                lives={lives}
-                powerUps={quizSettings.enablePowerUps ? powerUps : []}
-                onUsePowerUp={usePowerUp}
-                quizType={quizType}
-                currentScore={score}
-                totalQuestions={questions.length}
-                currentQuestionIndex={currentQuestionIndex}
-                selectedOptions={selectedOptions}
-                isAnswerLocked={isAnswerLocked}
-                feedback={feedback}
-                questions={questions}
-              />
-              <div className="mt-5 pt-4">
-                <div className="flex justify-between">
-                  <Button
-                    onClick={goToPreviousQuestion}
-                    disabled={currentQuestionIndex === 0}
-                    className="bg-gray-600 hover:bg-gray-700 transition-colors duration-300"
-                  >
-                    Previous
-                  </Button>
-                  <Button
-                    onClick={saveAnswers}
-                    disabled={isAnswerLocked || selectedOptions.length === 0}
-                    className="bg-blue-600 hover:bg-blue-700 transition-colors duration-300"
-                  >
-                    Save Answers
-                  </Button>
-                  <Button
-                    onClick={goToNextQuestion}
-                    disabled={currentQuestionIndex === questions.length - 1}
-                    className="bg-gray-600 hover:bg-gray-700 transition-colors duration-300"
-                  >
-                    Next
-                  </Button>
-                </div>
-                <AnimatePresence>
-                  {feedback && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className={`mt-4 text-lg font-semibold text-center ${
-                        feedback.correct ? "text-green-500" : "text-red-500"
-                      }`}
-                    >
-                      {feedback.correct ? (
-                        <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          exit={{ scale: 0 }}
-                          className="flex items-center justify-center space-x-2"
-                        >
-                          <CheckCircle className="h-6 w-6" />
-                          <span>Correct!</span>
-                        </motion.div>
-                      ) : (
-                        <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          exit={{ scale: 0 }}
-                          className="flex items-center justify-center space-x-2"
-                        >
-                          <XCircle className="h-6 w-6" />
-                          <span>Incorrect!</span>
-                        </motion.div>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+              {feedback.correct ? (
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  exit={{ scale: 0 }}
+                  className="flex items-center justify-center space-x-2"
+                >
+                  <CheckCircle className="h-5 w-5" />
+                  <span>Correct!</span>
+                </motion.div>
+              ) : (
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  exit={{ scale: 0 }}
+                  className="flex items-center justify-center space-x-2"
+                >
+                  <XCircle className="h-5 w-5" />
+                  <span>Incorrect!</span>
+                </motion.div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

@@ -155,7 +155,7 @@ export default function Component(
         </Button>
   
         <div className="text-center flex-1">
-          <h1 className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-violet-400">
+          <h1 className="text-3xl md:text-3xl py-2 font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-violet-400">
             {course.title || course.course_name}
           </h1>
           <p className="text-lg md:text-xl text-violet-300">
@@ -190,7 +190,7 @@ export default function Component(
           </CardHeader>
           <CardContent>
             <p className="text-sm text-violet-200 mb-3">
-              Study materials and concept review.
+              All questions with answers, flashcards and TTS.
             </p>
             <Button
               className="w-full bg-emerald-600 hover:bg-emerald-700 flex items-center justify-center text-sm"
