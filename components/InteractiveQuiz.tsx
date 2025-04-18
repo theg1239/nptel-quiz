@@ -899,7 +899,6 @@ const Quiz = ({
         )}
       </div>
 
-      {/* ── footer buttons & feedback ──────────────────────────────────── */}
       <div className="sticky bottom-0 left-0 right-0 bg-opacity-90 backdrop-blur-sm border-t border-gray-800 p-4 mt-4">
         <div className="flex justify-between gap-2 max-w-4xl mx-auto">
           <Button
@@ -1027,12 +1026,12 @@ const ResultScreen = ({
           </div>
 
           <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
-            <div className="bg-gray-700 bg-opacity-50 p-4 rounded-lg">
+            <div className="bg-opacity-50 p-4 rounded-lg">
               <p className="text-2xl font-bold text-green-400">{score}</p>
               <p className="text-sm text-gray-300">Correct</p>
             </div>
 
-            <div className="bg-gray-700 bg-opacity-50 p-4 rounded-lg">
+            <div className="bg-opacity-50 p-4 rounded-lg">
               <p className="text-2xl font-bold text-red-400">
                 {totalQuestions - score}
               </p>
@@ -1092,12 +1091,20 @@ const ResultScreen = ({
                                 {userAnswers[idx]?.selectedOptions
                                   .map(
                                     (opt) =>
-                                      question.options[opt]?.option_number,
+                                      question.options[opt]?.option_text,
                                   )
                                   .join(', ')}
                               </p>
                               <p className="text-green-400">
-                                Correct answer: {question.answer.join(', ')}
+                                Correct answer:{' '}
+                                {question.answer
+                                  .map(label => {
+                                    const opt = question.options.find(
+                                      o => o.option_number.toUpperCase() === label.toUpperCase()
+                                    )
+                                    return opt ? opt.option_text : label
+                                  })
+                                  .join(', ')}
                               </p>
                             </div>
                           )}

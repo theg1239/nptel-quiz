@@ -225,11 +225,11 @@ export default function Component(
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 text-gray-100 flex flex-col items-center p-4 md:p-6">
       <FeatureAnnounce 
-        id="weekly-quiz-feature"
-        title="New Weekly Quiz Feature"
-        description="Now you can select specific weeks for focused quiz sessions"
+        id="discussion-feature"
+        title="New Discussions"
+        description="Post queries or talk about the course"
         buttonText="Try it now"
-        icon={<Lightbulb className="w-9 h-9 text-purple-200" />}
+        icon={<UsersRound className="w-9 h-9 text-purple-200" />}
         maxViews={2}
         onClose={() => setShowAnnouncement(false)}
       />
