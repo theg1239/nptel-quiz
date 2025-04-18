@@ -672,7 +672,7 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
         </AnimatePresence>
 
         {!loading && !error && sanitizedCourse && (
-          <div className="mt-10 bg-gray-900 bg-opacity-50 backdrop-blur-md rounded-lg p-4 border border-gray-800 w-full">
+          <div className="mt-14 bg-gray-900 bg-opacity-50 backdrop-blur-md rounded-lg p-4 border border-gray-800 w-full">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm text-gray-400">Progress</span>
               <span className="text-sm text-indigo-400">

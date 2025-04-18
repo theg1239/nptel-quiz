@@ -26,12 +26,10 @@ const FeatureAnnounce: React.FC<FeatureAnnounceProps> = ({
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    // Check if we should show the announcement
     const announcements = JSON.parse(localStorage.getItem('feature-announcements') || '{}');
     const viewCount = announcements[id] || 0;
     
     if (viewCount < maxViews) {
-      // Increment view count and save to localStorage
       announcements[id] = viewCount + 1;
       localStorage.setItem('feature-announcements', JSON.stringify(announcements));
       setIsOpen(true);
