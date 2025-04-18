@@ -380,7 +380,7 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 text-gray-100 flex flex-col items-center">
-      <header className="w-full max-w-4xl flex flex-col items-center p-4 md:p-6 space-y-4">
+      <header className="w-full max-w-5xl flex flex-col items-center p-4 md:p-6 space-y-4">
         <div className="w-full flex flex-wrap justify-between items-center gap-2">
           <Button
             variant="ghost"
@@ -449,14 +449,14 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
         </h1>
       </header>
 
-      <main className="flex-1 w-full max-w-4xl flex flex-col md:flex-row items-start px-4 md:px-6 pt-2 gap-4">
+      <main className="flex-1 w-full max-w-5xl flex flex-col md:flex-row items-start px-4 md:px-6 pt-2 gap-6">
         {/* Sidebar for larger screens */}
         {!loading && !error && sanitizedCourse && !isFlashcardMode && (
-          <div className="hidden md:block w-56 shrink-0 bg-gray-900/50 backdrop-blur-md rounded-lg border border-gray-800 overflow-hidden sticky top-4">
+          <div className="hidden md:block w-56 shrink-0 bg-gray-900/50 backdrop-blur-md rounded-lg border border-gray-800 overflow-hidden sticky top-6">
             <div className="p-3 border-b border-gray-800">
               <h2 className="font-semibold text-indigo-300">Weeks</h2>
             </div>
-            <ScrollArea className="h-[calc(100vh-10rem)]">
+            <ScrollArea className="h-[calc(100vh-14rem)]">
               <div className="p-2">
                 {sanitizedCourse.weeks.map((week) => (
                   <Button
@@ -506,7 +506,7 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
             </div>
           )}
 
-          <AnimatePresence mode="wait" initial={false}>
+          <AnimatePresence mode="wait">
             {isFlashcardMode ? (
               <motion.div 
                 key="flashcard-mode"
@@ -516,7 +516,7 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.2 }}
               >
-                <div className="h-[calc(100vh-28rem)] w-full flex flex-col items-center">
+                <div className="h-[calc(100vh-24rem)] md:h-[calc(100vh-20rem)] w-full flex flex-col items-center">
                   {loading ? (
                     <div className="flex items-center justify-center h-full">
                       <SpaceLoader size={100} />
@@ -555,7 +555,7 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
                         </button>
                         
                         <motion.div 
-                          className="perspective-1000 w-full max-w-lg h-[300px] sm:h-[350px] cursor-pointer"
+                          className="perspective-1000 w-full max-w-lg h-[300px] sm:h-[400px] md:h-[450px] cursor-pointer"
                           onClick={handleFlashcardFlip}
                           key={`${selectedWeek}-${currentFlashcardIndex}`}
                           initial={{ opacity: 0, y: 20 }}
@@ -582,7 +582,7 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
                                   <BookOpen className="h-6 w-6 sm:h-8 sm:w-8 text-indigo-300" />
                                 </div>
                                 <h3 className="text-lg sm:text-xl text-center font-medium text-indigo-100 mb-3 sm:mb-4">Question</h3>
-                                <p className="text-center text-base sm:text-lg text-gray-200 overflow-y-auto max-h-[150px] sm:max-h-[200px] px-2 break-words">
+                                <p className="text-center text-base sm:text-lg text-gray-200 overflow-y-auto max-h-[150px] sm:max-h-[250px] md:max-h-[300px] px-2 break-words">
                                   {getCurrentFlashcard()?.question}
                                 </p>
                               </div>
@@ -603,7 +603,7 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
                                   <CheckCircle2 className="h-6 w-6 sm:h-8 sm:w-8 text-green-300" />
                                 </div>
                                 <h3 className="text-lg sm:text-xl text-center font-medium text-green-100 mb-3 sm:mb-4">Answer</h3>
-                                <p className="text-center text-base sm:text-lg text-gray-200 overflow-y-auto max-h-[150px] sm:max-h-[200px] px-2 break-words">
+                                <p className="text-center text-base sm:text-lg text-gray-200 overflow-y-auto max-h-[150px] sm:max-h-[250px] md:max-h-[300px] px-2 break-words">
                                   {getCorrectAnswerText(getCurrentFlashcard() || { options: [], answer: [], question: '', content_type: 'mcq' } as Question)}
                                 </p>
                               </div>
@@ -688,7 +688,7 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
                   </div>
                 </div>
                 
-                <ScrollArea className="h-[calc(100vh-12rem)] sm:h-[calc(100vh-14rem)] w-full overflow-y-auto">
+                <ScrollArea className="h-[calc(100vh-16rem)] w-full overflow-y-auto">
                   {loading ? (
                     <div className="flex items-center justify-center h-full">
                       <SpaceLoader size={100} />
@@ -699,11 +699,11 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
                     </div>
                   ) : selectedWeek && sanitizedCourse && (
                     <Card className="bg-gray-900 bg-opacity-50 backdrop-blur-md border-gray-800 overflow-hidden">
-                      <CardContent className="pt-4">
+                      <CardContent className="pt-6">
                         {sanitizedCourse.weeks
                           .find((week) => week.name === selectedWeek)
                           ?.questions.map((question: Question, index: number) => (
-                            <div key={index} className="mb-8 last:mb-0">
+                            <div key={index} className="mb-10 last:mb-6">
                               {question.content_type === 'text' ? (
                                 <>
                                   <h3 className="text-lg md:text-xl font-semibold mb-2 text-gray-100 break-words">
@@ -715,7 +715,7 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
                                 </>
                               ) : (
                                 <>
-                                  <h3 className="text-lg md:text-xl font-semibold mb-2 text-gray-100 break-words">
+                                  <h3 className="text-lg md:text-xl font-semibold mb-3 text-gray-100 break-words">
                                     {index + 1}. {question.question} 
                                   </h3>
                                   <ul className="space-y-3">
@@ -759,8 +759,8 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
       </main>
 
       {!loading && !error && sanitizedCourse && (
-        <div className="sticky bottom-0 left-0 right-0 bg-gray-900/70 backdrop-blur-md p-3 mt-4 w-full">
-          <div className="max-w-4xl mx-auto">
+        <div className="sticky bottom-0 left-0 right-0 bg-gray-900/80 backdrop-blur-md p-3 mt-4 w-full">
+          <div className="max-w-5xl mx-auto">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm text-gray-400">Progress</span>
               <span className="text-sm text-indigo-400">
