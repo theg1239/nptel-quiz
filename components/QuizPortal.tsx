@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Book, Clock, Zap, BarChart, ArrowRight, BookOpen, Award, ChevronLeft, Film, Users, Calendar, ConstructionIcon, X, Lightbulb } from "lucide-react"
+import { Book, Clock, Zap, BarChart, ArrowRight, BookOpen, Award, ChevronLeft, Film, Users, Calendar, ConstructionIcon, X, Lightbulb, GroupIcon, UsersRound } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/Button"
@@ -215,10 +215,10 @@ export default function Component(
       onClick: () => router.push(`/courses/${course_code}/study-planner`),
     },
     {
-      icon: ConstructionIcon,
-      title: "Coming soon...",
-      description: "Coming soon...",
-      onClick: () => {}, 
+      icon: UsersRound,
+      title: "Discussions",
+      description: "Ask doubts and course feedback",
+      onClick: () => router.push(`/courses/${course_code}/discussions`),
     },
   ]
 

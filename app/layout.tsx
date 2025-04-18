@@ -1,22 +1,9 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
-import { Suspense } from "react";
-import SpaceLoader from "@/components/SpaceLoader";
+import { Inter } from "next/font/google";
 import "./globals.css";
+import { Providers } from "./providers";
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-  display: "swap",
-});
-
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-  display: "swap",
-});
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.SITE_URL || 'https://nptelprep.in'),
@@ -106,9 +93,9 @@ interface MetaTag {
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: {
+  children: React.ReactNode
+}) {
   const additionalMetaTags: MetaTag[] = [
     {
       name: "viewport",
@@ -177,18 +164,10 @@ export default function RootLayout({
           <meta key={index} name={meta.name} content={meta.content} />
         ))}
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <Suspense
-          fallback={
-            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 flex items-center justify-center">
-              <SpaceLoader size={100} />
-            </div>
-          }
-        >
+      <body className={inter.className}>
+        <Providers>
           {children}
-        </Suspense>
+        </Providers>
       </body>
     </html>
   );

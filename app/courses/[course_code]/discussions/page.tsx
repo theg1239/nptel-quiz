@@ -1,15 +1,21 @@
-import { Metadata, ResolvingMetadata } from 'next'
+import { Metadata } from 'next'
 import { getCourse } from '@/lib/actions'
 import DiscussionForumClient from './discussions-client'
+import { Suspense } from 'react'
+import { getPosts } from '@/lib/actions/discussions'
+import SpaceLoader from '@/components/SpaceLoader'
+
+interface PageProps {
+  params: Promise<{
+    course_code: string
+  }>
+}
 
 export async function generateMetadata({ 
   params 
-}: { 
-  params: Promise<{ course_code: string }> 
-}, parent: ResolvingMetadata): Promise<Metadata> {
+}: PageProps): Promise<Metadata> {
   try {
     const { course_code } = await params;
-    
     const course = await getCourse(course_code);
     
     const title = `Discussion Forum - ${course.title || course.course_name}`;
@@ -43,26 +49,20 @@ export async function generateMetadata({
   }
 }
 
-export default async function DiscussionsPage({ params }: { params: Promise<{ course_code: string }> }) {
+export default async function DiscussionsPage({ params }: PageProps) {
   const { course_code } = await params;
-  
-  try {
-    const course = await getCourse(course_code);
-    return <DiscussionForumClient courseCode={course_code} courseName={course.title || course.course_name} />;
-  } catch (error) {
-    return (
+  const posts = await getPosts(course_code);
+
+  return (
+    <Suspense fallback={
       <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 flex items-center justify-center">
-        <div className="bg-gray-800 bg-opacity-50 backdrop-blur-md p-8 rounded-lg text-center">
-          <h1 className="text-2xl font-bold text-indigo-300 mb-4">Course Not Found</h1>
-          <p className="text-gray-300 mb-6">We couldn't find the discussion forum for this course.</p>
-          <a 
-            href="/courses" 
-            className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg transition-colors"
-          >
-            Return to Courses
-          </a>
-        </div>
+        <SpaceLoader size={100} />
       </div>
-    );
-  }
+    }>
+      <DiscussionForumClient 
+        courseCode={course_code}
+        initialPosts={posts || []}
+      />
+    </Suspense>
+  )
 }

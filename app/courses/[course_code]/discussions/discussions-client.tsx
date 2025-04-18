@@ -1,369 +1,508 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { ChevronLeft, MessageSquare, ThumbsUp, Send, User, Filter, Clock, ArrowUp, ArrowDown } from 'lucide-react'
+import { ChevronLeft, MessageSquare, ThumbsUp, Send, Filter, Clock, ArrowUp, ArrowDown, MoreVertical, Edit2, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/textarea'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import SpaceLoader from '@/components/SpaceLoader'
+import { createPost, createReply, togglePostLike, toggleReplyLike, deletePost, deleteReply, updatePost, updateReply } from '@/lib/actions/discussions'
+import { useSession, signIn } from 'next-auth/react'
 import { getCourse } from '@/lib/actions'
 
-interface DiscussionPost {
+interface Course {
+  course_code: string
+  course_name: string
+  title: string
+  weeks: {
+    name: string
+    questions: any[]
+  }[]
+}
+
+interface Post {
   id: string
-  userId: string
-  userName: string
-  avatar: string
   title: string
   content: string
-  timestamp: string
   weekNumber: number | null
-  likes: number
-  replies: DiscussionReply[]
+  courseCode: string
   tags: string[]
+  createdAt: Date
+  user: {
+    id: string
+    name: string | null
+    image: string | null
+  }
+  replies: {
+    id: string
+    content: string
+    createdAt: Date
+    user: {
+      id: string
+      name: string | null
+      image: string | null
+    }
+    likes: any[]
+  }[]
+  likes: any[]
 }
 
-interface DiscussionReply {
-  id: string
-  userId: string
-  userName: string
-  avatar: string
-  content: string
-  timestamp: string
-  likes: number
+interface Props {
+  courseCode: string
+  initialPosts: Post[]
 }
 
-interface User {
-  id: string
-  name: string
-  avatar: string
-}
-
-export default function DiscussionForumClient({ courseCode, courseName }: { courseCode: string; courseName: string }) {
+export default function DiscussionForumClient({ 
+  courseCode, 
+  initialPosts = [] // Provide default empty array
+}: Props) {
   const router = useRouter()
-  const [loading, setLoading] = useState(true)
+  const { data: session } = useSession()
   const [searchTerm, setSearchTerm] = useState('')
   const [activeTab, setActiveTab] = useState('all')
   const [selectedWeek, setSelectedWeek] = useState<number | null>(null)
   const [sortMethod, setSortMethod] = useState<'recent' | 'popular'>('recent')
-  const [posts, setPosts] = useState<DiscussionPost[]>([])
-  const [currentUser, setCurrentUser] = useState<User | null>(null)
+  const [posts, setPosts] = useState<Post[]>(initialPosts)
+  const [course, setCourse] = useState<Course | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
   const [newPostTitle, setNewPostTitle] = useState('')
   const [newPostContent, setNewPostContent] = useState('')
   const [newPostWeek, setNewPostWeek] = useState<number | null>(null)
   const [newPostTags, setNewPostTags] = useState<string[]>([])
   const [showNewPostForm, setShowNewPostForm] = useState(false)
   const [replyContent, setReplyContent] = useState<{[key: string]: string}>({})
+  const [editingPost, setEditingPost] = useState<string | null>(null)
+  const [editingReply, setEditingReply] = useState<string | null>(null)
+  const [editPostTitle, setEditPostTitle] = useState('')
+  const [editPostContent, setEditPostContent] = useState('')
+  const [editReplyContent, setEditReplyContent] = useState('')
+  const adminEmails = process.env.NEXT_PUBLIC_ADMIN_EMAILS?.split(',') || []
 
-  // Dummy data for demonstration
+  const isAdmin = useMemo(() => {
+    return adminEmails.includes(session?.user?.email || '')
+  }, [session?.user?.email])
+
+  const canModifyPost = (post: Post) => {
+    return isAdmin || post.user.id === session?.user?.id
+  }
+
+  const canModifyReply = (reply: any) => {
+    return isAdmin || reply.user.id === session?.user?.id
+  }
+
   useEffect(() => {
-    // Simulate API fetch
-    setTimeout(() => {
-      const dummyUser = {
-        id: 'user123',
-        name: 'Student',
-        avatar: '',
+    const loadCourse = async () => {
+      try {
+        const courseData = await getCourse(courseCode)
+        setCourse(courseData)
+      } catch (error) {
+        console.error('Failed to load course:', error)
+      } finally {
+        setIsLoading(false)
       }
-      
-      const dummyPosts: DiscussionPost[] = [
-        {
-          id: '1',
-          userId: 'user456',
-          userName: 'Alex Johnson',
-          avatar: '',
-          title: 'Confusion about Week 2 Concept',
-          content: 'I\'m having trouble understanding the relationship between the fundamental principle and the secondary principle. Can someone explain how they interact in real-world scenarios?',
-          timestamp: '2025-04-14T10:30:00Z',
-          weekNumber: 2,
-          likes: 5,
-          replies: [
-            {
-              id: 'r1',
-              userId: 'user789',
-              userName: 'Professor Williams',
-              avatar: '',
-              content: 'Great question! The fundamental principle describes the static relationships between components, while the secondary principle extends this to dynamic scenarios. In real-world terms, think of the fundamental principle as a snapshot of a system at rest, and the secondary principle as what happens when external forces are applied.',
-              timestamp: '2025-04-14T11:45:00Z',
-              likes: 8
-            },
-            {
-              id: 'r2',
-              userId: 'user101',
-              userName: 'Sam Taylor',
-              avatar: '',
-              content: 'I found it helpful to work through the practice problems in section 2.3. They really illustrate how these principles interact.',
-              timestamp: '2025-04-14T13:20:00Z',
-              likes: 3
-            }
-          ],
-          tags: ['concept clarification', 'week 2']
-        },
-        {
-          id: '2',
-          userId: 'user202',
-          userName: 'Jamie Smith',
-          avatar: '',
-          title: 'Additional resources for Week 1',
-          content: 'I\'ve found some great supplementary materials that helped me understand the Week 1 concepts better. Here are the links:\n\n1. [Introduction to Key Terminology](https://example.com/terminology)\n2. [Historical Context Video Series](https://example.com/history)\n3. [Interactive Demonstration](https://example.com/demo)',
-          timestamp: '2025-04-12T15:10:00Z',
-          weekNumber: 1,
-          likes: 12,
-          replies: [
-            {
-              id: 'r3',
-              userId: 'user303',
-              userName: 'Taylor Morgan',
-              avatar: '',
-              content: 'Thank you so much for sharing these! The interactive demonstration was especially helpful for visualizing the concepts.',
-              timestamp: '2025-04-12T16:30:00Z',
-              likes: 5
-            }
-          ],
-          tags: ['resources', 'week 1', 'helpful links']
-        },
-        {
-          id: '3',
-          userId: 'user404',
-          userName: 'Jordan Lee',
-          avatar: '',
-          title: 'Study group for final exam',
-          content: 'Would anyone be interested in forming a study group to prepare for the final exam? We could meet virtually twice a week to discuss practice problems and review concepts. Please reply if you\'re interested!',
-          timestamp: '2025-04-15T09:00:00Z',
-          weekNumber: null, // Not specific to any week
-          likes: 8,
-          replies: [
-            {
-              id: 'r4',
-              userId: 'user505',
-              userName: 'Casey Kim',
-              avatar: '',
-              content: 'I\'d love to join! Studying in a group has always helped me understand complex topics better.',
-              timestamp: '2025-04-15T09:45:00Z',
-              likes: 2
-            },
-            {
-              id: 'r5',
-              userId: 'user606',
-              userName: 'Riley Johnson',
-              avatar: '',
-              content: 'Count me in! I\'m particularly struggling with the concepts from Weeks 2 and 3, so I\'d appreciate the collaborative approach.',
-              timestamp: '2025-04-15T10:30:00Z',
-              likes: 1
-            },
-            {
-              id: 'r6',
-              userId: 'user707',
-              userName: 'Quinn Smith',
-              avatar: '',
-              content: 'I\'m interested too. Could we use a shared document to compile our notes and questions before each meeting?',
-              timestamp: '2025-04-15T11:15:00Z',
-              likes: 3
-            }
-          ],
-          tags: ['study group', 'collaboration', 'exam prep']
-        },
-        {
-          id: '4',
-          userId: 'user808',
-          userName: 'Morgan Patel',
-          avatar: '',
-          title: 'Week 3 challenge problem solution approach',
-          content: 'I\'ve been working on the challenge problem from Week 3 about complex systems with Lorenz equations. I\'m taking an approach using Euler\'s method with a smaller step size than suggested (0.005 instead of 0.01). Has anyone else tried this? My results seem more accurate when compared to the expected values.',
-          timestamp: '2025-04-16T08:15:00Z',
-          weekNumber: 3,
-          likes: 6,
-          replies: [
-            {
-              id: 'r7',
-              userId: 'user909',
-              userName: 'Dr. Chen',
-              avatar: '',
-              content: 'Excellent observation, Morgan! Using a smaller step size does indeed improve accuracy when using Euler\'s method. For those interested in exploring further, you might want to look into higher-order methods like Runge-Kutta that provide even better accuracy with larger step sizes.',
-              timestamp: '2025-04-16T09:30:00Z',
-              likes: 10
-            }
-          ],
-          tags: ['week 3', 'challenge problem', 'numerical methods']
-        }
-      ];
-      
-      setPosts(dummyPosts);
-      setCurrentUser(dummyUser);
-      setLoading(false);
-    }, 1500);
-  }, [courseCode]);
+    }
 
-  const handleCreatePost = () => {
-    if (!newPostTitle.trim() || !newPostContent.trim() || !currentUser) return;
-    
-    const newPost: DiscussionPost = {
-      id: `post-${Date.now()}`,
-      userId: currentUser.id,
-      userName: currentUser.name,
-      avatar: currentUser.avatar,
-      title: newPostTitle,
-      content: newPostContent,
-      timestamp: new Date().toISOString(),
-      weekNumber: newPostWeek,
-      likes: 0,
-      replies: [],
-      tags: newPostTags
-    };
-    
-    setPosts([newPost, ...posts]);
-    setNewPostTitle('');
-    setNewPostContent('');
-    setNewPostWeek(null);
-    setNewPostTags([]);
-    setShowNewPostForm(false);
-  };
+    loadCourse()
+  }, [courseCode])
 
-  const handleAddReply = (postId: string) => {
-    const content = replyContent[postId];
-    if (!content?.trim() || !currentUser) return;
-    
-    const updatedPosts = posts.map(post => {
-      if (post.id === postId) {
-        const newReply: DiscussionReply = {
-          id: `reply-${Date.now()}`,
-          userId: currentUser.id,
-          userName: currentUser.name,
-          avatar: currentUser.avatar,
-          content: content,
-          timestamp: new Date().toISOString(),
-          likes: 0
-        };
-        
-        return {
-          ...post,
-          replies: [...post.replies, newReply]
-        };
+  const handleCreatePost = async () => {
+    if (!session?.user?.name) {
+      signIn('google')
+      return
+    }
+
+    if (!newPostTitle.trim() || !newPostContent.trim()) return
+
+    try {
+      // Create optimistic post
+      const optimisticPost: Post = {
+        id: `temp-${Math.random()}`,
+        title: newPostTitle,
+        content: newPostContent,
+        weekNumber: newPostWeek,
+        courseCode,
+        tags: newPostTags,
+        createdAt: new Date(),
+        user: {
+          id: session.user.id,
+          name: session.user.name,
+          image: session.user.image || null,
+        },
+        replies: [],
+        likes: [],
       }
-      return post;
-    });
-    
-    setPosts(updatedPosts);
-    setReplyContent({...replyContent, [postId]: ''});
-  };
 
-  const handleLikePost = (postId: string) => {
-    const updatedPosts = posts.map(post => {
-      if (post.id === postId) {
-        return {
-          ...post,
-          likes: post.likes + 1
-        };
+      setPosts(prevPosts => [optimisticPost, ...prevPosts])
+
+      setNewPostTitle('')
+      setNewPostContent('')
+      setNewPostWeek(null)
+      setNewPostTags([])
+      setShowNewPostForm(false)
+
+      await createPost({
+        title: newPostTitle,
+        content: newPostContent,
+        weekNumber: newPostWeek,
+        courseCode,
+        tags: newPostTags,
+      })
+
+      router.refresh()
+    } catch (error) {
+      console.error('Failed to create post:', error)
+      setPosts(prevPosts => prevPosts.filter(post => !post.id.startsWith('temp-')))
+    }
+  }
+
+  const handleAddReply = async (postId: string) => {
+    if (!session?.user?.name) {
+      signIn('google')
+      return
+    }
+
+    const content = replyContent[postId]
+    if (!content?.trim()) return
+
+    try {
+      const optimisticReply = {
+        id: `temp-${Math.random()}`,
+        content,
+        createdAt: new Date(),
+        user: {
+          id: session.user.id,
+          name: session.user.name,
+          image: session.user.image || null,
+        },
+        likes: [],
       }
-      return post;
-    });
-    
-    setPosts(updatedPosts);
-  };
 
-  const handleLikeReply = (postId: string, replyId: string) => {
-    const updatedPosts = posts.map(post => {
-      if (post.id === postId) {
-        const updatedReplies = post.replies.map(reply => {
-          if (reply.id === replyId) {
+      setPosts(prevPosts => 
+        prevPosts.map(post => {
+          if (post.id === postId) {
             return {
-              ...reply,
-              likes: reply.likes + 1
-            };
+              ...post,
+              replies: [...post.replies, optimisticReply],
+            }
           }
-          return reply;
-        });
-        
-        return {
-          ...post,
-          replies: updatedReplies
-        };
-      }
-      return post;
-    });
-    
-    setPosts(updatedPosts);
-  };
+          return post
+        })
+      )
+
+      // Clear input
+      setReplyContent({...replyContent, [postId]: ''})
+
+      // Make API call
+      await createReply({
+        content,
+        postId,
+        courseCode,
+      })
+
+      router.refresh()
+    } catch (error) {
+      console.error('Failed to add reply:', error)
+      setPosts(prevPosts => 
+        prevPosts.map(post => {
+          if (post.id === postId) {
+            return {
+              ...post,
+              replies: post.replies.filter(reply => !reply.id.startsWith('temp-')),
+            }
+          }
+          return post
+        })
+      )
+    }
+  }
+
+  const handleLikePost = async (postId: string) => {
+    if (!session?.user?.id) {
+      signIn('google')
+      return
+    }
+
+    try {
+      // Update UI optimistically
+      setPosts(prevPosts => 
+        prevPosts.map(post => {
+          if (post.id === postId) {
+            const hasLiked = post.likes.some(like => like.userId === session.user.id)
+            return {
+              ...post,
+              likes: hasLiked 
+                ? post.likes.filter(like => like.userId !== session.user.id)
+                : [...post.likes, { userId: session.user.id }],
+            }
+          }
+          return post
+        })
+      )
+
+      await togglePostLike(postId, courseCode)
+      router.refresh()
+    } catch (error) {
+      console.error('Failed to toggle post like:', error)
+      router.refresh() // Refresh to get correct state
+    }
+  }
+
+  const handleLikeReply = async (replyId: string) => {
+    if (!session) {
+      signIn('google')
+      return
+    }
+
+    try {
+      await toggleReplyLike(replyId, courseCode)
+      router.refresh()
+    } catch (error) {
+      console.error('Failed to toggle reply like:', error)
+    }
+  }
 
   const handleAddTag = (tag: string) => {
     if (tag && !newPostTags.includes(tag)) {
-      setNewPostTags([...newPostTags, tag]);
+      setNewPostTags([...newPostTags, tag])
     }
-  };
+  }
 
   const handleRemoveTag = (tag: string) => {
-    setNewPostTags(newPostTags.filter(t => t !== tag));
-  };
+    setNewPostTags(newPostTags.filter(t => t !== tag))
+  }
+
+  const handleEditPost = async (postId: string) => {
+    const post = posts.find(p => p.id === postId)
+    if (!post) return
+
+    setEditingPost(postId)
+    setEditPostTitle(post.title)
+    setEditPostContent(post.content)
+  }
+
+  const handleSavePost = async (postId: string) => {
+    if (!editPostTitle.trim() || !editPostContent.trim()) return
+
+    try {
+      // Update UI optimistically
+      setPosts(prevPosts => 
+        prevPosts.map(post => {
+          if (post.id === postId) {
+            return {
+              ...post,
+              title: editPostTitle,
+              content: editPostContent,
+            }
+          }
+          return post
+        })
+      )
+
+      // Make API call
+      await updatePost({
+        postId,
+        title: editPostTitle,
+        content: editPostContent,
+        courseCode,
+      })
+
+      setEditingPost(null)
+      router.refresh()
+    } catch (error) {
+      console.error('Failed to update post:', error)
+      router.refresh() // Refresh to get correct state
+    }
+  }
+
+  const handleDeletePost = async (postId: string) => {
+    if (!confirm('Are you sure you want to delete this post?')) return
+
+    try {
+      // Update UI optimistically
+      setPosts(prevPosts => prevPosts.filter(post => post.id !== postId))
+
+      // Make API call
+      await deletePost(postId, courseCode)
+      router.refresh()
+    } catch (error) {
+      console.error('Failed to delete post:', error)
+      router.refresh() // Refresh to get correct state
+    }
+  }
+
+  const handleEditReply = async (replyId: string, content: string) => {
+    setEditingReply(replyId)
+    setEditReplyContent(content)
+  }
+
+  const handleSaveReply = async (postId: string, replyId: string) => {
+    if (!editReplyContent.trim()) return
+
+    try {
+      // Update UI optimistically
+      setPosts(prevPosts => 
+        prevPosts.map(post => {
+          if (post.id === postId) {
+            return {
+              ...post,
+              replies: post.replies.map(reply => {
+                if (reply.id === replyId) {
+                  return {
+                    ...reply,
+                    content: editReplyContent,
+                  }
+                }
+                return reply
+              }),
+            }
+          }
+          return post
+        })
+      )
+
+      // Make API call
+      await updateReply({
+        replyId,
+        content: editReplyContent,
+        courseCode,
+      })
+
+      setEditingReply(null)
+      router.refresh()
+    } catch (error) {
+      console.error('Failed to update reply:', error)
+      router.refresh() // Refresh to get correct state
+    }
+  }
+
+  const handleDeleteReply = async (postId: string, replyId: string) => {
+    if (!confirm('Are you sure you want to delete this reply?')) return
+
+    try {
+      // Update UI optimistically
+      setPosts(prevPosts => 
+        prevPosts.map(post => {
+          if (post.id === postId) {
+            return {
+              ...post,
+              replies: post.replies.filter(reply => reply.id !== replyId),
+            }
+          }
+          return post
+        })
+      )
+
+      // Make API call
+      await deleteReply(replyId, courseCode)
+      router.refresh()
+    } catch (error) {
+      console.error('Failed to delete reply:', error)
+      router.refresh() // Refresh to get correct state
+    }
+  }
 
   // Filter and sort posts
   const filteredPosts = posts.filter(post => {
     const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          post.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         post.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+                         post.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
     
-    const matchesWeek = selectedWeek === null || post.weekNumber === selectedWeek;
+    const matchesWeek = selectedWeek === null || post.weekNumber === selectedWeek
     
     const matchesTab = activeTab === 'all' || 
-                      (activeTab === 'my-posts' && post.userId === currentUser?.id) ||
-                      (activeTab === 'no-replies' && post.replies.length === 0);
+                      (activeTab === 'my-posts' && post.user.id === session?.user?.id) ||
+                      (activeTab === 'no-replies' && post.replies.length === 0)
     
-    return matchesSearch && matchesWeek && matchesTab;
-  });
+    return matchesSearch && matchesWeek && matchesTab
+  })
 
   const sortedPosts = [...filteredPosts].sort((a, b) => {
     if (sortMethod === 'recent') {
-      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     } else {
-      return b.likes - a.likes;
+      return b.likes.length - a.likes.length
     }
-  });
+  })
 
-  const weeks = Array.from(new Set(posts.filter(post => post.weekNumber !== null).map(post => post.weekNumber))).sort() as number[];
+  const availableWeeks = useMemo(() => {
+    const weekNumbers = new Set<number>();
+    
+    if (course?.weeks) {
+      course.weeks.forEach(week => {
+        const match = week.name.match(/Week (\d+)/);
+        if (match) {
+          const weekNumber = parseInt(match[1]);
+          if (!isNaN(weekNumber)) {
+            weekNumbers.add(weekNumber);
+          }
+        }
+      });
+    }
+    
+    posts.forEach(post => {
+      if (typeof post.weekNumber === 'number') {
+        weekNumbers.add(post.weekNumber);
+      }
+    });
+    
+    const sortedWeeks = Array.from(weekNumbers);
+    sortedWeeks.sort((a, b) => a - b);
+    return sortedWeeks;
+  }, [course?.weeks, posts]);
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
+  const formatDate = (date: Date) => {
+    return new Date(date).toLocaleDateString('en-US', { 
       year: 'numeric', 
       month: 'short', 
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
-    });
-  };
+    })
+  }
 
-  if (loading) {
+  const courseName = course?.title || course?.course_name || courseCode
+
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 flex items-center justify-center">
         <SpaceLoader size={100} />
       </div>
-    );
+    )
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 text-gray-100">
-      <div className="container mx-auto p-4 max-w-6xl">
-        <div className="flex justify-between items-center mb-6">
+      <div className="container mx-auto px-4 py-6 max-w-6xl">
+        <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
           <Button
             variant="ghost"
             onClick={() => router.push(`/courses/${courseCode}`)}
-            className="text-indigo-300 hover:text-indigo-100 hover:bg-indigo-900 transition-colors flex items-center"
+            className="text-indigo-300 hover:text-indigo-100 hover:bg-indigo-900 transition-colors flex items-center w-full md:w-auto justify-center"
           >
             <ChevronLeft className="mr-2 h-4 w-4" />
             Back to Course
           </Button>
-          <h1 className="text-3xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-pink-400">
-            Discussion Forum
+          <h1 className="text-2xl md:text-3xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-pink-400">
+            {courseName} - Discussion Forum
           </h1>
-          <div className="w-[100px]"></div>
+          <div className="w-full md:w-[100px]"></div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {/* Sidebar */}
-          <div className="md:col-span-1">
+          <div className="md:col-span-1 order-2 md:order-1">
             <Card className="bg-gray-800 bg-opacity-50 backdrop-blur-md border-gray-700 mb-4">
               <CardHeader>
                 <CardTitle className="text-xl text-indigo-300">Filters</CardTitle>
@@ -381,26 +520,30 @@ export default function DiscussionForumClient({ courseCode, courseName }: { cour
                         All Weeks
                       </Button>
                       
-                      {weeks.map(week => (
-                        <Button
-                          key={week}
-                          variant={selectedWeek === week ? "default" : "outline"}
-                          className="w-full justify-start"
-                          onClick={() => setSelectedWeek(week)}
-                        >
-                          Week {week}
-                        </Button>
-                      ))}
+                      {availableWeeks && availableWeeks.length > 0 ? (
+                        availableWeeks.map((week) => (
+                          <Button
+                            key={week}
+                            variant={selectedWeek === week ? "default" : "outline"}
+                            className="w-full justify-start"
+                            onClick={() => setSelectedWeek(week)}
+                          >
+                            Week {week}
+                          </Button>
+                        ))
+                      ) : (
+                        <div className="text-sm text-gray-400 py-2">No weeks available</div>
+                      )}
                     </div>
                   </div>
                   
                   <div>
                     <h3 className="text-sm font-medium text-gray-300 mb-2">Sort by</h3>
-                    <div className="flex space-x-2">
+                    <div className="flex flex-wrap gap-2">
                       <Button
                         variant={sortMethod === 'recent' ? "default" : "outline"}
                         size="sm"
-                        className="flex items-center"
+                        className="flex items-center flex-1"
                         onClick={() => setSortMethod('recent')}
                       >
                         <Clock className="mr-1 h-4 w-4" />
@@ -409,7 +552,7 @@ export default function DiscussionForumClient({ courseCode, courseName }: { cour
                       <Button
                         variant={sortMethod === 'popular' ? "default" : "outline"}
                         size="sm"
-                        className="flex items-center"
+                        className="flex items-center flex-1"
                         onClick={() => setSortMethod('popular')}
                       >
                         <ThumbsUp className="mr-1 h-4 w-4" />
@@ -431,7 +574,7 @@ export default function DiscussionForumClient({ courseCode, courseName }: { cour
           </div>
 
           {/* Main Content */}
-          <div className="md:col-span-3">
+          <div className="md:col-span-3 order-1 md:order-2">
             <div className="mb-6">
               <div className="relative">
                 <Input
@@ -439,16 +582,16 @@ export default function DiscussionForumClient({ courseCode, courseName }: { cour
                   placeholder="Search discussions..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="bg-gray-800 bg-opacity-50 text-gray-100 border-gray-700 focus:border-indigo-500"
+                  className="bg-gray-800 bg-opacity-50 text-gray-100 border-gray-700 focus:border-indigo-500 w-full"
                 />
               </div>
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-              <TabsList className="bg-gray-800 bg-opacity-50">
-                <TabsTrigger value="all" className="data-[state=active]:bg-indigo-600">All Discussions</TabsTrigger>
-                <TabsTrigger value="my-posts" className="data-[state=active]:bg-indigo-600">My Posts</TabsTrigger>
-                <TabsTrigger value="no-replies" className="data-[state=active]:bg-indigo-600">Unanswered</TabsTrigger>
+              <TabsList className="bg-gray-800 bg-opacity-50 w-full flex">
+                <TabsTrigger value="all" className="flex-1 data-[state=active]:bg-indigo-600">All Discussions</TabsTrigger>
+                <TabsTrigger value="my-posts" className="flex-1 data-[state=active]:bg-indigo-600">My Posts</TabsTrigger>
+                <TabsTrigger value="no-replies" className="flex-1 data-[state=active]:bg-indigo-600">Unanswered</TabsTrigger>
               </TabsList>
             </Tabs>
             
@@ -487,15 +630,16 @@ export default function DiscussionForumClient({ courseCode, courseName }: { cour
                     
                     <div>
                       <label htmlFor="post-week" className="text-sm font-medium text-gray-300 block mb-1">Related Week (Optional)</label>
-                      <select
-                        id="post-week"
-                        value={newPostWeek === null ? '' : newPostWeek}
+                      <select 
+                        value={newPostWeek || ''} 
                         onChange={(e) => setNewPostWeek(e.target.value ? Number(e.target.value) : null)}
                         className="w-full p-2 bg-gray-700 border border-gray-600 rounded-md text-gray-200"
                       >
-                        <option value="">General Discussion (No specific week)</option>
-                        {weeks.map(week => (
-                          <option key={week} value={week}>Week {week}</option>
+                        <option value="">Select Week</option>
+                        {availableWeeks.map((week) => (
+                          <option key={week} value={week}>
+                            Week {week}
+                          </option>
                         ))}
                       </select>
                     </div>
@@ -525,9 +669,9 @@ export default function DiscussionForumClient({ courseCode, courseName }: { cour
                           className="bg-gray-700 border-gray-600"
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') {
-                              e.preventDefault();
-                              handleAddTag((e.target as HTMLInputElement).value);
-                              (e.target as HTMLInputElement).value = '';
+                              e.preventDefault()
+                              handleAddTag((e.target as HTMLInputElement).value)
+                              ;(e.target as HTMLInputElement).value = ''
                             }
                           }}
                         />
@@ -535,9 +679,9 @@ export default function DiscussionForumClient({ courseCode, courseName }: { cour
                           variant="outline"
                           className="border-indigo-600 text-indigo-300"
                           onClick={(e) => {
-                            const input = e.currentTarget.previousElementSibling as HTMLInputElement;
-                            handleAddTag(input.value);
-                            input.value = '';
+                            const input = e.currentTarget.previousElementSibling as HTMLInputElement
+                            handleAddTag(input.value)
+                            input.value = ''
                           }}
                         >
                           Add
@@ -590,36 +734,102 @@ export default function DiscussionForumClient({ courseCode, courseName }: { cour
                         <div className="flex justify-between items-start">
                           <div className="flex items-center gap-3">
                             <Avatar className="h-10 w-10 border border-gray-700">
-                              <AvatarFallback className="bg-indigo-900 text-indigo-200">
-                                {post.userName.charAt(0)}
-                              </AvatarFallback>
+                              {post.user.image ? (
+                                <AvatarImage src={post.user.image} alt={post.user.name || 'User'} />
+                              ) : (
+                                <AvatarFallback className="bg-indigo-900 text-indigo-200">
+                                  {post.user.name?.charAt(0) || 'U'}
+                                </AvatarFallback>
+                              )}
                             </Avatar>
-                            <div>
-                              <CardTitle className="text-xl text-indigo-300">{post.title}</CardTitle>
-                              <div className="flex items-center text-xs text-gray-400 mt-1">
-                                <span>{post.userName}</span>
-                                <span className="mx-2">•</span>
-                                <span>{formatDate(post.timestamp)}</span>
-                                {post.weekNumber !== null && (
-                                  <>
+                            <div className="flex-1">
+                              {editingPost === post.id ? (
+                                <div className="space-y-2">
+                                  <Input
+                                    value={editPostTitle}
+                                    onChange={(e) => setEditPostTitle(e.target.value)}
+                                    className="bg-gray-700 border-gray-600"
+                                  />
+                                  <Textarea
+                                    value={editPostContent}
+                                    onChange={(e) => setEditPostContent(e.target.value)}
+                                    className="bg-gray-700 border-gray-600"
+                                  />
+                                  <div className="flex gap-2">
+                                    <Button
+                                      size="sm"
+                                      onClick={() => handleSavePost(post.id)}
+                                      disabled={!editPostTitle.trim() || !editPostContent.trim()}
+                                    >
+                                      Save
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => setEditingPost(null)}
+                                    >
+                                      Cancel
+                                    </Button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <>
+                                  <CardTitle className="text-xl text-indigo-300">{post.title}</CardTitle>
+                                  <div className="flex items-center text-xs text-gray-400 mt-1">
+                                    <span>{post.user.name}</span>
                                     <span className="mx-2">•</span>
-                                    <span>Week {post.weekNumber}</span>
-                                  </>
-                                )}
-                              </div>
+                                    <span>{formatDate(post.createdAt)}</span>
+                                    {post.weekNumber !== null && (
+                                      <>
+                                        <span className="mx-2">•</span>
+                                        <span>Week {post.weekNumber}</span>
+                                      </>
+                                    )}
+                                  </div>
+                                </>
+                              )}
                             </div>
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleLikePost(post.id)}
-                            className="text-gray-400 hover:text-indigo-300"
-                          >
-                            <ThumbsUp className="h-4 w-4 mr-1" />
-                            {post.likes}
-                          </Button>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleLikePost(post.id)}
+                              className={`text-gray-400 hover:text-indigo-300 ${
+                                post.likes.some(like => like.userId === session?.user?.id) ? 'text-indigo-300' : ''
+                              }`}
+                            >
+                              <ThumbsUp className="h-4 w-4 mr-1" />
+                              {post.likes.length}
+                            </Button>
+                            {canModifyPost(post) && (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm">
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
+                                  <DropdownMenuItem
+                                    onClick={() => handleEditPost(post.id)}
+                                    className="text-gray-200 hover:bg-gray-700"
+                                  >
+                                    <Edit2 className="h-4 w-4 mr-2" />
+                                    Edit
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => handleDeletePost(post.id)}
+                                    className="text-red-400 hover:bg-gray-700"
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Delete
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )}
+                          </div>
                         </div>
-                        {post.tags.length > 0 && (
+                        {!editingPost && post.tags.length > 0 && (
                           <div className="flex flex-wrap gap-2 mt-2">
                             {post.tags.map(tag => (
                               <span 
@@ -632,9 +842,11 @@ export default function DiscussionForumClient({ courseCode, courseName }: { cour
                           </div>
                         )}
                       </CardHeader>
-                      <CardContent className="py-2">
-                        <p className="text-gray-300 whitespace-pre-line">{post.content}</p>
-                      </CardContent>
+                      {!editingPost && (
+                        <CardContent className="py-2">
+                          <p className="text-gray-300 whitespace-pre-line">{post.content}</p>
+                        </CardContent>
+                      )}
                       
                       {/* Replies */}
                       {post.replies.length > 0 && (
@@ -646,27 +858,88 @@ export default function DiscussionForumClient({ courseCode, courseName }: { cour
                             {post.replies.map((reply) => (
                               <div key={reply.id} className="flex gap-3">
                                 <Avatar className="h-8 w-8 flex-shrink-0">
-                                  <AvatarFallback className="bg-indigo-900 text-indigo-200">
-                                    {reply.userName.charAt(0)}
-                                  </AvatarFallback>
+                                  {reply.user.image ? (
+                                    <AvatarImage src={reply.user.image} alt={reply.user.name || 'User'} />
+                                  ) : (
+                                    <AvatarFallback className="bg-indigo-900 text-indigo-200">
+                                      {reply.user.name?.charAt(0) || 'U'}
+                                    </AvatarFallback>
+                                  )}
                                 </Avatar>
                                 <div className="flex-1 bg-gray-700 bg-opacity-50 p-3 rounded-md">
-                                  <div className="flex justify-between items-start">
-                                    <div>
-                                      <p className="text-sm font-medium text-indigo-200">{reply.userName}</p>
-                                      <p className="text-xs text-gray-400">{formatDate(reply.timestamp)}</p>
+                                  {editingReply === reply.id ? (
+                                    <div className="space-y-2">
+                                      <Textarea
+                                        value={editReplyContent}
+                                        onChange={(e) => setEditReplyContent(e.target.value)}
+                                        className="bg-gray-700 border-gray-600"
+                                      />
+                                      <div className="flex gap-2">
+                                        <Button
+                                          size="sm"
+                                          onClick={() => handleSaveReply(post.id, reply.id)}
+                                          disabled={!editReplyContent.trim()}
+                                        >
+                                          Save
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => setEditingReply(null)}
+                                        >
+                                          Cancel
+                                        </Button>
+                                      </div>
                                     </div>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => handleLikeReply(post.id, reply.id)}
-                                      className="text-gray-400 hover:text-indigo-300"
-                                    >
-                                      <ThumbsUp className="h-3 w-3 mr-1" />
-                                      {reply.likes}
-                                    </Button>
-                                  </div>
-                                  <p className="text-gray-300 mt-2 text-sm whitespace-pre-line">{reply.content}</p>
+                                  ) : (
+                                    <>
+                                      <div className="flex justify-between items-start">
+                                        <div>
+                                          <p className="text-sm font-medium text-indigo-200">{reply.user.name}</p>
+                                          <p className="text-xs text-gray-400">{formatDate(reply.createdAt)}</p>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => handleLikeReply(reply.id)}
+                                            className={`text-gray-400 hover:text-indigo-300 ${
+                                              reply.likes.some(like => like.userId === session?.user?.id) ? 'text-indigo-300' : ''
+                                            }`}
+                                          >
+                                            <ThumbsUp className="h-3 w-3 mr-1" />
+                                            {reply.likes.length}
+                                          </Button>
+                                          {canModifyReply(reply) && (
+                                            <DropdownMenu>
+                                              <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" size="sm">
+                                                  <MoreVertical className="h-4 w-4" />
+                                                </Button>
+                                              </DropdownMenuTrigger>
+                                              <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
+                                                <DropdownMenuItem
+                                                  onClick={() => handleEditReply(reply.id, reply.content)}
+                                                  className="text-gray-200 hover:bg-gray-700"
+                                                >
+                                                  <Edit2 className="h-4 w-4 mr-2" />
+                                                  Edit
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem
+                                                  onClick={() => handleDeleteReply(post.id, reply.id)}
+                                                  className="text-red-400 hover:bg-gray-700"
+                                                >
+                                                  <Trash2 className="h-4 w-4 mr-2" />
+                                                  Delete
+                                                </DropdownMenuItem>
+                                              </DropdownMenuContent>
+                                            </DropdownMenu>
+                                          )}
+                                        </div>
+                                      </div>
+                                      <p className="text-gray-300 mt-2 text-sm whitespace-pre-line">{reply.content}</p>
+                                    </>
+                                  )}
                                 </div>
                               </div>
                             ))}
@@ -678,22 +951,27 @@ export default function DiscussionForumClient({ courseCode, courseName }: { cour
                       <CardFooter className="border-t border-gray-700 pt-3">
                         <div className="flex gap-3 w-full">
                           <Avatar className="h-8 w-8 flex-shrink-0">
-                            <AvatarFallback className="bg-indigo-900 text-indigo-200">
-                              {currentUser?.name.charAt(0) || 'U'}
-                            </AvatarFallback>
+                            {session?.user?.image ? (
+                              <AvatarImage src={session.user.image} alt={session.user.name || 'User'} />
+                            ) : (
+                              <AvatarFallback className="bg-indigo-900 text-indigo-200">
+                                {session?.user?.name?.charAt(0) || 'U'}
+                              </AvatarFallback>
+                            )}
                           </Avatar>
                           <div className="flex-1 flex gap-2">
                             <Input
-                              placeholder="Write a reply..."
+                              placeholder={session ? "Write a reply..." : "Sign in to reply"}
                               value={replyContent[post.id] || ''}
                               onChange={(e) => setReplyContent({...replyContent, [post.id]: e.target.value})}
                               className="flex-1 bg-gray-700 border-gray-600"
+                              disabled={!session}
                             />
                             <Button
                               className="bg-indigo-600 hover:bg-indigo-700"
                               size="sm"
                               onClick={() => handleAddReply(post.id)}
-                              disabled={!replyContent[post.id]?.trim()}
+                              disabled={!session || !replyContent[post.id]?.trim()}
                             >
                               <Send className="h-4 w-4" />
                             </Button>
