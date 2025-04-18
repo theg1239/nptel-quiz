@@ -156,17 +156,20 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
             })
           }))
         }
-        
+
         const courseMetadata: {
-          totalWeeks: number;
-          courseName: string;
-          lastUpdated: string;
+          totalWeeks: number
+          courseName: string
+          lastUpdated: string
         } = {
           totalWeeks: transformedCourse.weeks.length,
           courseName: transformedCourse.course_name,
           lastUpdated: new Date().toISOString()
         }
-        localStorage.setItem(`courseData_${courseCode}`, JSON.stringify(courseMetadata))
+        localStorage.setItem(
+          `courseData_${courseCode}`,
+          JSON.stringify(courseMetadata)
+        )
 
         setCourse(transformedCourse)
         if (transformedCourse.weeks.length > 0) {
@@ -194,32 +197,40 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
       weeks: sanitizedWeeks
     }
   }, [course])
-  
+
   useEffect(() => {
     if (selectedWeek && !loading && !error) {
       try {
-        const courseProgress = JSON.parse(localStorage.getItem("courseProgress") || "{}");
-        const weekProgress = JSON.parse(localStorage.getItem(`weekProgress_${courseCode}`) || "{}");
-        
-        weekProgress[selectedWeek] = true;
-        localStorage.setItem(`weekProgress_${courseCode}`, JSON.stringify(weekProgress));
-        
-        const totalWeeks = sanitizedCourse?.weeks.length || 0;
-        const viewedWeeks = Object.keys(weekProgress).length;
-        const viewProgress = Math.round((viewedWeeks / totalWeeks) * 40); // 40% weight for viewing content
-        
-        const quizProgress = courseProgress[courseCode] || 0;
-        const weightedQuizProgress = Math.round(quizProgress * 0.6); // 60% weight for quiz performance
-        
-        const totalProgress = Math.min(100, Math.round(viewProgress + weightedQuizProgress));
-        
-        courseProgress[courseCode] = totalProgress;
-        localStorage.setItem("courseProgress", JSON.stringify(courseProgress));
+        const courseProgress = JSON.parse(localStorage.getItem('courseProgress') || '{}')
+        const weekProgress = JSON.parse(
+          localStorage.getItem(`weekProgress_${courseCode}`) || '{}'
+        )
+
+        weekProgress[selectedWeek] = true
+        localStorage.setItem(
+          `weekProgress_${courseCode}`,
+          JSON.stringify(weekProgress)
+        )
+
+        const totalWeeks = sanitizedCourse?.weeks.length || 0
+        const viewedWeeks = Object.keys(weekProgress).length
+        const viewProgress = Math.round((viewedWeeks / totalWeeks) * 40)
+
+        const quizProgress = courseProgress[courseCode] || 0
+        const weightedQuizProgress = Math.round(quizProgress * 0.6)
+
+        const totalProgress = Math.min(
+          100,
+          Math.round(viewProgress + weightedQuizProgress)
+        )
+
+        courseProgress[courseCode] = totalProgress
+        localStorage.setItem('courseProgress', JSON.stringify(courseProgress))
       } catch (error) {
-        console.error("Error updating course progress:", error);
+        console.error('Error updating course progress:', error)
       }
     }
-  }, [selectedWeek, courseCode, loading, error, sanitizedCourse?.weeks.length]);
+  }, [selectedWeek, courseCode, loading, error, sanitizedCourse?.weeks.length])
 
   const handleWeekSelect = (weekName: string) => {
     setSelectedWeek(weekName)
@@ -227,12 +238,14 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
     setCurrentSpeechIndex(0)
   }
 
-  const currentWeekIndex = course?.weeks.findIndex(w => w.name === selectedWeek) ?? -1
+  const currentWeekIndex =
+    course?.weeks.findIndex(w => w.name === selectedWeek) ?? -1
   const totalWeeks = course?.weeks.length ?? 0
 
   const navigateWeek = (direction: 'prev' | 'next') => {
     if (!course) return
-    const newIndex = direction === 'prev' ? currentWeekIndex - 1 : currentWeekIndex + 1
+    const newIndex =
+      direction === 'prev' ? currentWeekIndex - 1 : currentWeekIndex + 1
     if (newIndex >= 0 && newIndex < course.weeks.length) {
       setSelectedWeek(course.weeks[newIndex].name)
       setCurrentSpeechIndex(0)
@@ -240,8 +253,16 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
   }
 
   useEffect(() => {
-    if (isReadAloudMode && !loading && !error && sanitizedCourse && selectedWeek) {
-      const weekQuestions = sanitizedCourse.weeks.find((week) => week.name === selectedWeek)?.questions
+    if (
+      isReadAloudMode &&
+      !loading &&
+      !error &&
+      sanitizedCourse &&
+      selectedWeek
+    ) {
+      const weekQuestions = sanitizedCourse.weeks.find(
+        week => week.name === selectedWeek
+      )?.questions
       if (!weekQuestions || weekQuestions.length === 0) return
 
       const speakQuestion = (index: number) => {
@@ -250,23 +271,27 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
         if (!question) return
 
         const correctOptionIndices = question.answer.map(ans => {
-          const index = question.options.findIndex(option => {
-            const { label } = getLabelAndText(option);
-            return label === ans;
-          });
-          return index;
-        });
+          const idx = question.options.findIndex(option => {
+            const { label } = getLabelAndText(option)
+            return label === ans
+          })
+          return idx
+        })
 
-        const correctOptionsText = correctOptionIndices.map((optionIndex) => {
-          const option = question.options[optionIndex];
-          const { optionText } = getLabelAndText(option);
-          return `Option ${optionIndex + 1}: ${optionText}`;
-        }).join('. ');
+        const correctOptionsText = correctOptionIndices
+          .map(optionIndex => {
+            const option = question.options[optionIndex]
+            const { optionText } = getLabelAndText(option)
+            return `Option ${optionIndex + 1}: ${optionText}`
+          })
+          .join('. ')
 
-        const textToSpeak = `Question ${index + 1}: ${question.question}. ${correctOptionsText}.`;
+        const textToSpeak = `Question ${index + 1}: ${
+          question.question
+        }. ${correctOptionsText}.`
 
         utteranceRef.current = new SpeechSynthesisUtterance(textToSpeak)
-        utteranceRef.current.rate = 1.2;
+        utteranceRef.current.rate = 1.2
         utteranceRef.current.onend = () => {
           setIsSpeaking(false)
           if (index + 1 < weekQuestions.length) {
@@ -286,7 +311,15 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
         setIsSpeaking(false)
       }
     }
-  }, [isReadAloudMode, currentSpeechIndex, sanitizedCourse, selectedWeek, loading, error, isSpeaking])
+  }, [
+    isReadAloudMode,
+    currentSpeechIndex,
+    sanitizedCourse,
+    selectedWeek,
+    loading,
+    error,
+    isSpeaking
+  ])
 
   const toggleReadAloudMode = () => {
     setIsReadAloudMode(!isReadAloudMode)
@@ -384,7 +417,7 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
                 transition={{ duration: 0.2 }}
                 className="flex items-center justify-center h-full"
               >
-                <SpaceLoader size={100} /> 
+                <SpaceLoader size={100} />
               </motion.div>
             ) : error ? (
               <motion.div
@@ -467,17 +500,13 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm text-gray-400">Progress</span>
               <span className="text-sm text-indigo-400">
-                {selectedWeek && sanitizedCourse ? 
-                  `${currentWeekIndex + 1} / ${totalWeeks} weeks` : 
-                  '0 / 0 weeks'
-                }
+                {`${currentWeekIndex + 1} / ${totalWeeks} weeks`}
               </span>
             </div>
-            <Progress 
-              value={selectedWeek && sanitizedCourse ? 
-                Math.round(((currentWeekIndex + 1) / totalWeeks) * 100) : 
-                0
-              } 
+            <Progress
+              value={Math.round(
+                ((currentWeekIndex + 1) / totalWeeks) * 100
+              )}
               className="h-2 bg-gray-700"
             />
           </div>
