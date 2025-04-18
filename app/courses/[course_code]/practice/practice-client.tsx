@@ -381,7 +381,7 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 text-gray-100 flex flex-col items-center">
       <header className="w-full max-w-4xl flex flex-col items-center p-4 md:p-6 space-y-4">
-        <div className="w-full flex justify-between items-center">
+        <div className="w-full flex flex-wrap justify-between items-center gap-2">
           <Button
             variant="ghost"
             className="text-indigo-300 hover:text-indigo-100 hover:bg-indigo-900 transition-colors flex items-center"
@@ -390,7 +390,7 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
             <ChevronLeft className="mr-2 h-4 w-4" />
             Back to Course
           </Button>
-          <div className="flex space-x-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               variant="ghost"
               className={`text-indigo-300 hover:text-indigo-100 hover:bg-indigo-900 transition-colors flex items-center ${isReadAloudMode ? 'bg-indigo-800/50' : ''}`}
@@ -398,7 +398,10 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
               disabled={isFlashcardMode}
             >
               <Volume2 className="mr-2 h-5 w-5" />
-              {isReadAloudMode ? 'Disable Read' : 'Read Aloud'}
+              <span className="hidden sm:inline">
+                {isReadAloudMode ? 'Disable Read' : 'Read Aloud'}
+              </span>
+              <span className="sm:hidden">Read</span>
             </Button>
             <Button
               variant="ghost"
@@ -407,7 +410,10 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
               disabled={isReadAloudMode}
             >
               <BookOpen className="mr-2 h-5 w-5" />
-              {isFlashcardMode ? 'Exit Flashcards' : 'Flashcards'}
+              <span className="hidden sm:inline">
+                {isFlashcardMode ? 'Exit Flashcards' : 'Flashcards'}
+              </span>
+              <span className="sm:hidden">Cards</span>
             </Button>
           </div>
           <Sheet open={isNavOpen} onOpenChange={setIsNavOpen}>
@@ -417,7 +423,7 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
                 <span className="sr-only">Open menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left">
+            <SheetContent side="left" className="md:hidden">
               <SheetHeader>
                 <SheetTitle>Weeks</SheetTitle>
               </SheetHeader>
@@ -426,7 +432,7 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
                   <Button
                     key={week.name}
                     variant="ghost"
-                    className="w-full justify-start"
+                    className="w-full justify-start text-left truncate"
                     onClick={() => handleWeekSelect(week.name)}
                   >
                     {week.name}
@@ -443,236 +449,318 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
         </h1>
       </header>
 
-      <main className="flex-1 w-full max-w-4xl flex flex-col items-center px-4 md:px-6 pt-2">
-        {isFlashcardMode && (
-          <div className="flex items-center justify-between mb-4 w-full">
-            <Button
-              variant="outline"
-              onClick={() => navigateWeek('prev')}
-              disabled={currentWeekIndex <= 0}
-              className="text-indigo-300 hover:text-indigo-100 hover:bg-indigo-900 transition-colors flex items-center"
-            >
-              <ChevronLeft className="mr-2 h-4 w-4" />
-              Previous Week
-            </Button>
-            <span className="text-lg font-semibold text-indigo-300">
-              {selectedWeek}
-            </span>
-            <Button
-              variant="outline"
-              onClick={() => navigateWeek('next')}
-              disabled={currentWeekIndex >= totalWeeks - 1}
-              className="text-indigo-300 hover:text-indigo-100 hover:bg-indigo-900 transition-colors flex items-center"
-            >
-              Next Week
-              <ChevronRight className="ml-2 h-4 w-4" />
-            </Button>
+      <main className="flex-1 w-full max-w-4xl flex flex-col md:flex-row items-start px-4 md:px-6 pt-2 gap-4">
+        {/* Sidebar for larger screens */}
+        {!loading && !error && sanitizedCourse && !isFlashcardMode && (
+          <div className="hidden md:block w-56 shrink-0 bg-gray-900/50 backdrop-blur-md rounded-lg border border-gray-800 overflow-hidden sticky top-4">
+            <div className="p-3 border-b border-gray-800">
+              <h2 className="font-semibold text-indigo-300">Weeks</h2>
+            </div>
+            <ScrollArea className="h-[calc(100vh-10rem)]">
+              <div className="p-2">
+                {sanitizedCourse.weeks.map((week) => (
+                  <Button
+                    key={week.name}
+                    variant={selectedWeek === week.name ? "default" : "ghost"}
+                    className={`w-full justify-start mb-1 text-left text-sm ${
+                      selectedWeek === week.name
+                        ? "bg-indigo-800/70 text-indigo-100"
+                        : "text-gray-300 hover:text-gray-100"
+                    }`}
+                    onClick={() => handleWeekSelect(week.name)}
+                  >
+                    <span className="truncate">{week.name}</span>
+                  </Button>
+                ))}
+              </div>
+            </ScrollArea>
           </div>
         )}
 
-        <AnimatePresence mode="wait" initial={false}>
-          {isFlashcardMode ? (
-            <motion.div 
-              key="flashcard-mode"
-              className="w-full flex flex-col items-center"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.2 }}
-            >
-              <div className="h-[calc(100vh-28rem)] w-full flex flex-col items-center">
-                {loading ? (
-                  <div className="flex items-center justify-center h-full">
-                    <SpaceLoader size={100} />
-                  </div>
-                ) : error ? (
-                  <div className="text-pink-500 text-center p-4 bg-gray-900 bg-opacity-50 backdrop-blur-md rounded-lg">
-                    {error}
-                  </div>
-                ) : (
-                  <div className="w-full flex flex-col items-center h-full">
-                    <div className="flex items-center justify-between w-full mb-4">
-                      <span className="text-indigo-300 text-sm">
-                        Card {currentFlashcardIndex + 1} of {sanitizedCourse?.weeks.find(week => week.name === selectedWeek)?.questions.length || 0}
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-pink-300 hover:text-pink-100 hover:bg-pink-900/30"
-                        onClick={toggleFlashcardMode}
-                      >
-                        <X className="h-4 w-4 mr-1" />
-                        Exit Flashcards
-                      </Button>
+        <div className={`flex-1 flex flex-col ${isFlashcardMode ? 'w-full' : ''}`}>
+          {isFlashcardMode && (
+            <div className="flex items-center justify-between mb-4 w-full">
+              <Button
+                variant="outline"
+                onClick={() => navigateWeek('prev')}
+                disabled={currentWeekIndex <= 0}
+                className="text-indigo-300 hover:text-indigo-100 hover:bg-indigo-900 transition-colors flex items-center"
+              >
+                <ChevronLeft className="mr-1 h-4 w-4" />
+                <span className="hidden sm:inline">Previous Week</span>
+                <span className="sm:hidden">Prev</span>
+              </Button>
+              <span className="text-sm md:text-lg font-semibold text-indigo-300 truncate px-2">
+                {selectedWeek}
+              </span>
+              <Button
+                variant="outline"
+                onClick={() => navigateWeek('next')}
+                disabled={currentWeekIndex >= totalWeeks - 1}
+                className="text-indigo-300 hover:text-indigo-100 hover:bg-indigo-900 transition-colors flex items-center"
+              >
+                <span className="hidden sm:inline">Next Week</span>
+                <span className="sm:hidden">Next</span>
+                <ChevronRight className="ml-1 h-4 w-4" />
+              </Button>
+            </div>
+          )}
+
+          <AnimatePresence mode="wait" initial={false}>
+            {isFlashcardMode ? (
+              <motion.div 
+                key="flashcard-mode"
+                className="w-full flex flex-col items-center"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="h-[calc(100vh-28rem)] w-full flex flex-col items-center">
+                  {loading ? (
+                    <div className="flex items-center justify-center h-full">
+                      <SpaceLoader size={100} />
                     </div>
-                    
-                    <div className="flex-grow flex items-center justify-center w-full relative">
-                      <button 
-                        className="absolute left-0 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 hover:bg-white/20 z-10"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigateFlashcard('prev');
-                        }}
-                      >
-                        <ChevronLeft className="h-6 w-6 text-white" />
-                      </button>
-                      
-                      <motion.div 
-                        className="perspective-1000 w-full max-w-lg h-[350px] cursor-pointer"
-                        onClick={handleFlashcardFlip}
-                        key={`${selectedWeek}-${currentFlashcardIndex}`}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <motion.div
-                          className="w-full h-full relative preserve-3d"
-                          animate={{ rotateY: isFlipped ? 180 : 0 }}
-                          transition={{ duration: 0.6, type: "spring", stiffness: 260, damping: 20 }}
+                  ) : error ? (
+                    <div className="text-pink-500 text-center p-4 bg-gray-900 bg-opacity-50 backdrop-blur-md rounded-lg">
+                      {error}
+                    </div>
+                  ) : (
+                    <div className="w-full flex flex-col items-center h-full">
+                      <div className="flex items-center justify-between w-full mb-4">
+                        <span className="text-indigo-300 text-sm">
+                          Card {currentFlashcardIndex + 1} of {sanitizedCourse?.weeks.find(week => week.name === selectedWeek)?.questions.length || 0}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-pink-300 hover:text-pink-100 hover:bg-pink-900/30"
+                          onClick={toggleFlashcardMode}
                         >
-                          {/* Front of card (Question) */}
+                          <X className="h-4 w-4 mr-1" />
+                          <span className="hidden sm:inline">Exit Flashcards</span>
+                          <span className="sm:hidden">Exit</span>
+                        </Button>
+                      </div>
+                      
+                      <div className="flex-grow flex items-center justify-center w-full relative">
+                        <button 
+                          className="absolute left-0 top-1/2 -translate-y-1/2 p-2 sm:p-3 rounded-full bg-white/10 hover:bg-white/20 z-10"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigateFlashcard('prev');
+                          }}
+                        >
+                          <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                        </button>
+                        
+                        <motion.div 
+                          className="perspective-1000 w-full max-w-lg h-[300px] sm:h-[350px] cursor-pointer"
+                          onClick={handleFlashcardFlip}
+                          key={`${selectedWeek}-${currentFlashcardIndex}`}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -20 }}
+                          transition={{ duration: 0.3 }}
+                        >
                           <motion.div
-                            className="absolute w-full h-full backface-hidden rounded-xl bg-gradient-to-br from-indigo-800/90 to-purple-800/90 backdrop-blur-md border border-indigo-500/30 shadow-lg p-6 flex flex-col"
+                            className="w-full h-full relative preserve-3d"
+                            animate={{ rotateY: isFlipped ? 180 : 0 }}
+                            transition={{ duration: 0.6, type: "spring", stiffness: 260, damping: 20 }}
                           >
-                            <div className="absolute top-3 right-3 flex items-center text-xs text-indigo-300 opacity-70">
-                              <span>Click to flip</span>
-                              <RotateCcw className="ml-1 h-3 w-3" />
-                            </div>
-                            
-                            <div className="flex-1 flex flex-col items-center justify-center">
-                              <div className="w-16 h-16 rounded-full bg-indigo-600/20 flex items-center justify-center mb-6">
-                                <BookOpen className="h-8 w-8 text-indigo-300" />
+                            {/* Front of card (Question) */}
+                            <motion.div
+                              className="absolute w-full h-full backface-hidden rounded-xl bg-gradient-to-br from-indigo-800/90 to-purple-800/90 backdrop-blur-md border border-indigo-500/30 shadow-lg p-4 sm:p-6 flex flex-col"
+                            >
+                              <div className="absolute top-3 right-3 flex items-center text-xs text-indigo-300 opacity-70">
+                                <span>Click to flip</span>
+                                <RotateCcw className="ml-1 h-3 w-3" />
                               </div>
-                              <h3 className="text-xl text-center font-medium text-indigo-100 mb-4">Question</h3>
-                              <p className="text-center text-lg text-gray-200 overflow-y-auto max-h-[200px] px-2">
-                                {getCurrentFlashcard()?.question}
-                              </p>
-                            </div>
-                          </motion.div>
-                          
-                          {/* Back of card (Answer) */}
-                          <motion.div
-                            className="absolute w-full h-full backface-hidden rounded-xl bg-gradient-to-br from-green-800/90 to-blue-800/90 backdrop-blur-md border border-green-500/30 shadow-lg p-6 flex flex-col"
-                            style={{ transform: "rotateY(180deg)" }}
-                          >
-                            <div className="absolute top-3 right-3 flex items-center text-xs text-green-300 opacity-70">
-                              <span>Click to flip</span>
-                              <RotateCcw className="ml-1 h-3 w-3" />
-                            </div>
-                            
-                            <div className="flex-1 flex flex-col items-center justify-center">
-                              <div className="w-16 h-16 rounded-full bg-green-600/20 flex items-center justify-center mb-6">
-                                <CheckCircle2 className="h-8 w-8 text-green-300" />
+                              
+                              <div className="flex-1 flex flex-col items-center justify-center overflow-hidden">
+                                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-indigo-600/20 flex items-center justify-center mb-4 sm:mb-6">
+                                  <BookOpen className="h-6 w-6 sm:h-8 sm:w-8 text-indigo-300" />
+                                </div>
+                                <h3 className="text-lg sm:text-xl text-center font-medium text-indigo-100 mb-3 sm:mb-4">Question</h3>
+                                <p className="text-center text-base sm:text-lg text-gray-200 overflow-y-auto max-h-[150px] sm:max-h-[200px] px-2 break-words">
+                                  {getCurrentFlashcard()?.question}
+                                </p>
                               </div>
-                              <h3 className="text-xl text-center font-medium text-green-100 mb-4">Answer</h3>
-                              <p className="text-center text-lg text-gray-200 overflow-y-auto max-h-[200px] px-2">
-                                {getCorrectAnswerText(getCurrentFlashcard() || { options: [], answer: [], question: '', content_type: 'mcq' } as Question)}
-                              </p>
-                            </div>
+                            </motion.div>
+                            
+                            {/* Back of card (Answer) */}
+                            <motion.div
+                              className="absolute w-full h-full backface-hidden rounded-xl bg-gradient-to-br from-green-800/90 to-blue-800/90 backdrop-blur-md border border-green-500/30 shadow-lg p-4 sm:p-6 flex flex-col"
+                              style={{ transform: "rotateY(180deg)" }}
+                            >
+                              <div className="absolute top-3 right-3 flex items-center text-xs text-green-300 opacity-70">
+                                <span>Click to flip</span>
+                                <RotateCcw className="ml-1 h-3 w-3" />
+                              </div>
+                              
+                              <div className="flex-1 flex flex-col items-center justify-center overflow-hidden">
+                                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-green-600/20 flex items-center justify-center mb-4 sm:mb-6">
+                                  <CheckCircle2 className="h-6 w-6 sm:h-8 sm:w-8 text-green-300" />
+                                </div>
+                                <h3 className="text-lg sm:text-xl text-center font-medium text-green-100 mb-3 sm:mb-4">Answer</h3>
+                                <p className="text-center text-base sm:text-lg text-gray-200 overflow-y-auto max-h-[150px] sm:max-h-[200px] px-2 break-words">
+                                  {getCorrectAnswerText(getCurrentFlashcard() || { options: [], answer: [], question: '', content_type: 'mcq' } as Question)}
+                                </p>
+                              </div>
+                            </motion.div>
                           </motion.div>
                         </motion.div>
-                      </motion.div>
-                      
-                      <button 
-                        className="absolute right-0 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 hover:bg-white/20 z-10"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigateFlashcard('next');
-                        }}
+                        
+                        <button 
+                          className="absolute right-0 top-1/2 -translate-y-1/2 p-2 sm:p-3 rounded-full bg-white/10 hover:bg-white/20 z-10"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigateFlashcard('next');
+                          }}
+                        >
+                          <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="mt-4 w-full flex justify-center">
+                  <span className="text-sm text-indigo-300">
+                    Card {currentFlashcardIndex + 1} of {sanitizedCourse?.weeks.find(week => week.name === selectedWeek)?.questions.length || 0}
+                  </span>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="practice-mode"
+                className="w-full"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="mb-4 flex items-center justify-between">
+                  <h2 className="text-lg font-semibold text-indigo-300 truncate">
+                    {selectedWeek}
+                  </h2>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigateWeek('prev')}
+                      disabled={currentWeekIndex <= 0}
+                      className="hidden sm:flex text-indigo-300 hover:text-indigo-100 hover:bg-indigo-900 h-8"
+                    >
+                      <ChevronLeft className="mr-1 h-4 w-4" />
+                      Previous
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigateWeek('next')}
+                      disabled={currentWeekIndex >= totalWeeks - 1}
+                      className="hidden sm:flex text-indigo-300 hover:text-indigo-100 hover:bg-indigo-900 h-8"
+                    >
+                      Next
+                      <ChevronRight className="ml-1 h-4 w-4" />
+                    </Button>
+                    <div className="flex sm:hidden gap-1">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => navigateWeek('prev')}
+                        disabled={currentWeekIndex <= 0}
+                        className="text-indigo-300 hover:text-indigo-100 hover:bg-indigo-900 h-8 w-8 p-0"
                       >
-                        <ChevronRight className="h-6 w-6 text-white" />
-                      </button>
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => navigateWeek('next')}
+                        disabled={currentWeekIndex >= totalWeeks - 1}
+                        className="text-indigo-300 hover:text-indigo-100 hover:bg-indigo-900 h-8 w-8 p-0"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
-                )}
-              </div>
-              
-              <div className="mt-4 w-full flex justify-center">
-                <span className="text-sm text-indigo-300">
-                  Card {currentFlashcardIndex + 1} of {sanitizedCourse?.weeks.find(week => week.name === selectedWeek)?.questions.length || 0}
-                </span>
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="practice-mode"
-              className="w-full"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{ duration: 0.2 }}
-            >
-              <ScrollArea className="h-[calc(100vh-22rem)] w-full overflow-y-auto">
-                {loading ? (
-                  <div className="flex items-center justify-center h-full">
-                    <SpaceLoader size={100} />
-                  </div>
-                ) : error ? (
-                  <div className="text-pink-500 text-center p-4 bg-gray-900 bg-opacity-50 backdrop-blur-md rounded-lg">
-                    {error}
-                  </div>
-                ) : selectedWeek && sanitizedCourse && (
-                  <Card className="bg-gray-900 bg-opacity-50 backdrop-blur-md border-gray-800">
-                    <CardContent className="pt-4">
-                      {sanitizedCourse.weeks
-                        .find((week) => week.name === selectedWeek)
-                        ?.questions.map((question: Question, index: number) => (
-                          <div key={index} className="mb-8 last:mb-0">
-                            {question.content_type === 'text' ? (
-                              <>
-                                <h3 className="text-lg md:text-xl font-semibold mb-2 text-gray-100">
-                                  {index + 1}. {question.question} 
-                                </h3>
-                                <div className="p-4 rounded-md bg-gray-800 bg-opacity-30 border border-gray-700 text-gray-300">
-                                  <p className="whitespace-pre-line">{question.question_text || "No content available"}</p>
-                                </div>
-                              </>
-                            ) : (
-                              <>
-                                <h3 className="text-lg md:text-xl font-semibold mb-2 text-gray-100">
-                                  {index + 1}. {question.question} 
-                                </h3>
-                                <ul className="space-y-3">
-                                  {question.options.map((option, optionIndex: number) => {
-                                    const { label, optionText } = getLabelAndText(option);
-                                    const isCorrect = question.answer.includes(label);
-                                    
-                                    return (
-                                      <li
-                                        key={optionIndex}
-                                        className={`p-3 rounded-md transition-colors ${
-                                          isCorrect
-                                            ? 'bg-green-800 bg-opacity-30 border border-green-600 text-green-300'
-                                            : 'bg-gray-800 bg-opacity-30 border border-gray-700 hover:bg-gray-700'
-                                        }`}
-                                      >
-                                        <div className="flex items-center">
-                                          {isCorrect && (
-                                            <CheckCircle2 className="mr-2 h-5 w-5 text-green-400 flex-shrink-0" />
-                                          )}
-                                          <span className={isCorrect ? 'text-green-300' : 'text-gray-300'}>
-                                            {`${label}. ${optionText}`}
-                                          </span>
-                                        </div>
-                                      </li>
-                                    );
-                                  })}
-                                </ul>
-                              </>
-                            )}
-                          </div>
-                        ))}
-                    </CardContent>
-                  </Card>
-                )}
-              </ScrollArea>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                </div>
+                
+                <ScrollArea className="h-[calc(100vh-12rem)] sm:h-[calc(100vh-14rem)] w-full overflow-y-auto">
+                  {loading ? (
+                    <div className="flex items-center justify-center h-full">
+                      <SpaceLoader size={100} />
+                    </div>
+                  ) : error ? (
+                    <div className="text-pink-500 text-center p-4 bg-gray-900 bg-opacity-50 backdrop-blur-md rounded-lg">
+                      {error}
+                    </div>
+                  ) : selectedWeek && sanitizedCourse && (
+                    <Card className="bg-gray-900 bg-opacity-50 backdrop-blur-md border-gray-800 overflow-hidden">
+                      <CardContent className="pt-4">
+                        {sanitizedCourse.weeks
+                          .find((week) => week.name === selectedWeek)
+                          ?.questions.map((question: Question, index: number) => (
+                            <div key={index} className="mb-8 last:mb-0">
+                              {question.content_type === 'text' ? (
+                                <>
+                                  <h3 className="text-lg md:text-xl font-semibold mb-2 text-gray-100 break-words">
+                                    {index + 1}. {question.question} 
+                                  </h3>
+                                  <div className="p-4 rounded-md bg-gray-800 bg-opacity-30 border border-gray-700 text-gray-300">
+                                    <p className="whitespace-pre-line break-words">{question.question_text || "No content available"}</p>
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <h3 className="text-lg md:text-xl font-semibold mb-2 text-gray-100 break-words">
+                                    {index + 1}. {question.question} 
+                                  </h3>
+                                  <ul className="space-y-3">
+                                    {question.options.map((option, optionIndex: number) => {
+                                      const { label, optionText } = getLabelAndText(option);
+                                      const isCorrect = question.answer.includes(label);
+                                      
+                                      return (
+                                        <li
+                                          key={optionIndex}
+                                          className={`p-3 rounded-md transition-colors ${
+                                            isCorrect
+                                              ? 'bg-green-800 bg-opacity-30 border border-green-600 text-green-300'
+                                              : 'bg-gray-800 bg-opacity-30 border border-gray-700 hover:bg-gray-700'
+                                          }`}
+                                        >
+                                          <div className="flex items-start">
+                                            {isCorrect && (
+                                              <CheckCircle2 className="mr-2 h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
+                                            )}
+                                            <span className={`${isCorrect ? 'text-green-300' : 'text-gray-300'} break-words`}>
+                                              {`${label}. ${optionText}`}
+                                            </span>
+                                          </div>
+                                        </li>
+                                      );
+                                    })}
+                                  </ul>
+                                </>
+                              )}
+                            </div>
+                          ))}
+                      </CardContent>
+                    </Card>
+                  )}
+                </ScrollArea>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </main>
 
-        {!loading && !error && sanitizedCourse && (
-          <div className="mt-14 bg-gray-900 bg-opacity-50 backdrop-blur-md rounded-lg p-4 border border-gray-800 w-full">
+      {!loading && !error && sanitizedCourse && (
+        <div className="sticky bottom-0 left-0 right-0 bg-gray-900/70 backdrop-blur-md p-3 mt-4 w-full">
+          <div className="max-w-4xl mx-auto">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm text-gray-400">Progress</span>
               <span className="text-sm text-indigo-400">
@@ -684,8 +772,8 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
               className="h-2 bg-gray-700"
             />
           </div>
-        )}
-      </main>
+        </div>
+      )}
 
       <style jsx global>{`
         .perspective-1000 {
