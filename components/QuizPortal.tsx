@@ -123,7 +123,6 @@ export default function Component(
       return
     }
     
-    // Get only questions from selected weeks and add week_name to each question
     const selectedWeeks = course.weeks.filter(week => weekSelections[week.name]);
     
     if (selectedWeeks.length === 0) {
@@ -138,7 +137,7 @@ export default function Component(
         week_name: week.name,
         options: question.options || [],
         answer: question.answer || [],
-        content_type: 'mcq' // Ensure content_type is set for weekly questions
+        content_type: 'mcq'
       }))
     ], [] as (Course['weeks'][0]['questions'][0] & { week_name: string })[]);
 
@@ -149,14 +148,15 @@ export default function Component(
     
     localStorage.setItem(`weekSelections_${course_code}`, JSON.stringify(weekSelections))
     
-    // Set time limit to exactly 1 minute per question
     const timeLimit = selectedWeeksQuestions.length;
     
     const quizSettings = {
       questionCount: selectedWeeksQuestions.length,
-      quizTime: timeLimit, // Time in minutes (1 minute per question)
+      quizTime: timeLimit,
       weekSelections,
-      selectedWeeksQuestions // Store the complete questions array with week info
+      selectedWeeksQuestions,
+      enableTimer: true, 
+      timerSeconds: timeLimit * 60 
     }
     
     localStorage.setItem("quizSettings", JSON.stringify(quizSettings))

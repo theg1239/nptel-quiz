@@ -298,7 +298,7 @@ const QuizContent = ({
                 </div>
               </div>
 
-              {(quizType === 'timed' || quizType === 'quick') && (
+              {(quizType === 'timed' || quizType === 'quick' || quizType === 'weekly') && (
                 <div className="w-32 sm:w-40">
                   <QuizTimer time={timeLeft} maxTime={maxTime} />
                 </div>
@@ -1187,7 +1187,9 @@ export default function InteractiveQuiz({
         )
 
         setFilteredQuestions(questionsWithWeekNames)
-        const timeLimit = questionsWithWeekNames.length
+        const timeLimit = storedSettings.timerSeconds 
+          ? storedSettings.timerSeconds / 60 
+          : questionsWithWeekNames.length
         setQuizSettings({
           questionCount: questionsWithWeekNames.length,
           quizTime: timeLimit,
