@@ -566,10 +566,10 @@ export default function DiscussionForumClient({
             
             <Button 
               className="w-full bg-indigo-600 hover:bg-indigo-700 mb-4 flex items-center justify-center"
-              onClick={() => setShowNewPostForm(true)}
+              onClick={() => session ? setShowNewPostForm(true) : signIn('google')}
             >
               <MessageSquare className="mr-2 h-4 w-4" />
-              New Discussion
+              {session ? "New Discussion" : "Sign in to Start a Discussion"}
             </Button>
           </div>
 
@@ -715,9 +715,9 @@ export default function DiscussionForumClient({
                 <p className="text-gray-400 mb-2">No discussions found matching your criteria.</p>
                 <Button 
                   className="bg-indigo-600 hover:bg-indigo-700"
-                  onClick={() => setShowNewPostForm(true)}
+                  onClick={() => session ? setShowNewPostForm(true) : signIn('google')}
                 >
-                  Start a New Discussion
+                  {session ? "Start a New Discussion" : "Sign in to Start a Discussion"}
                 </Button>
               </div>
             ) : (
@@ -955,26 +955,36 @@ export default function DiscussionForumClient({
                               <AvatarImage src={session.user.image} alt={session.user.name || 'User'} />
                             ) : (
                               <AvatarFallback className="bg-indigo-900 text-indigo-200">
-                                {session?.user?.name?.charAt(0) || 'U'}
+                                {session?.user?.name?.charAt(0) || '?'}
                               </AvatarFallback>
                             )}
                           </Avatar>
                           <div className="flex-1 flex gap-2">
-                            <Input
-                              placeholder={session ? "Write a reply..." : "Sign in to reply"}
-                              value={replyContent[post.id] || ''}
-                              onChange={(e) => setReplyContent({...replyContent, [post.id]: e.target.value})}
-                              className="flex-1 bg-gray-700 border-gray-600"
-                              disabled={!session}
-                            />
-                            <Button
-                              className="bg-indigo-600 hover:bg-indigo-700"
-                              size="sm"
-                              onClick={() => handleAddReply(post.id)}
-                              disabled={!session || !replyContent[post.id]?.trim()}
-                            >
-                              <Send className="h-4 w-4" />
-                            </Button>
+                            {session ? (
+                              <>
+                                <Input
+                                  placeholder="Write a reply..."
+                                  value={replyContent[post.id] || ''}
+                                  onChange={(e) => setReplyContent({...replyContent, [post.id]: e.target.value})}
+                                  className="flex-1 bg-gray-700 border-gray-600"
+                                />
+                                <Button
+                                  className="bg-indigo-600 hover:bg-indigo-700"
+                                  size="sm"
+                                  onClick={() => handleAddReply(post.id)}
+                                  disabled={!replyContent[post.id]?.trim()}
+                                >
+                                  <Send className="h-4 w-4" />
+                                </Button>
+                              </>
+                            ) : (
+                              <Button
+                                className="flex-1 bg-indigo-600 hover:bg-indigo-700"
+                                onClick={() => signIn('google')}
+                              >
+                                Sign in to Reply
+                              </Button>
+                            )}
                           </div>
                         </div>
                       </CardFooter>
