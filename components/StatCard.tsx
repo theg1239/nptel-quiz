@@ -1,7 +1,5 @@
 'use client'
 
-import { motion } from 'framer-motion'
-
 interface StatCardProps {
   icon: React.ReactNode
   title: string

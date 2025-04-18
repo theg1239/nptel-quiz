@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Progress } from '@/components/ui/Progress'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import SpaceLoader from "@/components/SpaceLoader"
-import { initializeQuestionsWithFixedOrder, Question } from '@/lib/quizUtils'
+import { initializeQuestionsWithFixedOrder, normalizeQuestion, Question } from '@/lib/quizUtils'
 import { getCourse } from '@/lib/actions'
 
 interface Week {
@@ -32,6 +32,12 @@ interface StatCardProps {
   icon: React.ReactNode
   title: string
   value: number
+}
+
+interface Assignment {
+  questions: {
+    length: number;
+  }[];
 }
 
 const sanitizeQuestion = (question: string): string => {
@@ -78,18 +84,17 @@ const StatCard: React.FC<StatCardProps> = ({ icon, title, value }) => (
   </motion.div>
 )
 
-const getLabelAndText = (option: string | { option_number: string; option_text: string }) => {
-  if (typeof option === 'object' && option !== null) {
+const getLabelAndText = (option: string | { option_number: string; option_text: string }): { label: string; optionText: string } => {
+  if (typeof option === 'object') {
     return {
-      label: option.option_number.toUpperCase(),
+      label: option.option_number,
       optionText: option.option_text
     };
-  } else {
-    const labelMatch = option.match(/^([A-Z])[).:-]/i);
-    const label = labelMatch ? labelMatch[1].toUpperCase() : '';
-    const optionText = option.replace(/^([A-Z])[).:-]/i, '').trim();
-    return { label, optionText };
   }
+  const labelMatch = option.match(/^([A-Z])[).:-]/i);
+  const label = labelMatch ? labelMatch[1].toUpperCase() : '';
+  const optionText = option.replace(/^[A-Z][).:-]/i, '').trim();
+  return { label, optionText };
 };
 
 export default function PracticeClient({ courseCode }: { courseCode: string }) {
@@ -115,28 +120,40 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
         setLoading(true)
         const response = await getCourse(courseCode)
         
+        // Transform and sort the weeks by week number
+        const sortedWeeks = response.weeks.slice().sort((a, b) => {
+          // Extract week numbers from week names (e.g., "Week 1" -> 1)
+          const weekNumA = parseInt(a.name.match(/\d+/)?.[0] || '0')
+          const weekNumB = parseInt(b.name.match(/\d+/)?.[0] || '0')
+          return weekNumA - weekNumB
+        })
+        
         const transformedCourse: Course = {
           course_code: response.course_code,
           course_name: response.course_name,
           title: response.course_name,
           request_count: response.request_count || 0,
-          question_count: response.assignments?.reduce((total, assignment) => total + assignment.questions.length, 0) || 0,
-          weeks: response.weeks.map(week => ({
+          question_count: response.assignments?.reduce((total: number, assignment: Assignment) => total + assignment.questions.length, 0) || 0,
+          weeks: sortedWeeks.map(week => ({
             name: week.name,
-            questions: week.questions.map(q => ({
-              question: q.question,
-              options: q.options.map((opt, index) => {
-                if (typeof opt === 'object' && opt !== null) {
-                  return opt;
-                } else {
-                  return {
-                    option_number: (index + 1).toString(),
-                    option_text: opt
-                  };
-                }
-              }),
-              answer: q.answer
-            }))
+            questions: week.questions.map((q: any) => {
+              // First convert the raw question to a properly typed partial question
+              const partialQuestion = {
+                question: typeof q === 'object' && 'question' in q ? q.question as string : '',
+                question_text: typeof q === 'object' && 'question_text' in q ? q.question_text as string : '',
+                content_type: typeof q === 'object' && 'content_type' in q ? q.content_type as 'mcq' | 'text' : 'mcq',
+                options: Array.isArray(q.options) ? q.options : [],
+                answer: Array.isArray(q.answer) ? q.answer : []
+              };
+              
+              // Then normalize it
+              return normalizeQuestion({
+                ...partialQuestion,
+                question: partialQuestion.question || partialQuestion.question_text || '',
+                question_text: partialQuestion.question_text || partialQuestion.question || '',
+                content_type: partialQuestion.content_type || 'mcq'
+              });
+            })
           }))
         }
         
@@ -392,41 +409,52 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
                   <CardContent className="pt-4">
                     {sanitizedCourse.weeks
                       .find((week) => week.name === selectedWeek)
-                      ?.questions.map((question: Question, index: number) => {
-                        return (
-                          <div key={index} className="mb-8 last:mb-0">
-                            <h3 className="text-lg md:text-xl font-semibold mb-2 text-gray-100">
-                              {index + 1}. {question.question} 
-                            </h3>
-                            <ul className="space-y-3">
-                              {question.options.map((option, optionIndex: number) => {
-                                const { label, optionText } = getLabelAndText(option);
-                                const isCorrect = question.answer.includes(label);
-
-                                return (
-                                  <li
-                                    key={optionIndex}
-                                    className={`p-3 rounded-md transition-colors ${
-                                      isCorrect
-                                        ? 'bg-green-800 bg-opacity-30 border border-green-600 text-green-300'
-                                        : 'bg-gray-800 bg-opacity-30 border border-gray-700 hover:bg-gray-700'
-                                    }`}
-                                  >
-                                    <div className="flex items-center">
-                                      {isCorrect && (
-                                        <CheckCircle2 className="mr-2 h-5 w-5 text-green-400 flex-shrink-0" />
-                                      )}
-                                      <span className={isCorrect ? 'text-green-300' : 'text-gray-300'}>
-                                        {`${label}. ${optionText}`}
-                                      </span>
-                                    </div>
-                                  </li>
-                                );
-                              })}
-                            </ul>
-                          </div>
-                        )
-                      })}
+                      ?.questions.map((question: Question, index: number) => (
+                        <div key={index} className="mb-8 last:mb-0">
+                          {question.content_type === 'text' ? (
+                            <>
+                              <h3 className="text-lg md:text-xl font-semibold mb-2 text-gray-100">
+                                {index + 1}. {question.question} 
+                              </h3>
+                              <div className="p-4 rounded-md bg-gray-800 bg-opacity-30 border border-gray-700 text-gray-300">
+                                <p className="whitespace-pre-line">{question.question_text || "No content available"}</p>
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <h3 className="text-lg md:text-xl font-semibold mb-2 text-gray-100">
+                                {index + 1}. {question.question} 
+                              </h3>
+                              <ul className="space-y-3">
+                                {question.options.map((option, optionIndex: number) => {
+                                  const { label, optionText } = getLabelAndText(option);
+                                  const isCorrect = question.answer.includes(label);
+                                  
+                                  return (
+                                    <li
+                                      key={optionIndex}
+                                      className={`p-3 rounded-md transition-colors ${
+                                        isCorrect
+                                          ? 'bg-green-800 bg-opacity-30 border border-green-600 text-green-300'
+                                          : 'bg-gray-800 bg-opacity-30 border border-gray-700 hover:bg-gray-700'
+                                      }`}
+                                    >
+                                      <div className="flex items-center">
+                                        {isCorrect && (
+                                          <CheckCircle2 className="mr-2 h-5 w-5 text-green-400 flex-shrink-0" />
+                                        )}
+                                        <span className={isCorrect ? 'text-green-300' : 'text-gray-300'}>
+                                          {`${label}. ${optionText}`}
+                                        </span>
+                                      </div>
+                                    </li>
+                                  );
+                                })}
+                              </ul>
+                            </>
+                          )}
+                        </div>
+                      ))}
                   </CardContent>
                 </Card>
               </motion.div>

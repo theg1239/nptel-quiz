@@ -5,16 +5,8 @@ import { Search, Book, ArrowRight } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/Input'
-import { Button } from '@/components/ui/Button'
 import UnderConstructionModal from '@/components/UnderConstructionModal'
-
-interface Course {
-  course_code: string
-  course_name: string
-  question_count: number
-  weeks: string[] | null
-  request_count: number
-}
+import { Course } from '@/types/index'
 
 interface SearchComponentProps {
   courses: Course[]
@@ -57,7 +49,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ courses }) => {
   }, [])
 
   const handleCourseSelection = (course: Course) => {
-    if (course.question_count === 0) {
+    if (course.question_count === 0 && course.video_count === 0 && course.transcript_count === 0) {
       setShowModal(true)
     } else {
       setSearchTerm('')

@@ -1,16 +1,16 @@
 import { Metadata } from 'next'
 import { getCourse } from '@/lib/actions'
 import InteractiveQuiz from '@/components/InteractiveQuiz'
-import { initializeQuestionsWithFixedOrder, Question } from '@/lib/quizUtils'
+import { Question } from '@/types/quiz'
 import { QuizType } from '@/types/quiz'
 
 interface Assignment {
-  questions: {
-    question_text: string
-    options: { option_number: string, option_text: string }[]
-    correct_option: string
-  }[]
-  week_number: number
+  questions: Array<{
+    question_text: string;
+    options: Array<{ option_number: string; option_text: string }>;
+    correct_option: string;
+  }>;
+  week_number: number;
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ course_code: string }> }): Promise<Metadata> {
@@ -66,25 +66,20 @@ export default async function QuizPage({
   try {
     const course = await getCourse(course_code);
     
-    const questions = course.assignments?.reduce<Question[]>((allQuestions, assignment) => {
-      if (assignment.questions && Array.isArray(assignment.questions)) {
-        const validQuestions = assignment.questions.filter(q => 
-          q && q.question_text && q.correct_option && q.options && Array.isArray(q.options) && 
-          q.options.every(opt => opt && opt.option_number && opt.option_text)
+    const questions = course.weeks.reduce((allQuestions, week) => {
+      if (week?.questions && Array.isArray(week.questions)) {
+        const validQuestions = week.questions.filter((q: Question) => 
+          q && (
+            (q.question && q.answer && Array.isArray(q.answer) && q.answer.length > 0 && 
+             q.options && Array.isArray(q.options) && q.options.length >= 2) ||
+            (q.content_type === 'text' && q.question && q.question_text)
+          )
         );
 
-        const transformedQuestions = validQuestions.map(q => ({
-          question: q.question_text,
-          options: q.options.map(opt => ({
-            option_number: opt.option_number,
-            option_text: opt.option_text
-          })),
-          answer: [q.correct_option]
-        }));
-        return [...allQuestions, ...transformedQuestions];
+        return [...allQuestions, ...validQuestions];
       }
       return allQuestions;
-    }, []) || [];
+    }, [] as Question[]);
 
     if (!questions || questions.length === 0) {
       return (
@@ -103,11 +98,9 @@ export default async function QuizPage({
       );
     }
 
-    const shuffledQuestions = initializeQuestionsWithFixedOrder(questions);
-    
     return (
       <InteractiveQuiz 
-        questions={shuffledQuestions} 
+        questions={questions}
         courseCode={course_code}
         courseName={course.title || course.course_name}
         quizType={quiz_type as QuizType}

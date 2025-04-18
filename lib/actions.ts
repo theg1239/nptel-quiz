@@ -75,10 +75,12 @@ const FALLBACK_STATS = {
 export interface ApiQuestion {
   question_text: string;
   correct_option: string;
+  content_type?: 'mcq' | 'text';
   options: {
     option_number: string;
     option_text: string;
-  }[];
+  }[] | null;
+  question_number: number;
 }
 
 export interface Assignment {
@@ -126,80 +128,65 @@ export interface StudyMaterial {
   languages?: { language: string; url: string }[];
 }
 
-export async function getCourse(courseCode: string): Promise<Course> {
+export async function getCourse(courseId: string) {
   try {
-    const res = await fetch(`${API_BASE_URL}/courses/${courseCode}`, { 
-      next: { revalidate: 3600 }
-    });
+    const response = await fetch(`${API_BASE_URL}/courses/${courseId}`, { cache: 'no-store' });
+    if (!response.ok) {
+      throw new Error('Failed to fetch course');
+    }
+    const data = await response.json();
     
-    if (!res.ok) {
-      console.warn(`Failed to fetch course ${courseCode}, using fallback`);
-      const fallbackCourse = FALLBACK_COURSES.find(c => c.course_code === courseCode) || {
-        title: `Course ${courseCode}`,
-        course_name: `Course ${courseCode}`,
-        course_code: courseCode,
-        request_count: 0,
-        question_count: 0,
-        video_count: 0,
-        transcript_count: 0,
-        assignments: [],
-        weeks: []
-      };
-      return fallbackCourse;
+    // Create weeks from assignments
+    const weekMap = new Map();
+    
+    if (data.assignments && Array.isArray(data.assignments)) {
+      data.assignments.forEach((assignment: Assignment) => {
+        const weekName = `Week ${assignment.week_number}`;
+        
+        if (!weekMap.has(weekName)) {
+          weekMap.set(weekName, {
+            name: weekName,
+            questions: []
+          });
+        }
+        
+        // Transform questions for this assignment
+        const transformedQuestions = assignment.questions?.map((q: ApiQuestion) => ({
+          question: q.question_text,
+          question_text: q.question_text,
+          content_type: q.content_type || 'text',
+          options: q.options || [],
+          answer: q.correct_option ? [q.correct_option] : []
+        })) || [];
+        
+        weekMap.get(weekName).questions.push(...transformedQuestions);
+      });
     }
     
-    const data = await res.json();
-    
-    const weeks = data.assignments?.filter((assignment: Assignment) => 
-      assignment && 
-      Array.isArray(assignment.questions) && 
-      assignment.questions.some((q: ApiQuestion) => q && q.question_text && q.correct_option && q.options)
-    ).map((assignment: Assignment) => ({
-      name: `Week ${assignment.week_number}`,
-      questions: assignment.questions
-        .filter((q: ApiQuestion) => q && q.question_text && q.correct_option && q.options)
-        .map((q: ApiQuestion) => ({
-          question: q.question_text,
-          options: q.options
-            .filter((opt: { option_number: string; option_text: string }) => opt && opt.option_number && opt.option_text)
-            .map((opt: { option_number: string; option_text: string }) => ({
-              option_number: opt.option_number,
-              option_text: opt.option_text
-            })),
-          answer: [q.correct_option.toUpperCase()]
-        }))
-    })) || [];
-
-    const questionCount = data.assignments?.reduce((total: number, assignment: Assignment) => {
-      if (!assignment || !Array.isArray(assignment.questions)) return total;
-      const validQuestions = assignment.questions.filter((q: ApiQuestion) => 
-        q && q.question_text && q.correct_option && q.options &&
-        Array.isArray(q.options) && q.options.every((opt: { option_number: string; option_text: string }) => opt && opt.option_number && opt.option_text)
-      );
-      return total + validQuestions.length;
-    }, 0) || 0;
+    // Convert weekMap to sorted array
+    const weeks = Array.from(weekMap.entries())
+      .sort(([weekA], [weekB]) => {
+        const numA = parseInt(weekA.split(' ')[1]);
+        const numB = parseInt(weekB.split(' ')[1]);
+        return numA - numB;
+      })
+      .map(([_, week]) => week);
 
     return {
-      ...data,
-      weeks,
+      course_code: data.course_code,
+      course_name: data.course_name,
       title: data.course_name,
       request_count: data.request_count || 0,
-      question_count: questionCount
+      video_count: data.video_count || 0,
+      transcript_count: data.transcript_count || 0,
+      question_count: data.assignments?.reduce((total: number, assignment: Assignment) => 
+        total + (assignment.questions?.length || 0), 0) || 0,
+      assignments: data.assignments || [],
+      weeks
     };
   } catch (error) {
-    console.error(`Error fetching course ${courseCode}:`, error);
-    const fallbackCourse = FALLBACK_COURSES.find(c => c.course_code === courseCode) || {
-      title: `Course ${courseCode}`,
-      course_name: `Course ${courseCode}`,
-      course_code: courseCode,
-      request_count: 0,
-      question_count: 0,
-      video_count: 0,
-      transcript_count: 0,
-      assignments: [],
-      weeks: []
-    };
-    return fallbackCourse;
+    console.error('Error fetching course:', error);
+    throw error;
   }
 }
 

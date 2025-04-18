@@ -164,11 +164,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* Preconnects for external resources if required */}
         {/* <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" /> */}
-
-        {/* Inject Structured Data */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

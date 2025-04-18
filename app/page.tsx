@@ -1,6 +1,5 @@
 import { Metadata } from 'next'
-import { Book, FileText, HelpCircle, Users, Video, Calendar, Trophy, Sparkles } from 'lucide-react'
-import ParticleBackground from '@/components/ParticleBackground'
+import { Book, FileText, HelpCircle } from 'lucide-react'
 import SearchComponent from '@/components/SearchComponent'
 import StatCard from '@/components/StatCard'
 import { Button } from '@/components/ui/Button'
@@ -12,6 +11,8 @@ interface SearchCourse {
   course_code: string
   course_name: string
   question_count: number
+  video_count: number
+  transcript_count: number
   weeks: string[] | null
   request_count: number
 }
@@ -68,6 +69,8 @@ export default async function Page() {
       course_code: course.course_code,
       course_name: course.course_name || course.title || `Course ${course.course_code}`,
       question_count: course.question_count || 0,
+      video_count: course.video_count || 0,
+      transcript_count: course.transcript_count || 0,
       weeks: course.weeks 
         ? course.weeks
             .filter(week => week && typeof week === 'object')

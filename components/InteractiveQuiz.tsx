@@ -10,10 +10,14 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription }
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/Tooltip"
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { QuizType } from '@/types/quiz'
-import { stripOptionLabels, initializeQuestionsWithFixedOrder, Question } from '@/lib/quizUtils'
+import { initializeQuestionsWithFixedOrder, Question } from '@/lib/quizUtils'
 
 const cleanQuestionText = (question: string): string => {
   return question.replace(/^\s*\d+[\).:\-]\s*/, '');
+}
+
+const cleanOptionText = (optionText: string, questionText: string): string => {
+  return optionText.replace(questionText, '').trim();
 }
 
 function shuffleArray<T>(array: T[]): T[] {
@@ -103,11 +107,15 @@ const QuizContent = ({
   feedback: { correct: boolean; selectedIndexes: number[] } | null;
   questions: Question[];
 }) => {
+  const currentQuestion = questions[currentQuestionIndex];
+  const isTextQuestion = currentQuestion.content_type === 'text';
+  const cleanedQuestion = cleanQuestionText(question);
+
   return (
     <Card className="bg-gray-800 bg-opacity-50 backdrop-blur-sm border-2 border-blue-500 shadow-lg">
       <CardHeader className="flex justify-between items-center">
         <CardTitle className="text-2xl font-bold text-blue-300">
-          {cleanQuestionText(question)}
+          {currentQuestionIndex + 1}. {cleanedQuestion}
         </CardTitle>
         <div className="text-blue-300 font-semibold">
           Score: {currentScore} / {totalQuestions}
@@ -115,64 +123,74 @@ const QuizContent = ({
       </CardHeader>
       {(quizType === 'timed' || quizType === 'quick') && <QuizTimer time={timeLeft} maxTime={maxTime} />}
       <CardContent>
-        <div className="flex justify-between items-center mb-4">
-          {quizType === 'quick' && (
-            <div className="flex space-x-2">
-              {powerUps.map((powerUp, index) => (
-                <PowerUp
-                  key={index}
-                  icon={powerUp.icon}
-                  name={powerUp.name}
-                  active={powerUp.active}
-                  onClick={() => onUsePowerUp(powerUp.type)}
-                />
-              ))}
+        {isTextQuestion ? (
+          <div className="space-y-4">
+            <div className="bg-gray-700 bg-opacity-50 p-4 rounded-lg border-2 border-gray-600">
+              <p className="text-gray-200 whitespace-pre-wrap">{currentQuestion.question_text}</p>
             </div>
-          )}
-          {(quizType === 'timed' || quizType === 'quick') && (
-            <div className="flex space-x-2">
-              {[...Array(lives)].map((_, i) => (
-                <Heart key={i} className="h-6 w-6 text-red-500" />
-              ))}
-            </div>
-          )}
-        </div>
-        
-        <div className="space-y-4">
-          {options.map((option, index) => {
-            const isSelected = selectedOptions.includes(index);
-            const currentQuestion = questions[currentQuestionIndex];
-            const isCorrect = currentQuestion.answer.includes(option.option_number.toUpperCase());
-            const showCorrect = (feedback && quizType === 'practice' && isCorrect) || 
-                              (feedback && !feedback.correct && isCorrect);
-            
-            return (
-              <button
-                key={index}
-                onClick={() => !isAnswerLocked && onAnswer([index])}
-                disabled={isAnswerLocked}
-                className={`w-full p-4 rounded-lg text-left transition-all duration-200 ${
-                  isAnswerLocked
-                    ? isSelected
-                      ? isCorrect
-                        ? 'bg-green-600 bg-opacity-20 border-2 border-green-500 text-green-300'
-                        : 'bg-red-600 bg-opacity-20 border-2 border-red-500 text-red-300'
-                      : showCorrect
-                      ? 'bg-green-600 bg-opacity-20 border-2 border-green-500 text-green-300'
-                      : 'bg-gray-700 bg-opacity-50 border-2 border-gray-600 text-gray-400'
-                    : isSelected
-                    ? 'bg-blue-600 bg-opacity-20 border-2 border-blue-500 text-blue-300 hover:bg-blue-600 hover:bg-opacity-30'
-                    : 'bg-gray-700 bg-opacity-50 border-2 border-gray-600 text-gray-300 hover:bg-gray-600 hover:border-gray-500'
-                }`}
-              >
-                <div className="flex items-center">
-                  <span className="text-lg font-semibold mr-2">{option.option_number}.</span>
-                  <span>{option.option_text}</span>
+          </div>
+        ) : (
+          <>
+            <div className="flex justify-between items-center mb-4">
+              {quizType === 'quick' && (
+                <div className="flex space-x-2">
+                  {powerUps.map((powerUp, index) => (
+                    <PowerUp
+                      key={index}
+                      icon={powerUp.icon}
+                      name={powerUp.name}
+                      active={powerUp.active}
+                      onClick={() => onUsePowerUp(powerUp.type)}
+                    />
+                  ))}
                 </div>
-              </button>
-            );
-          })}
-        </div>
+              )}
+              {(quizType === 'timed' || quizType === 'quick') && (
+                <div className="flex space-x-2">
+                  {[...Array(lives)].map((_, i) => (
+                    <Heart key={i} className="h-6 w-6 text-red-500" />
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            <div className="space-y-4">
+              {options.map((option, index) => {
+                const isSelected = selectedOptions.includes(index);
+                const isCorrect = currentQuestion.answer.includes(option.option_number.toUpperCase());
+                const showCorrect = (feedback && quizType === 'practice' && isCorrect) || 
+                                  (feedback && !feedback.correct && isCorrect);
+                const cleanedOptionText = cleanOptionText(option.option_text, question);
+                
+                return (
+                  <button
+                    key={index}
+                    onClick={() => !isAnswerLocked && onAnswer([index])}
+                    disabled={isAnswerLocked}
+                    className={`w-full p-4 rounded-lg text-left transition-all duration-200 ${
+                      isAnswerLocked
+                        ? isSelected
+                          ? isCorrect
+                            ? 'bg-green-600 bg-opacity-20 border-2 border-green-500 text-green-300'
+                            : 'bg-red-600 bg-opacity-20 border-2 border-red-500 text-red-300'
+                          : showCorrect
+                          ? 'bg-green-600 bg-opacity-20 border-2 border-green-500 text-green-300'
+                          : 'bg-gray-700 bg-opacity-50 border-2 border-gray-600 text-gray-400'
+                        : isSelected
+                        ? 'bg-blue-600 bg-opacity-20 border-2 border-blue-500 text-blue-300 hover:bg-blue-600 hover:bg-opacity-30'
+                        : 'bg-gray-700 bg-opacity-50 border-2 border-gray-600 text-gray-300 hover:bg-gray-600 hover:border-gray-500'
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <span className="text-lg font-semibold mr-2">{option.option_number}.</span>
+                      <span>{cleanedOptionText}</span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   );
@@ -258,23 +276,19 @@ const Quiz = ({
     }
 
     try {
-      // Calculate quiz performance (60% weight)
       const totalQuestions = questions.length;
       const correctAnswers = userAnswers.filter(ans => ans.correct).length;
       const quizPerformance = Math.round((correctAnswers / totalQuestions) * 100);
       const weightedQuizProgress = Math.round(quizPerformance * 0.6);
 
-      // Get view progress (40% weight)
       const weekProgress = JSON.parse(localStorage.getItem(`weekProgress_${courseCode}`) || "{}");
       const courseData = JSON.parse(localStorage.getItem(`courseData_${courseCode}`) || "{}");
       const totalWeeks = courseData.totalWeeks || 1;
       const viewedWeeks = Object.keys(weekProgress).length;
       const viewProgress = Math.round((viewedWeeks / totalWeeks) * 40);
 
-      // Calculate total progress
       const totalProgress = Math.min(100, Math.round(viewProgress + weightedQuizProgress));
       
-      // Update course progress
       const courseProgress = JSON.parse(localStorage.getItem("courseProgress") || "{}");
       courseProgress[courseCode] = totalProgress;
       localStorage.setItem("courseProgress", JSON.stringify(courseProgress));
@@ -307,7 +321,7 @@ const Quiz = ({
     const currentQuestion = questions[currentQuestionIndex];
     const displayedOptions = currentQuestion.options.filter((_, idx) => availableOptions.includes(idx));
     const selectedLabels = selectedOptions.map(idx => displayedOptions[idx].option_number.toUpperCase());
-    const correctLabels = currentQuestion.answer.map(ans => ans.toUpperCase());
+    const correctLabels = currentQuestion.answer.map((ans: string) => ans.toUpperCase());
 
     const isCorrect =
       selectedLabels.length === correctLabels.length &&
@@ -613,11 +627,12 @@ export default function InteractiveQuiz({
   const sanitizedQuestions = useMemo(() => initializeQuestionsWithFixedOrder(
     questions.filter(
       (q) =>
-        q.question &&
-        q.options &&
-        q.options.length >= 2 &&
-        q.answer &&
-        q.answer.length > 0
+        q.question && (
+          // Handle MCQ questions
+          (q.content_type === 'mcq' && q.options && q.options.length >= 2 && q.answer && q.answer.length > 0) ||
+          // Handle text questions
+          (q.content_type === 'text' && q.question_text)
+        )
     )
   ), [questions])
 

@@ -1,56 +1,68 @@
 export interface Question {
   question: string;
-  options: { option_number: string, option_text: string }[];
-  answer: string[]; 
+  question_text?: string;
+  options: Array<{
+    option_number: string;
+    option_text: string;
+  }>;
+  answer: string[];
+  content_type?: 'mcq' | 'text';
 }
 
-export function stripOptionLabels(options: { option_number: string, option_text: string }[]): { cleanOptions: string[]; labels: string[] } {
-  const cleanOptions = options.map(option => option.option_text.trim());
-  const labels = options.map(option => option.option_number);
-  return { cleanOptions, labels };
+export function stripOptionLabels(option: string): string {
+  return option.replace(/^[A-Z][).:-]\s*/, '').trim();
+}
+
+export function cleanQuestionText(text: string): string {
+  // Remove any numbering at the start (e.g., "1.", "1)", "(1)", etc.)
+  let cleaned = text.replace(/^\s*\d+[\).:-]\s*/, '');
+  // Remove any "Question:" or similar prefixes
+  cleaned = cleaned.replace(/^\s*(Question|Q)[\s:.]-?\s*/i, '');
+  return cleaned.trim();
 }
 
 export function initializeQuestionsWithFixedOrder(questions: Question[]): Question[] {
-  return questions.map((q) => {
-    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    const options = q.options.map((opt, idx) => {
+  return questions.map(q => ({
+    ...q,
+    options: q.options || [],
+    answer: q.answer || []
+  }));
+}
+
+// Utility function to clean option text - removes duplicate question content
+export function cleanOptionText(optionText: string, questionText: string): string {
+  const cleanedQuestion = cleanQuestionText(questionText).toLowerCase();
+  const cleanedOption = cleanQuestionText(optionText).toLowerCase();
+  
+  // If the option starts with the question text, remove it
+  if (cleanedOption.startsWith(cleanedQuestion)) {
+    return optionText.substring(questionText.length).trim();
+  }
+  return optionText;
+}
+
+export function normalizeQuestion(question: Partial<Question>): Question {
+  return {
+    question: question.question || '',
+    question_text: question.question_text || '',
+    options: Array.isArray(question.options) ? question.options.map((opt: string | { option_number: string; option_text: string }) => {
       if (typeof opt === 'string') {
-        const optStr = String(opt);
-        const hasLabel = /^[A-Z][).:-]?\s*/i.test(optStr);
-        const match = optStr.match(/^([A-Z])[).:-]?\s*(.*)/i);
-        if (hasLabel && match) {
-          return {
-            option_number: match[1].toUpperCase(),
-            option_text: match[2].trim()
-          };
-        }
+        const labelMatch = opt.match(/^([A-Z])[).:-]/i);
+        const label = labelMatch ? labelMatch[1].toUpperCase() : '';
+        const text = opt.replace(/^[A-Z][).:-]\s*/i, '').trim();
         return {
-          option_number: letters[idx],
-          option_text: optStr.trim()
+          option_number: label,
+          option_text: text
         };
+      } else if (opt && typeof opt === 'object' && 'option_number' in opt && 'option_text' in opt) {
+        return opt;
       }
-      if (!opt.option_number) {
-        return {
-          ...opt,
-          option_number: letters[idx]
-        };
-      }
-      return opt;
-    });
-
-    const answers = q.answer.map(ans => {
-      const isNumeric = !isNaN(Number(ans));
-      if (isNumeric) {
-        const idx = parseInt(ans);
-        return letters[idx];
-      }
-      return ans.toUpperCase();
-    });
-
-    return {
-      question: q.question,
-      options,
-      answer: answers
-    };
-  });
+      return {
+        option_number: '',
+        option_text: String(opt)
+      };
+    }) : [],
+    answer: Array.isArray(question.answer) ? question.answer : [],
+    content_type: question.content_type || 'mcq'
+  };
 }

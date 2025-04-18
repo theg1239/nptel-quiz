@@ -1,9 +1,8 @@
 import { getServerSideSitemap } from 'next-sitemap'
 import { getAllCourses, getCourseMaterials } from '@/lib/actions'
-import { MetadataRoute } from 'next'
 
 type SitemapEntry = {
-  loc: string;
+  loc: string;  
   lastmod: string;
   changefreq: 'always' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'never';
   priority: number;
