@@ -10,7 +10,7 @@
   50% {
     transform: translateY(-10px);
     opacity: 1;
-  } 
+  }
   100% {
     transform: translateY(0px);
     opacity: 0.2;
@@ -49,12 +49,12 @@
 }
 
 .suggestion-list {
-  max-height: 200px; 
+  max-height: 200px;
   overflow-y: auto;
   position: absolute;
-  width: 100%; 
-  background-color: #1f2937; 
-  z-index: 10; 
+  width: 100%;
+  background-color: #1f2937;
+  z-index: 10;
 }
 
 .search-container {
@@ -140,4 +140,3 @@
 .bg-popover {
   background-color: rgb(31 41 55 / 0.95) !important;
 } */
-

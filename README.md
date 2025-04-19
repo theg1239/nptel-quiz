@@ -38,6 +38,7 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 ### Dynamic Sitemap Generation
 
 This project includes a dynamic sitemap generator that indexes:
+
 - Main site pages
 - Individual course pages
 - Course practice pages
@@ -46,6 +47,7 @@ This project includes a dynamic sitemap generator that indexes:
 The sitemap is automatically generated based on the courses in your database and is accessible at `/sitemap.xml`.
 
 The sitemap generation logic prioritizes:
+
 1. Main site pages
 2. Individual course pages
 3. Quiz pages sorted by popularity
@@ -61,6 +63,7 @@ A robots.txt file is included at `/robots.txt` that points search engines to the
 When deploying to Vercel, make sure to:
 
 1. Set the environment variables in the Vercel dashboard:
+
    - `SITE_URL`: Your production URL (e.g., https://nptelprep.in)
    - `NEXT_PUBLIC_API_URL`: Your API URL
 

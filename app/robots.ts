@@ -1,4 +1,4 @@
-import { MetadataRoute } from 'next'
+import { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -6,25 +6,14 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: [
-          '/api/',
-          '/private/',
-          '/*?*',
-        ]
+        disallow: ['/api/', '/private/', '/*?*'],
       },
       {
         userAgent: 'GPTBot',
-        allow: [
-          '/courses/',
-          '/courses/*/materials',
-          '/courses/*/videos'
-        ],
-        disallow: ['/api/']
-      }
+        allow: ['/courses/', '/courses/*/materials', '/courses/*/videos'],
+        disallow: ['/api/'],
+      },
     ],
-    sitemap: [
-      'https://nptelprep.in/sitemap.xml',
-      'https://nptelprep.in/server-sitemap.xml'
-    ],
-  }
+    sitemap: ['https://nptelprep.in/sitemap.xml', 'https://nptelprep.in/server-sitemap.xml'],
+  };
 }

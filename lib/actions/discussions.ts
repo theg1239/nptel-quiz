@@ -1,9 +1,9 @@
-"use server"
+'use server';
 
-import { prisma } from "@/lib/prisma"
-import { getServerSession } from "next-auth"
-import { revalidatePath } from "next/cache"
-import { authOptions } from "@/auth"
+import { prisma } from '@/lib/prisma';
+import { getServerSession } from 'next-auth';
+import { revalidatePath } from 'next/cache';
+import { authOptions } from '@/auth';
 
 export async function getPosts(courseCode: string) {
   const posts = await prisma.post.findMany({
@@ -43,9 +43,9 @@ export async function getPosts(courseCode: string) {
     orderBy: {
       createdAt: 'desc',
     },
-  })
+  });
 
-  return posts
+  return posts;
 }
 
 export async function createPost({
@@ -55,14 +55,14 @@ export async function createPost({
   courseCode,
   tags,
 }: {
-  title: string
-  content: string
-  weekNumber: number | null
-  courseCode: string
-  tags: string[]
+  title: string;
+  content: string;
+  weekNumber: number | null;
+  courseCode: string;
+  tags: string[];
 }) {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.id) throw new Error('Unauthorized')
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) throw new Error('Unauthorized');
 
   const post = await prisma.post.create({
     data: {
@@ -73,10 +73,10 @@ export async function createPost({
       tags,
       userId: session.user.id,
     },
-  })
+  });
 
-  revalidatePath(`/courses/${courseCode}/discussions`)
-  return post
+  revalidatePath(`/courses/${courseCode}/discussions`);
+  return post;
 }
 
 export async function createReply({
@@ -84,12 +84,12 @@ export async function createReply({
   postId,
   courseCode,
 }: {
-  content: string
-  postId: string
-  courseCode: string
+  content: string;
+  postId: string;
+  courseCode: string;
 }) {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.id) throw new Error('Unauthorized')
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) throw new Error('Unauthorized');
 
   const reply = await prisma.reply.create({
     data: {
@@ -97,15 +97,15 @@ export async function createReply({
       postId,
       userId: session.user.id,
     },
-  })
+  });
 
-  revalidatePath(`/courses/${courseCode}/discussions`)
-  return reply
+  revalidatePath(`/courses/${courseCode}/discussions`);
+  return reply;
 }
 
 export async function togglePostLike(postId: string, courseCode: string) {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.id) throw new Error('Unauthorized')
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) throw new Error('Unauthorized');
 
   const existingLike = await prisma.postLike.findUnique({
     where: {
@@ -114,29 +114,29 @@ export async function togglePostLike(postId: string, courseCode: string) {
         postId,
       },
     },
-  })
+  });
 
   if (existingLike) {
     await prisma.postLike.delete({
       where: {
         id: existingLike.id,
       },
-    })
+    });
   } else {
     await prisma.postLike.create({
       data: {
         userId: session.user.id,
         postId,
       },
-    })
+    });
   }
 
-  revalidatePath(`/courses/${courseCode}/discussions`)
+  revalidatePath(`/courses/${courseCode}/discussions`);
 }
 
 export async function toggleReplyLike(replyId: string, courseCode: string) {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.id) throw new Error('Unauthorized')
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) throw new Error('Unauthorized');
 
   const existingLike = await prisma.replyLike.findUnique({
     where: {
@@ -145,24 +145,24 @@ export async function toggleReplyLike(replyId: string, courseCode: string) {
         replyId,
       },
     },
-  })
+  });
 
   if (existingLike) {
     await prisma.replyLike.delete({
       where: {
         id: existingLike.id,
       },
-    })
+    });
   } else {
     await prisma.replyLike.create({
       data: {
         userId: session.user.id,
         replyId,
       },
-    })
+    });
   }
 
-  revalidatePath(`/courses/${courseCode}/discussions`)
+  revalidatePath(`/courses/${courseCode}/discussions`);
 }
 
 export async function updatePost({
@@ -171,24 +171,24 @@ export async function updatePost({
   content,
   courseCode,
 }: {
-  postId: string
-  title: string
-  content: string
-  courseCode: string
+  postId: string;
+  title: string;
+  content: string;
+  courseCode: string;
 }) {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.id) throw new Error('Unauthorized')
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) throw new Error('Unauthorized');
 
   const post = await prisma.post.findUnique({
     where: { id: postId },
     select: { userId: true },
-  })
+  });
 
-  const adminEmails = process.env.ADMIN_EMAILS?.split(',') || []
-  const isAdmin = adminEmails.includes(session.user.email || '')
+  const adminEmails = process.env.ADMIN_EMAILS?.split(',') || [];
+  const isAdmin = adminEmails.includes(session.user.email || '');
 
   if (!post || (!isAdmin && post.userId !== session.user.id)) {
-    throw new Error('Unauthorized')
+    throw new Error('Unauthorized');
   }
 
   const updatedPost = await prisma.post.update({
@@ -197,10 +197,10 @@ export async function updatePost({
       title,
       content,
     },
-  })
+  });
 
-  revalidatePath(`/courses/${courseCode}/discussions`)
-  return updatedPost
+  revalidatePath(`/courses/${courseCode}/discussions`);
+  return updatedPost;
 }
 
 export async function updateReply({
@@ -208,23 +208,23 @@ export async function updateReply({
   content,
   courseCode,
 }: {
-  replyId: string
-  content: string
-  courseCode: string
+  replyId: string;
+  content: string;
+  courseCode: string;
 }) {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.id) throw new Error('Unauthorized')
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) throw new Error('Unauthorized');
 
   const reply = await prisma.reply.findUnique({
     where: { id: replyId },
     select: { userId: true },
-  })
+  });
 
-  const adminEmails = process.env.ADMIN_EMAILS?.split(',') || []
-  const isAdmin = adminEmails.includes(session.user.email || '')
+  const adminEmails = process.env.ADMIN_EMAILS?.split(',') || [];
+  const isAdmin = adminEmails.includes(session.user.email || '');
 
   if (!reply || (!isAdmin && reply.userId !== session.user.id)) {
-    throw new Error('Unauthorized')
+    throw new Error('Unauthorized');
   }
 
   const updatedReply = await prisma.reply.update({
@@ -232,26 +232,26 @@ export async function updateReply({
     data: {
       content,
     },
-  })
+  });
 
-  revalidatePath(`/courses/${courseCode}/discussions`)
-  return updatedReply
+  revalidatePath(`/courses/${courseCode}/discussions`);
+  return updatedReply;
 }
 
 export async function deletePost(postId: string, courseCode: string) {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.id) throw new Error('Unauthorized')
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) throw new Error('Unauthorized');
 
   const post = await prisma.post.findUnique({
     where: { id: postId },
     select: { userId: true },
-  })
+  });
 
-  const adminEmails = process.env.ADMIN_EMAILS?.split(',') || []
-  const isAdmin = adminEmails.includes(session.user.email || '')
+  const adminEmails = process.env.ADMIN_EMAILS?.split(',') || [];
+  const isAdmin = adminEmails.includes(session.user.email || '');
 
   if (!post || (!isAdmin && post.userId !== session.user.id)) {
-    throw new Error('Unauthorized')
+    throw new Error('Unauthorized');
   }
 
   // Delete all associated likes and replies first
@@ -272,25 +272,25 @@ export async function deletePost(postId: string, courseCode: string) {
     prisma.post.delete({
       where: { id: postId },
     }),
-  ])
+  ]);
 
-  revalidatePath(`/courses/${courseCode}/discussions`)
+  revalidatePath(`/courses/${courseCode}/discussions`);
 }
 
 export async function deleteReply(replyId: string, courseCode: string) {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.id) throw new Error('Unauthorized')
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) throw new Error('Unauthorized');
 
   const reply = await prisma.reply.findUnique({
     where: { id: replyId },
     select: { userId: true },
-  })
+  });
 
-  const adminEmails = process.env.ADMIN_EMAILS?.split(',') || []
-  const isAdmin = adminEmails.includes(session.user.email || '')
+  const adminEmails = process.env.ADMIN_EMAILS?.split(',') || [];
+  const isAdmin = adminEmails.includes(session.user.email || '');
 
   if (!reply || (!isAdmin && reply.userId !== session.user.id)) {
-    throw new Error('Unauthorized')
+    throw new Error('Unauthorized');
   }
 
   // Delete all associated likes first
@@ -301,7 +301,7 @@ export async function deleteReply(replyId: string, courseCode: string) {
     prisma.reply.delete({
       where: { id: replyId },
     }),
-  ])
+  ]);
 
-  revalidatePath(`/courses/${courseCode}/discussions`)
-}   
+  revalidatePath(`/courses/${courseCode}/discussions`);
+}

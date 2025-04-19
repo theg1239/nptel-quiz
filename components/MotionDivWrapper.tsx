@@ -1,11 +1,11 @@
-'use client'
+'use client';
 
-import { motion, MotionProps } from 'framer-motion'
-import React from 'react'
+import { motion, MotionProps } from 'framer-motion';
+import React from 'react';
 
 interface MotionDivWrapperProps extends MotionProps {
-  children: React.ReactNode
-  className?: string
+  children: React.ReactNode;
+  className?: string;
 }
 
 const MotionDivWrapper: React.FC<MotionDivWrapperProps> = ({
@@ -25,6 +25,6 @@ const MotionDivWrapper: React.FC<MotionDivWrapperProps> = ({
   >
     {children}
   </motion.div>
-)
+);
 
-export default MotionDivWrapper
+export default MotionDivWrapper;

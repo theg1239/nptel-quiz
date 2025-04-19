@@ -5,9 +5,7 @@ module.exports = {
   sitemapSize: 1000,
   exclude: ['/api/*'],
   robotsTxtOptions: {
-    additionalSitemaps: [
-      'https://nptelprep.in/server-sitemap.xml',
-    ],
+    additionalSitemaps: ['https://nptelprep.in/server-sitemap.xml'],
   },
   generateIndexSitemap: true,
   outDir: './public',

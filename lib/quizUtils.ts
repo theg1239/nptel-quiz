@@ -28,7 +28,7 @@ export function initializeQuestionsWithFixedOrder(questions: Question[]): Questi
     options: q.options || [],
     answer: q.answer || [],
     // Explicitly preserve the week_name if it exists
-    week_name: q.week_name || undefined
+    week_name: q.week_name || undefined,
   }));
 }
 
@@ -36,7 +36,7 @@ export function initializeQuestionsWithFixedOrder(questions: Question[]): Questi
 export function cleanOptionText(optionText: string, questionText: string): string {
   const cleanedQuestion = cleanQuestionText(questionText).toLowerCase();
   const cleanedOption = cleanQuestionText(optionText).toLowerCase();
-  
+
   // If the option starts with the question text, remove it
   if (cleanedOption.startsWith(cleanedQuestion)) {
     return optionText.substring(questionText.length).trim();
@@ -48,24 +48,31 @@ export function normalizeQuestion(question: Partial<Question>): Question {
   return {
     question: question.question || '',
     question_text: question.question_text || '',
-    options: Array.isArray(question.options) ? question.options.map((opt: string | { option_number: string; option_text: string }) => {
-      if (typeof opt === 'string') {
-        const labelMatch = opt.match(/^([A-Z])[).:-]/i);
-        const label = labelMatch ? labelMatch[1].toUpperCase() : '';
-        const text = opt.replace(/^[A-Z][).:-]\s*/i, '').trim();
-        return {
-          option_number: label,
-          option_text: text
-        };
-      } else if (opt && typeof opt === 'object' && 'option_number' in opt && 'option_text' in opt) {
-        return opt;
-      }
-      return {
-        option_number: '',
-        option_text: String(opt)
-      };
-    }) : [],
+    options: Array.isArray(question.options)
+      ? question.options.map((opt: string | { option_number: string; option_text: string }) => {
+          if (typeof opt === 'string') {
+            const labelMatch = opt.match(/^([A-Z])[).:-]/i);
+            const label = labelMatch ? labelMatch[1].toUpperCase() : '';
+            const text = opt.replace(/^[A-Z][).:-]\s*/i, '').trim();
+            return {
+              option_number: label,
+              option_text: text,
+            };
+          } else if (
+            opt &&
+            typeof opt === 'object' &&
+            'option_number' in opt &&
+            'option_text' in opt
+          ) {
+            return opt;
+          }
+          return {
+            option_number: '',
+            option_text: String(opt),
+          };
+        })
+      : [],
     answer: Array.isArray(question.answer) ? question.answer : [],
-    content_type: question.content_type || 'mcq'
+    content_type: question.content_type || 'mcq',
   };
 }

@@ -2,9 +2,9 @@ name: Quality & Security Checks
 
 on:
   push:
-    branches: [ futureprep ]
+    branches: [futureprep]
   pull_request:
-    branches: [ futureprep ]
+    branches: [futureprep]
 
 jobs:
   quality:
@@ -21,6 +21,12 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Lint
+        run: npm run lint
 
       - name: Build Next.js
         run: npm run build
@@ -44,7 +50,7 @@ jobs:
   codeql:
     name: CodeQL Analysis
     runs-on: ubuntu-latest
-    needs: [ quality, audit ]
+    needs: [quality, audit]
     permissions:
       actions: read
       security-events: write

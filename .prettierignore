@@ -1,0 +1,23 @@
+# Dependency directories
+node_modules/
+
+# Build outputs
+.next/
+out/
+build/
+dist/
+
+# Cache
+.cache/
+.vercel/
+
+# Misc
+.DS_Store
+.env*
+*.log
+*.vsix
+
+# Package files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml

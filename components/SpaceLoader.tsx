@@ -1,6 +1,6 @@
-'use client'
+'use client';
 
-import { motion } from 'framer-motion'
+import { motion } from 'framer-motion';
 
 const SpaceLoader = ({ size = 100 }) => {
   const orbitVariants = {
@@ -9,10 +9,10 @@ const SpaceLoader = ({ size = 100 }) => {
       transition: {
         duration: 8,
         repeat: Infinity,
-        ease: "linear"
-      }
-    }
-  }
+        ease: 'linear',
+      },
+    },
+  };
 
   const planetVariants = {
     animate: {
@@ -20,10 +20,10 @@ const SpaceLoader = ({ size = 100 }) => {
       transition: {
         duration: 2,
         repeat: Infinity,
-        ease: "easeInOut"
-      }
-    }
-  }
+        ease: 'easeInOut',
+      },
+    },
+  };
 
   const starVariants = {
     animate: {
@@ -32,17 +32,17 @@ const SpaceLoader = ({ size = 100 }) => {
       transition: {
         duration: 3,
         repeat: Infinity,
-        ease: "easeInOut"
-      }
-    }
-  }
+        ease: 'easeInOut',
+      },
+    },
+  };
 
   return (
     <div className="relative" style={{ width: size, height: size }}>
       {[...Array(20)].map((_, i) => (
         <motion.div
           key={i}
-          className="absolute bg-white rounded-full"
+          className="absolute rounded-full bg-white"
           style={{
             width: Math.random() * 2 + 1,
             height: Math.random() * 2 + 1,
@@ -57,7 +57,7 @@ const SpaceLoader = ({ size = 100 }) => {
       {[0.7, 0.85, 1].map((scale, index) => (
         <motion.div
           key={index}
-          className="absolute border border-blue-500 rounded-full"
+          className="absolute rounded-full border border-blue-500"
           style={{
             width: size * scale,
             height: size * scale,
@@ -68,7 +68,7 @@ const SpaceLoader = ({ size = 100 }) => {
           animate="animate"
         >
           <motion.div
-            className="absolute bg-blue-400 rounded-full"
+            className="absolute rounded-full bg-blue-400"
             style={{
               width: size * 0.1,
               height: size * 0.1,
@@ -82,7 +82,7 @@ const SpaceLoader = ({ size = 100 }) => {
       ))}
 
       <motion.div
-        className="absolute bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full"
+        className="absolute rounded-full bg-gradient-to-r from-yellow-400 to-orange-500"
         style={{
           width: size * 0.2,
           height: size * 0.2,
@@ -91,19 +91,19 @@ const SpaceLoader = ({ size = 100 }) => {
         }}
         animate={{
           boxShadow: [
-            "0 0 20px rgba(255, 165, 0, 0.5)",
-            "0 0 40px rgba(255, 165, 0, 0.7)",
-            "0 0 20px rgba(255, 165, 0, 0.5)",
-          ]
+            '0 0 20px rgba(255, 165, 0, 0.5)',
+            '0 0 40px rgba(255, 165, 0, 0.7)',
+            '0 0 20px rgba(255, 165, 0, 0.5)',
+          ],
         }}
         transition={{
           duration: 2,
           repeat: Infinity,
-          ease: "easeInOut"
+          ease: 'easeInOut',
         }}
       />
     </div>
-  )
-}
+  );
+};
 
-export default SpaceLoader
+export default SpaceLoader;

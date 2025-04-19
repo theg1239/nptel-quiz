@@ -1,12 +1,12 @@
-'use server'
+'use server';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.nptelprep.in';
 
 const FALLBACK_COURSES = [
   {
-    title: "Data Structures and Algorithms",
-    course_name: "Data Structures and Algorithms",
-    course_code: "DSA101",
+    title: 'Data Structures and Algorithms',
+    course_name: 'Data Structures and Algorithms',
+    course_code: 'DSA101',
     request_count: 150,
     question_count: 240,
     video_count: 0,
@@ -14,19 +14,19 @@ const FALLBACK_COURSES = [
     assignments: [],
     weeks: [
       {
-        name: "Week 1: Introduction",
-        questions: []
+        name: 'Week 1: Introduction',
+        questions: [],
       },
       {
-        name: "Week 2: Arrays and Linked Lists",
-        questions: []
-      }
-    ]
+        name: 'Week 2: Arrays and Linked Lists',
+        questions: [],
+      },
+    ],
   },
   {
-    title: "Machine Learning",
-    course_name: "Machine Learning",
-    course_code: "ML202",
+    title: 'Machine Learning',
+    course_name: 'Machine Learning',
+    course_code: 'ML202',
     request_count: 200,
     question_count: 180,
     video_count: 0,
@@ -34,19 +34,19 @@ const FALLBACK_COURSES = [
     assignments: [],
     weeks: [
       {
-        name: "Week 1: Basics",
-        questions: []
+        name: 'Week 1: Basics',
+        questions: [],
       },
       {
-        name: "Week 2: Linear Regression",
-        questions: []
-      }
-    ]
+        name: 'Week 2: Linear Regression',
+        questions: [],
+      },
+    ],
   },
   {
-    title: "Web Development",
-    course_name: "Web Development",
-    course_code: "WEB303",
+    title: 'Web Development',
+    course_name: 'Web Development',
+    course_code: 'WEB303',
     request_count: 175,
     question_count: 160,
     video_count: 0,
@@ -54,15 +54,15 @@ const FALLBACK_COURSES = [
     assignments: [],
     weeks: [
       {
-        name: "Week 1: HTML & CSS",
-        questions: []
+        name: 'Week 1: HTML & CSS',
+        questions: [],
       },
       {
-        name: "Week 2: JavaScript",
-        questions: []
-      }
-    ]
-  }
+        name: 'Week 2: JavaScript',
+        questions: [],
+      },
+    ],
+  },
 ];
 
 const FALLBACK_STATS = {
@@ -76,10 +76,12 @@ export interface ApiQuestion {
   question_text: string;
   correct_option: string;
   content_type?: 'mcq' | 'text';
-  options: {
-    option_number: string;
-    option_text: string;
-  }[] | null;
+  options:
+    | {
+        option_number: string;
+        option_text: string;
+      }[]
+    | null;
   question_number: number;
 }
 
@@ -135,34 +137,35 @@ export async function getCourse(courseId: string) {
       throw new Error('Failed to fetch course');
     }
     const data = await response.json();
-    
+
     // Create weeks from assignments
     const weekMap = new Map();
-    
+
     if (data.assignments && Array.isArray(data.assignments)) {
       data.assignments.forEach((assignment: Assignment) => {
         const weekName = `Week ${assignment.week_number}`;
-        
+
         if (!weekMap.has(weekName)) {
           weekMap.set(weekName, {
             name: weekName,
-            questions: []
+            questions: [],
           });
         }
-        
+
         // Transform questions for this assignment
-        const transformedQuestions = assignment.questions?.map((q: ApiQuestion) => ({
-          question: q.question_text,
-          question_text: q.question_text,
-          content_type: q.content_type || 'text',
-          options: q.options || [],
-          answer: q.correct_option ? [q.correct_option] : []
-        })) || [];
-        
+        const transformedQuestions =
+          assignment.questions?.map((q: ApiQuestion) => ({
+            question: q.question_text,
+            question_text: q.question_text,
+            content_type: q.content_type || 'text',
+            options: q.options || [],
+            answer: q.correct_option ? [q.correct_option] : [],
+          })) || [];
+
         weekMap.get(weekName).questions.push(...transformedQuestions);
       });
     }
-    
+
     // Convert weekMap to sorted array
     const weeks = Array.from(weekMap.entries())
       .sort(([weekA], [weekB]) => {
@@ -179,10 +182,13 @@ export async function getCourse(courseId: string) {
       request_count: data.request_count || 0,
       video_count: data.video_count || 0,
       transcript_count: data.transcript_count || 0,
-      question_count: data.assignments?.reduce((total: number, assignment: Assignment) => 
-        total + (assignment.questions?.length || 0), 0) || 0,
+      question_count:
+        data.assignments?.reduce(
+          (total: number, assignment: Assignment) => total + (assignment.questions?.length || 0),
+          0
+        ) || 0,
       assignments: data.assignments || [],
-      weeks
+      weeks,
     };
   } catch (error) {
     console.error('Error fetching course:', error);
@@ -192,15 +198,15 @@ export async function getCourse(courseId: string) {
 
 export async function getAllCourses(): Promise<Course[]> {
   try {
-    const res = await fetch(`${API_BASE_URL}/courses`, { 
-      next: { revalidate: 60 }
+    const res = await fetch(`${API_BASE_URL}/courses`, {
+      next: { revalidate: 60 },
     });
-    
+
     if (!res.ok) {
       console.warn('Failed to fetch courses, using fallback data');
       return FALLBACK_COURSES;
     }
-    
+
     const data = await res.json();
     return Array.isArray(data.courses) ? data.courses : FALLBACK_COURSES;
   } catch (error) {
@@ -211,15 +217,15 @@ export async function getAllCourses(): Promise<Course[]> {
 
 export async function getStats(): Promise<Stats> {
   try {
-    const res = await fetch(`${API_BASE_URL}/counts`, { 
-      next: { revalidate: 60 }
+    const res = await fetch(`${API_BASE_URL}/counts`, {
+      next: { revalidate: 60 },
     });
-    
+
     if (!res.ok) {
       console.warn('Failed to fetch stats, using fallback data');
       return FALLBACK_STATS;
     }
-    
+
     return await res.json();
   } catch (error) {
     console.error('Error fetching stats:', error);
@@ -229,15 +235,15 @@ export async function getStats(): Promise<Stats> {
 
 export async function getCourseMaterials(courseCode: string): Promise<StudyMaterial[]> {
   try {
-    const res = await fetch(`${API_BASE_URL}/courses/${courseCode}`, { 
-      next: { revalidate: 3600 }
+    const res = await fetch(`${API_BASE_URL}/courses/${courseCode}`, {
+      next: { revalidate: 3600 },
     });
-    
+
     if (!res.ok) {
       console.warn(`Failed to fetch course materials for ${courseCode}, using empty array`);
       return [];
     }
-    
+
     const data = await res.json();
     return Array.isArray(data.materials) ? data.materials : [];
   } catch (error) {
@@ -265,12 +271,12 @@ export async function saveStudyPlan(courseCode: string, tasks: any[]): Promise<b
       const studyPlan: StudyPlan = {
         courseCode,
         tasks,
-        lastUpdated: new Date().toISOString()
+        lastUpdated: new Date().toISOString(),
       };
-      
+
       localStorage.setItem(`studyPlan_${courseCode}`, JSON.stringify(studyPlan));
     }
-    
+
     return true;
   } catch (error) {
     console.error(`Error saving study plan for ${courseCode}:`, error);
@@ -282,12 +288,12 @@ export async function getStudyPlan(courseCode: string): Promise<StudyPlan | null
   try {
     if (typeof window !== 'undefined') {
       const savedPlan = localStorage.getItem(`studyPlan_${courseCode}`);
-      
+
       if (savedPlan) {
         return JSON.parse(savedPlan) as StudyPlan;
       }
     }
-    
+
     return null;
   } catch (error) {
     console.error(`Error retrieving study plan for ${courseCode}:`, error);

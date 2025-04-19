@@ -1,19 +1,22 @@
-import * as React from 'react'
-import { cn } from '@/lib/utils'
+import * as React from 'react';
+import { cn } from '@/lib/utils';
 
 interface ProgressProps extends React.HTMLAttributes<HTMLDivElement> {
-  value: number 
-  colorClass?: string
-  indicatorClassName?: string
+  value: number;
+  colorClass?: string;
+  indicatorClassName?: string;
 }
 
 const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
-  ({ className, value, colorClass = 'bg-blue-600 dark:bg-blue-500', indicatorClassName, ...props }, ref) => {
-    const clampedValue = Math.min(100, Math.max(0, value))
+  (
+    { className, value, colorClass = 'bg-blue-600 dark:bg-blue-500', indicatorClassName, ...props },
+    ref
+  ) => {
+    const clampedValue = Math.min(100, Math.max(0, value));
     return (
       <div
         ref={ref}
-        className={cn('relative w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full', className)}
+        className={cn('relative h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700', className)}
         {...props}
       >
         <div
@@ -21,10 +24,10 @@ const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
           style={{ width: `${clampedValue}%` }}
         />
       </div>
-    )
+    );
   }
-)
+);
 
-Progress.displayName = 'Progress'
+Progress.displayName = 'Progress';
 
-export { Progress }
+export { Progress };

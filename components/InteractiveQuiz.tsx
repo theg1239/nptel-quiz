@@ -1,7 +1,7 @@
-'use client'
+'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Heart,
   Zap,
@@ -14,10 +14,10 @@ import {
   XCircle,
   ChevronLeft,
   Settings,
-} from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/Button'
-import { Progress } from '@/components/ui/Progress'
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/Button';
+import { Progress } from '@/components/ui/Progress';
 import {
   Card,
   CardContent,
@@ -25,45 +25,35 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
-} from '@/components/ui/Card'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/Tooltip'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
-import { QuizType } from '@/types/quiz'
-import { initializeQuestionsWithFixedOrder, Question } from '@/lib/quizUtils'
+} from '@/components/ui/Card';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/Tooltip';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { QuizType } from '@/types/quiz';
+import { initializeQuestionsWithFixedOrder, Question } from '@/lib/quizUtils';
 
-const cleanQuestionText = (question: string): string =>
-  question.replace(/^\s*\d+[\).:\-]\s*/, '')
+const cleanQuestionText = (question: string): string => question.replace(/^\s*\d+[\).:\-]\s*/, '');
 
 const cleanOptionText = (optionText: string, questionText: string): string =>
-  optionText.replace(questionText, '').trim()
+  optionText.replace(questionText, '').trim();
 
 function shuffleArray<T>(array: T[]): T[] {
-  return [...array].sort(() => Math.random() - 0.5)
+  return [...array].sort(() => Math.random() - 0.5);
 }
 
 interface InteractiveQuizProps {
-  quizType: QuizType
-  courseName: string
-  questions: Question[]
-  courseCode: string
-  onExit?: () => void
+  quizType: QuizType;
+  courseName: string;
+  questions: Question[];
+  courseCode: string;
+  onExit?: () => void;
 }
 
 interface PowerUpType {
-  type: string
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>
-  name: string
-  active: boolean
+  type: string;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  name: string;
+  active: boolean;
 }
 
 const PowerUp = ({
@@ -72,28 +62,26 @@ const PowerUp = ({
   active,
   onClick,
 }: {
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>
-  name: string
-  active: boolean
-  onClick: () => void
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  name: string;
+  active: boolean;
+  onClick: () => void;
 }) => (
   <TooltipProvider>
     <Tooltip>
       <TooltipTrigger asChild>
         <button
           onClick={onClick}
-          className={`p-2 rounded-full transition-all duration-300 ${
+          className={`rounded-full p-2 transition-all duration-300 ${
             active
-              ? 'bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/50'
-              : 'bg-gray-700 opacity-50 cursor-not-allowed'
+              ? 'bg-blue-600 shadow-lg shadow-blue-500/50 hover:bg-blue-700'
+              : 'cursor-not-allowed bg-gray-700 opacity-50'
           }`}
           disabled={!active}
           aria-label={`Use ${name} power-up`}
           type="button"
         >
-          <Icon
-            className={`h-6 w-6 ${active ? 'text-white' : 'text-gray-400'}`}
-          />
+          <Icon className={`h-6 w-6 ${active ? 'text-white' : 'text-gray-400'}`} />
         </button>
       </TooltipTrigger>
       <TooltipContent side="top">
@@ -103,30 +91,24 @@ const PowerUp = ({
       </TooltipContent>
     </Tooltip>
   </TooltipProvider>
-)
+);
 
-const QuizTimer = ({
-  time,
-  maxTime,
-}: {
-  time: number
-  maxTime: number
-}) => {
-  const minutes = Math.floor(time / 60)
-  const seconds = time % 60
-  const percentage = (time / maxTime) * 100
+const QuizTimer = ({ time, maxTime }: { time: number; maxTime: number }) => {
+  const minutes = Math.floor(time / 60);
+  const seconds = time % 60;
+  const percentage = (time / maxTime) * 100;
 
   return (
     <div className="w-full space-y-1">
-      <div className="flex justify-between items-center text-xs sm:text-sm">
+      <div className="flex items-center justify-between text-xs sm:text-sm">
         <span className="text-gray-300">Time Left:</span>
         <span className="font-medium text-blue-300">
           {minutes}m{seconds.toString().padStart(2, '0')}s
         </span>
       </div>
-      <div className="w-full bg-gray-700 rounded-full h-2">
+      <div className="h-2 w-full rounded-full bg-gray-700">
         <div
-          className="bg-blue-600 h-2 rounded-full transition-all duration-1000 ease-linear"
+          className="h-2 rounded-full bg-blue-600 transition-all duration-1000 ease-linear"
           style={{ width: `${Math.max(0, percentage)}%` }}
           role="progressbar"
           aria-valuenow={time}
@@ -135,28 +117,26 @@ const QuizTimer = ({
         />
       </div>
     </div>
-  )
-}
+  );
+};
 
 const QuizSettings = ({
   quizSettings,
   onSettingChange,
 }: {
   quizSettings: {
-    showFeedback: boolean
-    enablePowerUps: boolean
-    enableLives: boolean
-  }
-  onSettingChange: (
-    setting: 'showFeedback' | 'enablePowerUps' | 'enableLives',
-  ) => void
+    showFeedback: boolean;
+    enablePowerUps: boolean;
+    enableLives: boolean;
+  };
+  onSettingChange: (setting: 'showFeedback' | 'enablePowerUps' | 'enableLives') => void;
 }) => (
   <Popover>
     <PopoverTrigger asChild>
       <Button
         variant="outline"
         size="icon"
-        className="h-9 w-9 shrink-0 border-gray-700 hover:bg-gray-700 hover:border-gray-600"
+        className="h-9 w-9 shrink-0 border-gray-700 hover:border-gray-600 hover:bg-gray-700"
         aria-label="Quiz Settings"
       >
         <Settings className="h-5 w-5" />
@@ -164,7 +144,7 @@ const QuizSettings = ({
     </PopoverTrigger>
 
     <PopoverContent
-      className="w-64 p-2 space-y-2 border border-blue-500 rounded-lg shadow-lg animate-in fade-in-0 zoom-in-95"
+      className="w-64 space-y-2 rounded-lg border border-blue-500 p-2 shadow-lg animate-in fade-in-0 zoom-in-95"
       style={{
         backgroundColor: 'rgba(17, 24, 39, 0.95)',
         backdropFilter: 'blur(8px)',
@@ -179,8 +159,8 @@ const QuizSettings = ({
           size="sm"
           className={`w-full justify-start ${
             quizSettings.showFeedback
-              ? 'bg-blue-600 hover:bg-blue-700 text-white'
-              : 'bg-gray-700 hover:bg-gray-600 text-gray-200'
+              ? 'bg-blue-600 text-white hover:bg-blue-700'
+              : 'bg-gray-700 text-gray-200 hover:bg-gray-600'
           }`}
         >
           {quizSettings.showFeedback ? 'Hide' : 'Show'} Feedback
@@ -192,8 +172,8 @@ const QuizSettings = ({
           size="sm"
           className={`w-full justify-start ${
             quizSettings.enablePowerUps
-              ? 'bg-blue-600 hover:bg-blue-700 text-white'
-              : 'bg-gray-700 hover:bg-gray-600 text-gray-200'
+              ? 'bg-blue-600 text-white hover:bg-blue-700'
+              : 'bg-gray-700 text-gray-200 hover:bg-gray-600'
           }`}
         >
           {quizSettings.enablePowerUps ? 'Disable' : 'Enable'} Power‑ups
@@ -205,8 +185,8 @@ const QuizSettings = ({
           size="sm"
           className={`w-full justify-start ${
             quizSettings.enableLives
-              ? 'bg-blue-600 hover:bg-blue-700 text-white'
-              : 'bg-gray-700 hover:bg-gray-600 text-gray-200'
+              ? 'bg-blue-600 text-white hover:bg-blue-700'
+              : 'bg-gray-700 text-gray-200 hover:bg-gray-600'
           }`}
         >
           {quizSettings.enableLives ? 'Disable' : 'Enable'} Lives
@@ -214,7 +194,7 @@ const QuizSettings = ({
       </div>
     </PopoverContent>
   </Popover>
-)
+);
 
 const QuizContent = ({
   question,
@@ -235,65 +215,62 @@ const QuizContent = ({
   questions,
   quizSettings,
 }: {
-  question: string
-  options: { option_number: string; option_text: string }[]
-  onAnswer: (newSelectedOptions: number[]) => void
-  timeLeft: number
-  maxTime: number
-  lives: number
-  powerUps: PowerUpType[]
-  onUsePowerUp: (type: string) => void
-  quizType: string
-  currentScore: number
-  totalQuestions: number
-  currentQuestionIndex: number
-  selectedOptions: number[]
-  isAnswerLocked: boolean
-  feedback: { correct: boolean; selectedIndexes: number[] } | null
-  questions: Question[]
+  question: string;
+  options: { option_number: string; option_text: string }[];
+  onAnswer: (newSelectedOptions: number[]) => void;
+  timeLeft: number;
+  maxTime: number;
+  lives: number;
+  powerUps: PowerUpType[];
+  onUsePowerUp: (type: string) => void;
+  quizType: string;
+  currentScore: number;
+  totalQuestions: number;
+  currentQuestionIndex: number;
+  selectedOptions: number[];
+  isAnswerLocked: boolean;
+  feedback: { correct: boolean; selectedIndexes: number[] } | null;
+  questions: Question[];
   quizSettings: {
-    enablePowerUps: boolean
-    enableLives: boolean
-    showFeedback: boolean
-  }
+    enablePowerUps: boolean;
+    enableLives: boolean;
+    showFeedback: boolean;
+  };
 }) => {
-  const currentQuestion = questions[currentQuestionIndex]
-  const isTextQuestion = currentQuestion.content_type === 'text'
-  const cleanedQuestion = cleanQuestionText(question)
-  const weekName =
-    quizType === 'weekly' ? (currentQuestion as any).week_name : null
+  const currentQuestion = questions[currentQuestionIndex];
+  const isTextQuestion = currentQuestion.content_type === 'text';
+  const cleanedQuestion = cleanQuestionText(question);
+  const weekName = quizType === 'weekly' ? (currentQuestion as any).week_name : null;
 
   const questionTextClass =
     cleanedQuestion.length > 100
       ? 'text-lg sm:text-xl'
       : cleanedQuestion.length > 50
-      ? 'text-xl sm:text-2xl'
-      : 'text-2xl sm:text-3xl'
+        ? 'text-xl sm:text-2xl'
+        : 'text-2xl sm:text-3xl';
 
   return (
-    <ScrollArea className="custom-scrollbar flex-1 w-full mb-4 overflow-y-auto">
+    <ScrollArea className="custom-scrollbar mb-4 w-full flex-1 overflow-y-auto">
       <div className="p-1 md:p-2">
-        <Card className="bg-gray-800 bg-opacity-50 backdrop-blur-sm border-2 border-blue-500 shadow-lg h-full flex flex-col">
+        <Card className="flex h-full flex-col border-2 border-blue-500 bg-gray-800 bg-opacity-50 shadow-lg backdrop-blur-sm">
           <CardHeader className="flex-shrink-0 px-4 py-3">
             {weekName && (
               <div className="mb-2">
-                <span className="text-sm font-medium text-blue-400">
-                  {weekName}
-                </span>
+                <span className="text-sm font-medium text-blue-400">{weekName}</span>
               </div>
             )}
 
-            <div className="flex justify-between items-center gap-2 mb-2">
+            <div className="mb-2 flex items-center justify-between gap-2">
               <CardTitle
-                className={`${questionTextClass} font-bold text-blue-300 break-words flex-1`}
+                className={`${questionTextClass} flex-1 break-words font-bold text-blue-300`}
               >
                 {currentQuestionIndex + 1}. {cleanedQuestion}
               </CardTitle>
             </div>
 
-            <div className="flex justify-between items-center">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="text-blue-300 font-semibold text-sm sm:text-base">
+                <div className="text-sm font-semibold text-blue-300 sm:text-base">
                   Score: {currentScore} / {totalQuestions}
                 </div>
               </div>
@@ -306,18 +283,18 @@ const QuizContent = ({
             </div>
           </CardHeader>
 
-          <CardContent className="flex-1 overflow-y-auto no-scrollbar px-4 py-2">
+          <CardContent className="no-scrollbar flex-1 overflow-y-auto px-4 py-2">
             {isTextQuestion ? (
               <div className="space-y-4">
-                <div className="bg-gray-700 bg-opacity-50 p-4 rounded-lg border-2 border-gray-600 max-h-[40vh] overflow-y-auto custom-scrollbar">
-                  <p className="text-gray-200 whitespace-pre-wrap text-sm sm:text-base">
+                <div className="custom-scrollbar max-h-[40vh] overflow-y-auto rounded-lg border-2 border-gray-600 bg-gray-700 bg-opacity-50 p-4">
+                  <p className="whitespace-pre-wrap text-sm text-gray-200 sm:text-base">
                     {currentQuestion.question_text}
                   </p>
                 </div>
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="flex justify-between items-center">
+                <div className="flex items-center justify-between">
                   {quizSettings?.enablePowerUps && (
                     <div className="flex flex-wrap gap-2">
                       {powerUps.map((powerUp, index) => (
@@ -333,17 +310,13 @@ const QuizContent = ({
                   )}
 
                   {quizSettings.enableLives &&
-                    (quizType === 'timed' ||
-                      quizType === 'quick' ||
-                      quizType === 'progress') && (
+                    (quizType === 'timed' || quizType === 'quick' || quizType === 'progress') && (
                       <div className="flex gap-1">
                         {[...Array(3)].map((_, i) => (
                           <Heart
                             key={i}
                             className={`h-4 w-4 sm:h-6 sm:w-6 ${
-                              i < lives
-                                ? 'text-red-500 fill-red-500'
-                                : 'text-red-500/50'
+                              i < lives ? 'fill-red-500 text-red-500' : 'text-red-500/50'
                             }`}
                           />
                         ))}
@@ -352,27 +325,22 @@ const QuizContent = ({
                 </div>
 
                 <div
-                  className="grid gap-2 sm:gap-3 min-h-[50vh] sm:min-h-[40vh]"
+                  className="grid min-h-[50vh] gap-2 sm:min-h-[40vh] sm:gap-3"
                   role="radiogroup"
                   aria-label="Quiz options"
                 >
                   {options.map((option, index) => {
-                    const isSelected = selectedOptions.includes(index)
+                    const isSelected = selectedOptions.includes(index);
                     const isCorrect = currentQuestion.answer.includes(
-                      option.option_number.toUpperCase(),
-                    )
+                      option.option_number.toUpperCase()
+                    );
                     const showCorrect =
                       (feedback && quizType === 'practice' && isCorrect) ||
-                      (feedback && !feedback.correct && isCorrect)
-                    const cleanedOptionText = cleanOptionText(
-                      option.option_text,
-                      question,
-                    )
+                      (feedback && !feedback.correct && isCorrect);
+                    const cleanedOptionText = cleanOptionText(option.option_text, question);
                     const optionTextClass =
-                      cleanedOptionText.length > 80
-                        ? 'text-xs sm:text-sm'
-                        : 'text-sm sm:text-base'
-                    const optionId = `option-${currentQuestionIndex}-${index}`
+                      cleanedOptionText.length > 80 ? 'text-xs sm:text-sm' : 'text-sm sm:text-base';
+                    const optionId = `option-${currentQuestionIndex}-${index}`;
 
                     return (
                       <div key={index} className="relative">
@@ -381,35 +349,31 @@ const QuizContent = ({
                           id={optionId}
                           name={`question-${currentQuestionIndex}`}
                           checked={isSelected}
-                          onChange={() =>
-                            !isAnswerLocked && onAnswer([index])
-                          }
+                          onChange={() => !isAnswerLocked && onAnswer([index])}
                           disabled={isAnswerLocked}
-                          className="sr-only peer"
+                          className="peer sr-only"
                           aria-label={`Option ${option.option_number}: ${cleanedOptionText}`}
                         />
 
                         <label
                           htmlFor={optionId}
-                          className={`block w-full p-2.5 sm:p-4 rounded-lg text-left transition-all duration-200 cursor-pointer select-none ${
+                          className={`block w-full cursor-pointer select-none rounded-lg p-2.5 text-left transition-all duration-200 sm:p-4 ${
                             isAnswerLocked
                               ? isSelected
                                 ? isCorrect
-                                  ? 'bg-green-600 bg-opacity-20 border-2 border-green-500 text-green-300'
-                                  : 'bg-red-600 bg-opacity-20 border-2 border-red-500 text-red-300'
+                                  ? 'border-2 border-green-500 bg-green-600 bg-opacity-20 text-green-300'
+                                  : 'border-2 border-red-500 bg-red-600 bg-opacity-20 text-red-300'
                                 : showCorrect
-                                ? 'bg-green-600 bg-opacity-20 border-2 border-green-500 text-green-300'
-                                : 'bg-gray-700 bg-opacity-50 border-2 border-gray-600 text-gray-400'
-                              : 'bg-gray-700 bg-opacity-50 border-2 border-gray-600 text-gray-300 hover:bg-gray-600 hover:border-gray-500 peer-checked:bg-blue-600 peer-checked:bg-opacity-20 peer-checked:border-blue-500 peer-checked:text-blue-300'
+                                  ? 'border-2 border-green-500 bg-green-600 bg-opacity-20 text-green-300'
+                                  : 'border-2 border-gray-600 bg-gray-700 bg-opacity-50 text-gray-400'
+                              : 'border-2 border-gray-600 bg-gray-700 bg-opacity-50 text-gray-300 hover:border-gray-500 hover:bg-gray-600 peer-checked:border-blue-500 peer-checked:bg-blue-600 peer-checked:bg-opacity-20 peer-checked:text-blue-300'
                           }`}
                         >
                           <div className="flex items-start sm:items-center">
-                            <span className="text-base sm:text-lg font-semibold mr-2 flex-shrink-0 min-w-[1.5rem]">
+                            <span className="mr-2 min-w-[1.5rem] flex-shrink-0 text-base font-semibold sm:text-lg">
                               {option.option_number}.
                             </span>
-                            <span
-                              className={`${optionTextClass} break-words flex-grow`}
-                            >
+                            <span className={`${optionTextClass} flex-grow break-words`}>
                               {cleanedOptionText}
                             </span>
                             {isAnswerLocked && (
@@ -428,7 +392,7 @@ const QuizContent = ({
                           </div>
                         </label>
                       </div>
-                    )
+                    );
                   })}
                 </div>
               </div>
@@ -437,8 +401,8 @@ const QuizContent = ({
         </Card>
       </div>
     </ScrollArea>
-  )
-}
+  );
+};
 
 const Quiz = ({
   quizType = 'practice',
@@ -448,50 +412,48 @@ const Quiz = ({
   courseName,
   courseCode,
 }: {
-  quizType: QuizType
-  onExit: () => void
-  questions: Question[]
-  quizTime: number
-  courseName: string
-  courseCode: string
+  quizType: QuizType;
+  onExit: () => void;
+  questions: Question[];
+  quizTime: number;
+  courseName: string;
+  courseCode: string;
 }) => {
-  const router = useRouter()
+  const router = useRouter();
 
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
-  const [score, setScore] = useState(0)
-  const [lives, setLives] = useState(3)
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [lives, setLives] = useState(3);
   const [timeLeft, setTimeLeft] = useState(() => {
     if (quizType === 'timed' || quizType === 'quick' || quizType === 'weekly') {
-      return quizTime * 60
+      return quizTime * 60;
     }
-    return 0
-  })
-  const [powerUps, setPowerUps] = useState<PowerUpType[]>([])
-  const [quizEnded, setQuizEnded] = useState(false)
-  const [availableOptions, setAvailableOptions] = useState<number[]>([
-    0, 1, 2, 3,
-  ])
+    return 0;
+  });
+  const [powerUps, setPowerUps] = useState<PowerUpType[]>([]);
+  const [quizEnded, setQuizEnded] = useState(false);
+  const [availableOptions, setAvailableOptions] = useState<number[]>([0, 1, 2, 3]);
   const [feedback, setFeedback] = useState<{
-    correct: boolean
-    selectedIndexes: number[]
-  } | null>(null)
-  const [selectedOptions, setSelectedOptions] = useState<number[]>([])
+    correct: boolean;
+    selectedIndexes: number[];
+  } | null>(null);
+  const [selectedOptions, setSelectedOptions] = useState<number[]>([]);
   const [userAnswers, setUserAnswers] = useState<
     {
-      selectedOptions: number[]
-      correct: boolean
-      locked: boolean
-      correctAnswer?: string[]
+      selectedOptions: number[];
+      correct: boolean;
+      locked: boolean;
+      correctAnswer?: string[];
     }[]
-  >(questions.map(() => ({ selectedOptions: [], correct: false, locked: false })))
+  >(questions.map(() => ({ selectedOptions: [], correct: false, locked: false })));
 
   const [quizSettings, setQuizSettings] = useState({
     showFeedback: true,
     enablePowerUps: true,
     enableLives: true,
-  })
+  });
 
-  const [powerUpUsage, setPowerUpUsage] = useState<Record<string, boolean>>({})
+  const [powerUpUsage, setPowerUpUsage] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (quizSettings.enablePowerUps) {
@@ -514,201 +476,184 @@ const Quiz = ({
           name: 'Shield',
           active: !powerUpUsage['shield'],
         },
-      ])
+      ]);
     } else {
-      setPowerUps([])
+      setPowerUps([]);
     }
-  }, [quizSettings.enablePowerUps, powerUpUsage])
+  }, [quizSettings.enablePowerUps, powerUpUsage]);
 
   const savePowerUpUsage = useCallback((type: string) => {
-    setPowerUpUsage((prev) => ({ ...prev, [type]: true }))
-  }, [])
+    setPowerUpUsage(prev => ({ ...prev, [type]: true }));
+  }, []);
 
   const handleExit = useCallback(() => {
-    setPowerUpUsage({})
-    if (onExit) onExit()
-  }, [onExit])
+    setPowerUpUsage({});
+    if (onExit) onExit();
+  }, [onExit]);
 
   useEffect(() => {
-    let timer: NodeJS.Timeout
+    let timer: NodeJS.Timeout;
 
     if (
-      (quizType === 'timed' ||
-        quizType === 'quick' ||
-        quizType === 'weekly') &&
+      (quizType === 'timed' || quizType === 'quick' || quizType === 'weekly') &&
       !quizEnded &&
       timeLeft > 0
     ) {
       timer = setInterval(() => {
-        setTimeLeft((prev) => {
+        setTimeLeft(prev => {
           if (prev <= 1) {
-            endQuiz()
-            return 0
+            endQuiz();
+            return 0;
           }
-          return prev - 1
-        })
-      }, 1000)
+          return prev - 1;
+        });
+      }, 1000);
     }
 
     return () => {
-      if (timer) clearInterval(timer)
-    }
-  }, [quizType, quizEnded, timeLeft])
+      if (timer) clearInterval(timer);
+    };
+  }, [quizType, quizEnded, timeLeft]);
 
   const handleSettingsChange = (setting: keyof typeof quizSettings) => {
-    setQuizSettings((prev) => ({
+    setQuizSettings(prev => ({
       ...prev,
       [setting]: !prev[setting],
-    }))
-  }
+    }));
+  };
 
   const endQuiz = useCallback(() => {
-    setTimeLeft(0)
-    setQuizEnded(true)
+    setTimeLeft(0);
+    setQuizEnded(true);
 
     try {
-      const storedProgress = JSON.parse(
-        localStorage.getItem('quizProgress') || '{}',
-      )
+      const storedProgress = JSON.parse(localStorage.getItem('quizProgress') || '{}');
       const incorrectQuestions = questions
         .filter((_, idx) => !userAnswers[idx]?.correct)
-        .map((q) => q.question)
+        .map(q => q.question);
       storedProgress[courseCode] = {
         incorrectQuestions,
-      }
-      localStorage.setItem('quizProgress', JSON.stringify(storedProgress))
+      };
+      localStorage.setItem('quizProgress', JSON.stringify(storedProgress));
     } catch (err) {
-      console.error('Error updating quiz progress:', err)
+      console.error('Error updating quiz progress:', err);
     }
 
     try {
-      const totalQuestions = questions.length
-      const correctAnswers = userAnswers.filter((ans) => ans.correct).length
-      const quizPerformance = Math.round(
-        (correctAnswers / totalQuestions) * 100,
-      )
-      const weightedQuizProgress = Math.round(quizPerformance * 0.6)
+      const totalQuestions = questions.length;
+      const correctAnswers = userAnswers.filter(ans => ans.correct).length;
+      const quizPerformance = Math.round((correctAnswers / totalQuestions) * 100);
+      const weightedQuizProgress = Math.round(quizPerformance * 0.6);
 
-      const weekProgress = JSON.parse(
-        localStorage.getItem(`weekProgress_${courseCode}`) || '{}',
-      )
-      const courseData = JSON.parse(
-        localStorage.getItem(`courseData_${courseCode}`) || '{}',
-      )
-      const totalWeeks = courseData.totalWeeks || 1
-      const viewedWeeks = Object.keys(weekProgress).length
-      const viewProgress = Math.round((viewedWeeks / totalWeeks) * 40)
+      const weekProgress = JSON.parse(localStorage.getItem(`weekProgress_${courseCode}`) || '{}');
+      const courseData = JSON.parse(localStorage.getItem(`courseData_${courseCode}`) || '{}');
+      const totalWeeks = courseData.totalWeeks || 1;
+      const viewedWeeks = Object.keys(weekProgress).length;
+      const viewProgress = Math.round((viewedWeeks / totalWeeks) * 40);
 
-      const totalProgress = Math.min(
-        100,
-        Math.round(viewProgress + weightedQuizProgress),
-      )
+      const totalProgress = Math.min(100, Math.round(viewProgress + weightedQuizProgress));
 
-      const courseProgress = JSON.parse(
-        localStorage.getItem('courseProgress') || '{}',
-      )
-      courseProgress[courseCode] = totalProgress
-      localStorage.setItem('courseProgress', JSON.stringify(courseProgress))
+      const courseProgress = JSON.parse(localStorage.getItem('courseProgress') || '{}');
+      courseProgress[courseCode] = totalProgress;
+      localStorage.setItem('courseProgress', JSON.stringify(courseProgress));
     } catch (err) {
-      console.error('Error updating course completion:', err)
+      console.error('Error updating course completion:', err);
     }
-  }, [questions, userAnswers, courseCode])
+  }, [questions, userAnswers, courseCode]);
 
   const goToNextQuestion = useCallback(() => {
     if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex((prev) => prev + 1)
-      setSelectedOptions(userAnswers[currentQuestionIndex + 1]?.selectedOptions || [])
-      setAvailableOptions([0, 1, 2, 3])
-      setFeedback(null)
+      setCurrentQuestionIndex(prev => prev + 1);
+      setSelectedOptions(userAnswers[currentQuestionIndex + 1]?.selectedOptions || []);
+      setAvailableOptions([0, 1, 2, 3]);
+      setFeedback(null);
     } else {
-      endQuiz()
+      endQuiz();
     }
-  }, [currentQuestionIndex, questions.length, userAnswers, endQuiz])
+  }, [currentQuestionIndex, questions.length, userAnswers, endQuiz]);
 
   const goToPreviousQuestion = () => {
     if (currentQuestionIndex > 0) {
-      const previousIndex = currentQuestionIndex - 1
-      const previousAnswer = userAnswers[previousIndex]
+      const previousIndex = currentQuestionIndex - 1;
+      const previousAnswer = userAnswers[previousIndex];
 
-      setCurrentQuestionIndex(previousIndex)
-      setSelectedOptions(previousAnswer?.selectedOptions || [])
-      setAvailableOptions([0, 1, 2, 3])
+      setCurrentQuestionIndex(previousIndex);
+      setSelectedOptions(previousAnswer?.selectedOptions || []);
+      setAvailableOptions([0, 1, 2, 3]);
 
       if (previousAnswer?.locked) {
-        const isCorrect = previousAnswer.correct
+        const isCorrect = previousAnswer.correct;
         setFeedback({
           correct: isCorrect,
           selectedIndexes: previousAnswer.selectedOptions,
-        })
+        });
       } else {
-        setFeedback(null)
+        setFeedback(null);
       }
     }
-  }
+  };
 
   const handleAnswer = useCallback(
     (newSelectedOptions: number[]) => {
-      setSelectedOptions(newSelectedOptions)
-      setUserAnswers((prev) => {
-        const newAnswers = [...prev]
+      setSelectedOptions(newSelectedOptions);
+      setUserAnswers(prev => {
+        const newAnswers = [...prev];
         newAnswers[currentQuestionIndex] = {
           selectedOptions: newSelectedOptions,
           correct: false,
           locked: false,
-        }
-        return newAnswers
-      })
+        };
+        return newAnswers;
+      });
     },
-    [currentQuestionIndex],
-  )
+    [currentQuestionIndex]
+  );
 
   const saveAnswers = useCallback(() => {
-    const currentQuestion = questions[currentQuestionIndex]
+    const currentQuestion = questions[currentQuestionIndex];
     const displayedOptions = currentQuestion.options.filter((_, idx) =>
-      availableOptions.includes(idx),
-    )
-    const selectedLabels = selectedOptions.map((idx) =>
-      displayedOptions[idx].option_number.toUpperCase(),
-    )
-    const correctLabels = currentQuestion.answer.map((ans: string) =>
-      ans.toUpperCase(),
-    )
+      availableOptions.includes(idx)
+    );
+    const selectedLabels = selectedOptions.map(idx =>
+      displayedOptions[idx].option_number.toUpperCase()
+    );
+    const correctLabels = currentQuestion.answer.map((ans: string) => ans.toUpperCase());
 
     const isCorrect =
       selectedLabels.length === correctLabels.length &&
-      selectedLabels.every((label) => correctLabels.includes(label))
+      selectedLabels.every(label => correctLabels.includes(label));
 
     if (isCorrect) {
-      setScore((prev) => prev + 1)
+      setScore(prev => prev + 1);
     } else if (quizSettings.enableLives) {
-      setLives((prev) => {
-        const newLives = prev - 1
+      setLives(prev => {
+        const newLives = prev - 1;
         if (newLives === 0) {
-          endQuiz()
+          endQuiz();
         }
-        return newLives
-      })
+        return newLives;
+      });
     }
 
-    setUserAnswers((prev) => {
-      const newAnswers = [...prev]
+    setUserAnswers(prev => {
+      const newAnswers = [...prev];
       newAnswers[currentQuestionIndex] = {
         selectedOptions,
         correct: isCorrect,
         locked: true,
         correctAnswer: correctLabels,
-      }
-      return newAnswers
-    })
+      };
+      return newAnswers;
+    });
 
     if (quizSettings.showFeedback) {
-      setFeedback({ correct: isCorrect, selectedIndexes: selectedOptions })
+      setFeedback({ correct: isCorrect, selectedIndexes: selectedOptions });
     }
 
     if (currentQuestionIndex === questions.length - 1) {
-      setTimeout(() => endQuiz(), 1500)
+      setTimeout(() => endQuiz(), 1500);
     } else if (isCorrect || !quizSettings.showFeedback) {
-      setTimeout(() => goToNextQuestion(), 1500)
+      setTimeout(() => goToNextQuestion(), 1500);
     }
   }, [
     questions,
@@ -718,50 +663,39 @@ const Quiz = ({
     endQuiz,
     goToNextQuestion,
     availableOptions,
-  ])
+  ]);
 
   const usePowerUp = useCallback(
     (type: string) => {
-      if (!quizSettings.enablePowerUps || powerUpUsage[type]) return
+      if (!quizSettings.enablePowerUps || powerUpUsage[type]) return;
 
       if (type === 'fiftyFifty') {
-        const currentQuestion = questions[currentQuestionIndex]
-        const correctLabels = currentQuestion.answer.map((ans) =>
-          ans.toUpperCase(),
-        )
+        const currentQuestion = questions[currentQuestionIndex];
+        const correctLabels = currentQuestion.answer.map(ans => ans.toUpperCase());
 
         const correctIndexes = currentQuestion.options
           .map((opt, idx) => {
-            const label = opt.option_number.toUpperCase()
-            return correctLabels.includes(label) ? idx : -1
+            const label = opt.option_number.toUpperCase();
+            return correctLabels.includes(label) ? idx : -1;
           })
-          .filter((idx) => idx !== -1)
+          .filter(idx => idx !== -1);
 
-        let incorrectOptions = availableOptions.filter(
-          (idx) => !correctIndexes.includes(idx),
-        )
+        let incorrectOptions = availableOptions.filter(idx => !correctIndexes.includes(idx));
 
         if (availableOptions.length <= correctIndexes.length + 1) {
-          setAvailableOptions(correctIndexes)
+          setAvailableOptions(correctIndexes);
         } else {
-          const optionsToRemove = incorrectOptions.slice(
-            0,
-            Math.min(2, incorrectOptions.length),
-          )
-          setAvailableOptions((prev) =>
-            prev.filter((idx) => !optionsToRemove.includes(idx)),
-          )
+          const optionsToRemove = incorrectOptions.slice(0, Math.min(2, incorrectOptions.length));
+          setAvailableOptions(prev => prev.filter(idx => !optionsToRemove.includes(idx)));
         }
       } else if (type === 'extraTime') {
-        setTimeLeft((prev) => prev + 30)
+        setTimeLeft(prev => prev + 30);
       } else if (type === 'shield') {
-        setLives((prev) => prev + 1)
+        setLives(prev => prev + 1);
       }
 
-      savePowerUpUsage(type)
-      setPowerUps((prev) =>
-        prev.map((p) => (p.type === type ? { ...p, active: false } : p)),
-      )
+      savePowerUpUsage(type);
+      setPowerUps(prev => prev.map(p => (p.type === type ? { ...p, active: false } : p)));
     },
     [
       currentQuestionIndex,
@@ -770,30 +704,28 @@ const Quiz = ({
       quizSettings.enablePowerUps,
       powerUpUsage,
       savePowerUpUsage,
-    ],
-  )
+    ]
+  );
 
   const restartQuiz = useCallback(() => {
-    setCurrentQuestionIndex(0)
-    setScore(0)
-    setLives(quizSettings.enableLives ? 3 : 0)
+    setCurrentQuestionIndex(0);
+    setScore(0);
+    setLives(quizSettings.enableLives ? 3 : 0);
     setTimeLeft(
       quizType === 'timed' || quizType === 'quick'
         ? quizTime * 60
         : quizType === 'weekly'
-        ? quizTime * 60
-        : 0,
-    )
-    setPowerUpUsage({})
-    setPowerUps((prev) => prev.map((p) => ({ ...p, active: true })))
-    setQuizEnded(false)
-    setAvailableOptions([0, 1, 2, 3])
-    setFeedback(null)
-    setSelectedOptions([])
-    setUserAnswers(
-      questions.map(() => ({ selectedOptions: [], correct: false, locked: false })),
-    )
-  }, [quizTime, questions, quizType, quizSettings.enableLives])
+          ? quizTime * 60
+          : 0
+    );
+    setPowerUpUsage({});
+    setPowerUps(prev => prev.map(p => ({ ...p, active: true })));
+    setQuizEnded(false);
+    setAvailableOptions([0, 1, 2, 3]);
+    setFeedback(null);
+    setSelectedOptions([]);
+    setUserAnswers(questions.map(() => ({ selectedOptions: [], correct: false, locked: false })));
+  }, [quizTime, questions, quizType, quizSettings.enableLives]);
 
   if (quizEnded) {
     return (
@@ -805,49 +737,44 @@ const Quiz = ({
         questions={questions}
         userAnswers={userAnswers}
       />
-    )
+    );
   }
 
-  const currentQuestion = questions[currentQuestionIndex]
-  const isAnswerLocked = userAnswers[currentQuestionIndex]?.locked
+  const currentQuestion = questions[currentQuestionIndex];
+  const isAnswerLocked = userAnswers[currentQuestionIndex]?.locked;
 
   const confirmQuitQuiz = () => {
     if (
       window.confirm(
-        'Are you sure you want to end the quiz? Your progress will be saved in the results.',
+        'Are you sure you want to end the quiz? Your progress will be saved in the results.'
       )
     ) {
-      endQuiz()
+      endQuiz();
     }
-  }
+  };
 
   return (
-    <div className="w-full max-w-4xl flex flex-col h-[calc(100vh-5rem)] overflow-hidden relative">
-      <div className="flex justify-between items-center mb-4">
+    <div className="relative flex h-[calc(100vh-5rem)] w-full max-w-4xl flex-col overflow-hidden">
+      <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Button
             onClick={handleExit}
             variant="ghost"
-            className="text-blue-300 hover:bg-blue-900 transition-colors duration-300 flex items-center"
+            className="flex items-center text-blue-300 transition-colors duration-300 hover:bg-blue-900"
           >
             <ArrowLeft className="mr-2 h-4 w-4" /> Exit
           </Button>
 
-          <QuizSettings
-            quizSettings={quizSettings}
-            onSettingChange={handleSettingsChange}
-          />
+          <QuizSettings quizSettings={quizSettings} onSettingChange={handleSettingsChange} />
         </div>
 
         <div className="flex items-center gap-4">
           {quizSettings.enableLives && (
-            <div className="flex gap-1 mr-4">
+            <div className="mr-4 flex gap-1">
               {[...Array(3)].map((_, i) => (
                 <Heart
                   key={i}
-                  className={`h-5 w-5 ${
-                    i < lives ? 'text-red-500 fill-red-500' : 'text-gray-600'
-                  }`}
+                  className={`h-5 w-5 ${i < lives ? 'fill-red-500 text-red-500' : 'text-gray-600'}`}
                 />
               ))}
             </div>
@@ -872,13 +799,11 @@ const Quiz = ({
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -100 }}
             transition={{ duration: 0.3, ease: [0.42, 0, 0.58, 1] }}
-            className="h-full flex flex-col"
+            className="flex h-full flex-col"
           >
             <QuizContent
               question={currentQuestion.question}
-              options={currentQuestion.options.filter((_, idx) =>
-                availableOptions.includes(idx),
-              )}
+              options={currentQuestion.options.filter((_, idx) => availableOptions.includes(idx))}
               onAnswer={handleAnswer}
               timeLeft={timeLeft}
               maxTime={quizTime * 60}
@@ -899,12 +824,12 @@ const Quiz = ({
         )}
       </div>
 
-      <div className="sticky bottom-0 left-0 right-0 bg-opacity-90 backdrop-blur-sm border-t border-gray-800 p-4 mt-4">
-        <div className="flex justify-between gap-2 max-w-4xl mx-auto">
+      <div className="sticky bottom-0 left-0 right-0 mt-4 border-t border-gray-800 bg-opacity-90 p-4 backdrop-blur-sm">
+        <div className="mx-auto flex max-w-4xl justify-between gap-2">
           <Button
             onClick={goToPreviousQuestion}
             disabled={currentQuestionIndex === 0}
-            className="bg-gray-600 hover:bg-gray-700 transition-colors duration-300"
+            className="bg-gray-600 transition-colors duration-300 hover:bg-gray-700"
           >
             Previous
           </Button>
@@ -912,7 +837,7 @@ const Quiz = ({
           <Button
             onClick={saveAnswers}
             disabled={isAnswerLocked || selectedOptions.length === 0}
-            className="bg-blue-600 hover:bg-blue-700 transition-colors duration-300 flex-1"
+            className="flex-1 bg-blue-600 transition-colors duration-300 hover:bg-blue-700"
           >
             Save Answers
           </Button>
@@ -920,7 +845,7 @@ const Quiz = ({
           <Button
             onClick={goToNextQuestion}
             disabled={currentQuestionIndex === questions.length - 1}
-            className="bg-gray-600 hover:bg-gray-700 transition-colors duration-300"
+            className="bg-gray-600 transition-colors duration-300 hover:bg-gray-700"
           >
             Next
           </Button>
@@ -932,7 +857,7 @@ const Quiz = ({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 10 }}
-              className={`mt-2 text-lg font-semibold text-center ${
+              className={`mt-2 text-center text-lg font-semibold ${
                 feedback.correct ? 'text-green-500' : 'text-red-500'
               }`}
             >
@@ -962,8 +887,8 @@ const Quiz = ({
         </AnimatePresence>
       </div>
     </div>
-  )
-}
+  );
+};
 
 const ResultScreen = ({
   score,
@@ -973,26 +898,26 @@ const ResultScreen = ({
   questions,
   userAnswers,
 }: {
-  score: number
-  totalQuestions: number
-  onRestart: () => void
-  courseCode: string
-  questions: Question[]
-  userAnswers: { selectedOptions: number[]; correct: boolean; locked: boolean }[]
+  score: number;
+  totalQuestions: number;
+  onRestart: () => void;
+  courseCode: string;
+  questions: Question[];
+  userAnswers: { selectedOptions: number[]; correct: boolean; locked: boolean }[];
 }) => {
-  const router = useRouter()
-  const [showDetails, setShowDetails] = useState(false)
-  const progressValue = Math.round((score / totalQuestions) * 100)
+  const router = useRouter();
+  const [showDetails, setShowDetails] = useState(false);
+  const progressValue = Math.round((score / totalQuestions) * 100);
 
   const handleBackToPortal = () => {
-    router.push(`/courses/${courseCode}`)
-  }
+    router.push(`/courses/${courseCode}`);
+  };
 
   return (
-    <Card className="w-full max-w-4xl mx-auto bg-gray-800 bg-opacity-50 backdrop-blur-sm text-center border-2 border-blue-500 shadow-lg relative overflow-hidden">
+    <Card className="relative mx-auto w-full max-w-4xl overflow-hidden border-2 border-blue-500 bg-gray-800 bg-opacity-50 text-center shadow-lg backdrop-blur-sm">
       <button
         onClick={handleBackToPortal}
-        className="absolute top-4 left-4 text-blue-300 hover:bg-blue-900 p-2 rounded-full transition-colors duration-300"
+        className="absolute left-4 top-4 rounded-full p-2 text-blue-300 transition-colors duration-300 hover:bg-blue-900"
         aria-label="Back to Course Portal"
         type="button"
       >
@@ -1000,9 +925,7 @@ const ResultScreen = ({
       </button>
 
       <CardHeader>
-        <CardTitle className="text-3xl font-bold text-blue-300 mb-2">
-          Quiz Results
-        </CardTitle>
+        <CardTitle className="mb-2 text-3xl font-bold text-blue-300">Quiz Results</CardTitle>
         <CardDescription className="text-gray-300">
           You've completed the quiz! Here's how you did:
         </CardDescription>
@@ -1022,26 +945,24 @@ const ResultScreen = ({
 
             <Progress value={progressValue} className="w-full max-w-md" />
 
-            <p className="text-gray-300 text-sm">{progressValue}% Accuracy</p>
+            <p className="text-sm text-gray-300">{progressValue}% Accuracy</p>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
-            <div className="bg-opacity-50 p-4 rounded-lg">
+          <div className="mx-auto grid max-w-md grid-cols-2 gap-4">
+            <div className="rounded-lg bg-opacity-50 p-4">
               <p className="text-2xl font-bold text-green-400">{score}</p>
               <p className="text-sm text-gray-300">Correct</p>
             </div>
 
-            <div className="bg-opacity-50 p-4 rounded-lg">
-              <p className="text-2xl font-bold text-red-400">
-                {totalQuestions - score}
-              </p>
+            <div className="rounded-lg bg-opacity-50 p-4">
+              <p className="text-2xl font-bold text-red-400">{totalQuestions - score}</p>
               <p className="text-sm text-gray-300">Incorrect</p>
             </div>
           </div>
 
           <Button
             onClick={() => setShowDetails(!showDetails)}
-            className="w-full max-w-md mx-auto bg-blue-600 hover:bg-blue-700"
+            className="mx-auto w-full max-w-md bg-blue-600 hover:bg-blue-700"
           >
             {showDetails ? 'Hide Details' : 'Show Question Details'}
           </Button>
@@ -1055,32 +976,30 @@ const ResultScreen = ({
                 className="w-full"
               >
                 <div className="border-b border-gray-700 pb-2">
-                  <h3 className="font-medium text-lg text-blue-300">
-                    Question Analysis
-                  </h3>
+                  <h3 className="text-lg font-medium text-blue-300">Question Analysis</h3>
                 </div>
 
-                <ScrollArea className="h-[40vh] w-full mt-4 rounded-lg border border-gray-700 custom-scrollbar">
+                <ScrollArea className="custom-scrollbar mt-4 h-[40vh] w-full rounded-lg border border-gray-700">
                   <div className="space-y-4 p-4">
                     {questions.map((question, idx) => (
                       <div
                         key={idx}
-                        className={`p-4 rounded-lg ${
+                        className={`rounded-lg p-4 ${
                           userAnswers[idx]?.correct
-                            ? 'bg-green-900 bg-opacity-20 border border-green-700'
-                            : 'bg-red-900 bg-opacity-20 border border-red-700'
+                            ? 'border border-green-700 bg-green-900 bg-opacity-20'
+                            : 'border border-red-700 bg-red-900 bg-opacity-20'
                         }`}
                       >
                         <div className="flex flex-col space-y-2">
                           <div className="flex items-start justify-between">
-                            <p className="text-sm font-medium text-left text-gray-200">
+                            <p className="text-left text-sm font-medium text-gray-200">
                               {idx + 1}. {question.question}
                             </p>
 
                             {userAnswers[idx]?.correct ? (
-                              <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 ml-2" />
+                              <CheckCircle className="ml-2 h-5 w-5 flex-shrink-0 text-green-500" />
                             ) : (
-                              <XCircle className="h-5 w-5 text-red-500 flex-shrink-0 ml-2" />
+                              <XCircle className="ml-2 h-5 w-5 flex-shrink-0 text-red-500" />
                             )}
                           </div>
 
@@ -1089,10 +1008,7 @@ const ResultScreen = ({
                               <p className="text-red-400">
                                 Your answer:{' '}
                                 {userAnswers[idx]?.selectedOptions
-                                  .map(
-                                    (opt) =>
-                                      question.options[opt]?.option_text,
-                                  )
+                                  .map(opt => question.options[opt]?.option_text)
                                   .join(', ')}
                               </p>
                               <p className="text-green-400">
@@ -1101,8 +1017,8 @@ const ResultScreen = ({
                                   .map(label => {
                                     const opt = question.options.find(
                                       o => o.option_number.toUpperCase() === label.toUpperCase()
-                                    )
-                                    return opt ? opt.option_text : label
+                                    );
+                                    return opt ? opt.option_text : label;
                                   })
                                   .join(', ')}
                               </p>
@@ -1119,24 +1035,21 @@ const ResultScreen = ({
         </div>
       </CardContent>
 
-      <CardFooter className="flex flex-col sm:flex-row gap-4">
-        <Button
-          onClick={onRestart}
-          className="w-full sm:w-1/2 bg-blue-600 hover:bg-blue-700"
-        >
+      <CardFooter className="flex flex-col gap-4 sm:flex-row">
+        <Button onClick={onRestart} className="w-full bg-blue-600 hover:bg-blue-700 sm:w-1/2">
           Try Again
         </Button>
 
         <Button
           onClick={handleBackToPortal}
-          className="w-full sm:w-1/2 bg-gray-600 hover:bg-gray-700"
+          className="w-full bg-gray-600 hover:bg-gray-700 sm:w-1/2"
         >
           Back to Course
         </Button>
       </CardFooter>
     </Card>
-  )
-}
+  );
+};
 
 export default function InteractiveQuiz({
   quizType,
@@ -1145,157 +1058,141 @@ export default function InteractiveQuiz({
   questions,
   courseCode,
 }: InteractiveQuizProps) {
-  const router = useRouter()
+  const router = useRouter();
 
-  const [currentPhase, setCurrentPhase] = useState<
-    'intro' | 'quiz' | 'results'
-  >('intro')
+  const [currentPhase, setCurrentPhase] = useState<'intro' | 'quiz' | 'results'>('intro');
 
-  const [quizSettingsLoaded, setQuizSettingsLoaded] = useState(false)
+  const [quizSettingsLoaded, setQuizSettingsLoaded] = useState(false);
   const [quizSettings, setQuizSettings] = useState<{
-    questionCount: number
-    quizTime: number
-  }>({ questionCount: 10, quizTime: 5 })
+    questionCount: number;
+    quizTime: number;
+  }>({ questionCount: 10, quizTime: 5 });
 
-  const [filteredQuestions, setFilteredQuestions] = useState<Question[]>([])
+  const [filteredQuestions, setFilteredQuestions] = useState<Question[]>([]);
 
   useEffect(() => {
     try {
-      const storedSettings = JSON.parse(localStorage.getItem('quizSettings') || '{}')
+      const storedSettings = JSON.parse(localStorage.getItem('quizSettings') || '{}');
 
       if (quizType === 'weekly') {
         const weekSelections =
           storedSettings.weekSelections ||
-          JSON.parse(
-            localStorage.getItem(`weekSelections_${courseCode}`) || '{}',
-          )
-        const selectedWeeks = Object.keys(weekSelections || {}).filter(
-          (w) => weekSelections[w],
-        )
+          JSON.parse(localStorage.getItem(`weekSelections_${courseCode}`) || '{}');
+        const selectedWeeks = Object.keys(weekSelections || {}).filter(w => weekSelections[w]);
 
         if (selectedWeeks.length === 0) {
-          console.error('No weeks selected for weekly quiz')
-          router.push(`/courses/${courseCode}`)
-          return
+          console.error('No weeks selected for weekly quiz');
+          router.push(`/courses/${courseCode}`);
+          return;
         }
 
-        const filtered = questions.filter((q) =>
-          selectedWeeks.includes((q as any).week_name),
-        )
+        const filtered = questions.filter(q => selectedWeeks.includes((q as any).week_name));
 
         if (filtered.length === 0) {
-          console.error('No questions found for selected weeks')
-          router.push(`/courses/${courseCode}`)
-          return
+          console.error('No questions found for selected weeks');
+          router.push(`/courses/${courseCode}`);
+          return;
         }
 
-        const questionsWithWeekNames = filtered.map((q) =>
-          (q as any).week_name ? q : { ...q, week_name: 'Unknown Week' },
-        )
+        const questionsWithWeekNames = filtered.map(q =>
+          (q as any).week_name ? q : { ...q, week_name: 'Unknown Week' }
+        );
 
-        setFilteredQuestions(questionsWithWeekNames)
-        const timeLimit = storedSettings.timerSeconds 
-          ? storedSettings.timerSeconds / 60 
-          : questionsWithWeekNames.length
+        setFilteredQuestions(questionsWithWeekNames);
+        const timeLimit = storedSettings.timerSeconds
+          ? storedSettings.timerSeconds / 60
+          : questionsWithWeekNames.length;
         setQuizSettings({
           questionCount: questionsWithWeekNames.length,
           quizTime: timeLimit,
-        })
+        });
       } else {
         if (quizType === 'practice') {
           setQuizSettings({
             questionCount: questions.length,
             quizTime: 0,
-          })
+          });
         } else if (quizType === 'timed') {
           setQuizSettings({
-            questionCount:
-              storedSettings.questionCount || Math.min(50, questions.length),
+            questionCount: storedSettings.questionCount || Math.min(50, questions.length),
             quizTime: storedSettings.quizTime || 30,
-          })
+          });
         } else if (quizType === 'quick') {
-          setQuizSettings({ questionCount: 10, quizTime: 5 })
+          setQuizSettings({ questionCount: 10, quizTime: 5 });
         } else if (quizType === 'progress') {
-          const cnt = Math.min(20, questions.length)
-          setQuizSettings({ questionCount: cnt, quizTime: cnt })
+          const cnt = Math.min(20, questions.length);
+          setQuizSettings({ questionCount: cnt, quizTime: cnt });
         }
       }
     } catch (err) {
-      console.error('Error setting up quiz:', err)
+      console.error('Error setting up quiz:', err);
       setQuizSettings({
         questionCount: Math.min(10, questions.length),
         quizTime: 10,
-      })
+      });
     } finally {
-      setQuizSettingsLoaded(true)
+      setQuizSettingsLoaded(true);
     }
-  }, [quizType, questions, courseCode, router])
+  }, [quizType, questions, courseCode, router]);
 
   const rawQuestions = useMemo<Question[]>(
     () => (quizType === 'weekly' ? filteredQuestions : questions),
-    [quizType, filteredQuestions, questions],
-  )
+    [quizType, filteredQuestions, questions]
+  );
 
   const sanitizedQuestions = useMemo(
     () =>
       initializeQuestionsWithFixedOrder(
         rawQuestions.filter(
-          (q) =>
+          q =>
             q.question &&
             ((q.content_type === 'mcq' &&
               q.options &&
               q.options.length >= 2 &&
               q.answer &&
               q.answer.length > 0) ||
-              (q.content_type === 'text' && q.question_text)),
-        ),
+              (q.content_type === 'text' && q.question_text))
+        )
       ),
-    [rawQuestions],
-  )
+    [rawQuestions]
+  );
 
   const displayedQuestions = useMemo(() => {
-    if (
-      quizType === 'practice' ||
-      quizType === 'progress' ||
-      quizType === 'weekly'
-    ) {
-      return sanitizedQuestions
+    if (quizType === 'practice' || quizType === 'progress' || quizType === 'weekly') {
+      return sanitizedQuestions;
     }
-    const count = Math.min(quizSettings.questionCount, sanitizedQuestions.length)
-    return shuffleArray(sanitizedQuestions).slice(0, count)
-  }, [sanitizedQuestions, quizType, quizSettings.questionCount])
+    const count = Math.min(quizSettings.questionCount, sanitizedQuestions.length);
+    return shuffleArray(sanitizedQuestions).slice(0, count);
+  }, [sanitizedQuestions, quizType, quizSettings.questionCount]);
 
   const progressQuestions = useMemo(() => {
-    if (quizType !== 'progress') return displayedQuestions
+    if (quizType !== 'progress') return displayedQuestions;
 
     try {
-      const storedProgress = JSON.parse(localStorage.getItem('quizProgress') || '{}')
-      const incorrect =
-        storedProgress[courseCode]?.incorrectQuestions || []
-      const onlyIncorrect = displayedQuestions.filter((q) =>
-        incorrect.includes(q.question),
-      )
-      return onlyIncorrect.length ? onlyIncorrect : displayedQuestions
+      const storedProgress = JSON.parse(localStorage.getItem('quizProgress') || '{}');
+      const incorrect = storedProgress[courseCode]?.incorrectQuestions || [];
+      const onlyIncorrect = displayedQuestions.filter(q => incorrect.includes(q.question));
+      return onlyIncorrect.length ? onlyIncorrect : displayedQuestions;
     } catch {
-      return displayedQuestions
+      return displayedQuestions;
     }
-  }, [quizType, displayedQuestions, courseCode])
+  }, [quizType, displayedQuestions, courseCode]);
 
   if (!quizSettingsLoaded) {
     return (
-      <div className="flex items-center justify-center w-full h-full">
+      <div className="flex h-full w-full items-center justify-center">
         <p>Loading...</p>
       </div>
-    )
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-gray-100 flex flex-col items-center justify-center p-4">
-      <div className="absolute inset-0 pointer-events-none select-none">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 p-4 text-gray-100">
+      <div className="pointer-events-none absolute inset-0 select-none">
         {[...Array(50)].map((_, i) => (
           <motion.div
             key={i}
-            className="absolute bg-blue-500 rounded-full opacity-20"
+            className="absolute rounded-full bg-blue-500 opacity-20"
             style={{
               top: `${Math.random() * 100}%`,
               left: `${Math.random() * 100}%`,
@@ -1322,20 +1219,18 @@ export default function InteractiveQuiz({
             <Quiz
               quizType={quizType}
               onExit={onExit || (() => router.back())}
-              questions={
-                quizType === 'progress' ? progressQuestions : displayedQuestions
-              }
+              questions={quizType === 'progress' ? progressQuestions : displayedQuestions}
               quizTime={quizSettings.quizTime}
               courseName={courseName}
               courseCode={courseCode}
             />
           ) : (
-            <div className="text-center text-red-500 bg-gray-800 bg-opacity-50 backdrop-blur-sm p-6 rounded-lg">
+            <div className="rounded-lg bg-gray-800 bg-opacity-50 p-6 text-center text-red-500 backdrop-blur-sm">
               Invalid Quiz Type. Please select a valid quiz type.
             </div>
           )}
         </AnimatePresence>
       </div>
     </div>
-  )
+  );
 }

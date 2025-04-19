@@ -1,23 +1,21 @@
-import { Metadata } from 'next'
-import { getCourse } from '@/lib/actions'
-import DiscussionForumClient from './discussions-client'
-import { Suspense } from 'react'
-import { getPosts } from '@/lib/actions/discussions'
-import SpaceLoader from '@/components/SpaceLoader'
+import { Metadata } from 'next';
+import { getCourse } from '@/lib/actions';
+import DiscussionForumClient from './discussions-client';
+import { Suspense } from 'react';
+import { getPosts } from '@/lib/actions/discussions';
+import SpaceLoader from '@/components/SpaceLoader';
 
 interface PageProps {
   params: Promise<{
-    course_code: string
-  }>
+    course_code: string;
+  }>;
 }
 
-export async function generateMetadata({ 
-  params 
-}: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   try {
     const { course_code } = await params;
     const course = await getCourse(course_code);
-    
+
     const title = `Discussion Forum - ${course.title || course.course_name}`;
     const description = `Join the discussion forum for ${course.title || course.course_name}. Ask questions, share insights, and collaborate with other students.`;
 
@@ -29,10 +27,10 @@ export async function generateMetadata({
         `${course.title} discussion`,
         `${course.course_name} forum`,
         `${course.course_code} community`,
-        "NPTEL student discussions",
-        "NPTEL course forum",
-        "collaborative learning",
-        "peer-to-peer learning"
+        'NPTEL student discussions',
+        'NPTEL course forum',
+        'collaborative learning',
+        'peer-to-peer learning',
       ],
       openGraph: {
         title,
@@ -43,8 +41,9 @@ export async function generateMetadata({
     };
   } catch (error) {
     return {
-      title: "Discussion Forum | NPTELPrep",
-      description: "Ask questions, share insights, and collaborate with fellow students in our discussion forums.",
+      title: 'Discussion Forum | NPTELPrep',
+      description:
+        'Ask questions, share insights, and collaborate with fellow students in our discussion forums.',
     };
   }
 }
@@ -54,15 +53,14 @@ export default async function DiscussionsPage({ params }: PageProps) {
   const posts = await getPosts(course_code);
 
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 flex items-center justify-center">
-        <SpaceLoader size={100} />
-      </div>
-    }>
-      <DiscussionForumClient 
-        courseCode={course_code}
-        initialPosts={posts || []}
-      />
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800">
+          <SpaceLoader size={100} />
+        </div>
+      }
+    >
+      <DiscussionForumClient courseCode={course_code} initialPosts={posts || []} />
     </Suspense>
-  )
+  );
 }
