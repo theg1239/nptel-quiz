@@ -96,7 +96,7 @@ npm run dev
 ## Project Structure
 
 ```
-├── app/                  
+├── app/
 │   ├── api/              # API routes
 │   ├── about/            # About page
 │   ├── courses/          # Course pages and features

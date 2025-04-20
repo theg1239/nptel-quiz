@@ -10,8 +10,7 @@ const GA_ID = process.env.NEXT_PUBLIC_GTAG_ID || 'G-D072DH0Q9Q';
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.SITE_URL || 'https://nptelprep.in'),
   title: {
-    default:
-      'NPTELPrep - Free NPTEL & Swayam Course Practice | Interactive Learning Platform',
+    default: 'NPTELPrep - Free NPTEL & Swayam Course Practice | Interactive Learning Platform',
     template: '%s | NPTELPrep',
   },
   description:

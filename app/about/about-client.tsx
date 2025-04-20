@@ -148,8 +148,8 @@ export default function AboutClient() {
                   <h2 className="text-lg font-bold text-blue-300 sm:text-xl">Contribute</h2>
                 </div>
                 <p className="mb-3 text-sm text-gray-200 sm:mb-4 sm:text-base">
-                  We welcome contributions from the community! Whether you&apos;re a developer, content
-                  creator, or NPTEL student, there are many ways to help improve NPTELPrep.
+                  We welcome contributions from the community! Whether you&apos;re a developer,
+                  content creator, or NPTEL student, there are many ways to help improve NPTELPrep.
                 </p>
                 <p className="text-xs text-gray-300 sm:text-sm">
                   Submit issues, feature requests, or contribute code through our GitHub repository.
