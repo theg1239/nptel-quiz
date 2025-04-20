@@ -1,9 +1,0 @@
-# *
-User-agent: *
-Allow: /
-
-# Host
-Host: https://nptelprep.in
-
-# Sitemaps
-Sitemap: https://nptelprep.in/sitemap.xml

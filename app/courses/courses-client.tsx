@@ -6,7 +6,7 @@ import { Book, Search, Star, ArrowLeft, ArrowRight, Zap, Users, Award } from 'lu
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/Input';
+import { Input } from '@/components/ui/input';
 import { Course } from '@/lib/actions';
 import Logo from '@/components/gradient-logo';
 

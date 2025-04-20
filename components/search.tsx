@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Search, Book, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { Input } from '@/components/ui/Input';
+import { Input } from '@/components/ui/input';
 import UnderConstructionModal from '@/components/under-construction-modal';
 import { Course } from '@/types/index';
 
