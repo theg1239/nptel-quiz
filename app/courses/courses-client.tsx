@@ -4,11 +4,11 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Book, Search, Star, ArrowLeft, ArrowRight, Zap, Users, Award } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/Input';
 import { Course } from '@/lib/actions';
-import Logo from '@/components/Logo';
+import Logo from '@/components/gradient-logo';
 
 const ITEMS_PER_PAGE = 9;
 

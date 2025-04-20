@@ -1,7 +1,7 @@
 'use client';
 
 import { AlertTriangle, X } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 interface UnderConstructionModalProps {
   isOpen: boolean;
@@ -37,7 +37,7 @@ export default function UnderConstructionModal({ isOpen, onClose }: UnderConstru
         </h2>
 
         <p className="mb-6 text-xl text-blue-300">
-          We're working on bringing you an amazing learning experience. Please check back soon!
+          We&apos;re working on bringing you an amazing learning experience. Please check back soon!
         </p>
 
         <Button

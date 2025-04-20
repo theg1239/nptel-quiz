@@ -25,7 +25,7 @@ export default async function VideosPage({ params }: { params: Promise<{ course_
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 text-white">
         <div className="rounded-lg bg-gray-800 bg-opacity-50 p-8 backdrop-blur-md">
           <h1 className="mb-4 text-2xl font-bold">Course Not Found</h1>
-          <p>Sorry, the course you're looking for doesn't exist or has been removed.</p>
+          <p>Sorry, the course you&apos;re looking for doesn&apos;t exist or has been removed.</p>
         </div>
       </div>
     );

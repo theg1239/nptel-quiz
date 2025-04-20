@@ -15,13 +15,13 @@ import {
   RotateCcw,
   X,
 } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { Card, CardContent } from '@/components/ui/Card';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Progress } from '@/components/ui/Progress';
+import { Progress } from '@/components/ui/progress';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import SpaceLoader from '@/components/SpaceLoader';
+import SpaceLoader from '@/components/space-loader';
 import { initializeQuestionsWithFixedOrder, normalizeQuestion, Question } from '@/lib/quizUtils';
 import { getCourse } from '@/lib/actions';
 

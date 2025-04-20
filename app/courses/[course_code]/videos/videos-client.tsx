@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Play, Calendar, ChevronLeft, ChevronRight, Clock, BookOpen } from 'lucide-react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/Button';
+import Image from 'next/image';
+import { Button } from '@/components/ui/button';
 import { getCourseMaterials, StudyMaterial } from '@/lib/actions';
 
 const scrollbarHideStyles = `
@@ -19,7 +20,7 @@ const scrollbarHideStyles = `
 `;
 
 const placeholderThumbnail =
-  'https://sdmntprwestus.oaiusercontent.com/files/00000000-7e38-6230-a298-8c91b4a8a7d4/raw?se=2025-04-16T02%3A34%3A55Z&sp=r&sv=2024-08-04&sr=b&scid=217b454a-87e5-5b0c-a27d-80dca3c00ea5&skoid=51916beb-8d6a-49b8-8b29-ca48ed86557e&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-04-15T08%3A46%3A43Z&ske=2025-04-16T08%3A46%3A43Z&sks=b&skv=2024-08-04&sig=PLI8r1cHOW8hIh%2BfNmbnpxrvfl2IN0U9CgV5nzXMoUA%3D';
+  'https://nptelprep.in/assets/thumbnail.png';
 
 export default function VideosClient({
   courseCode,
@@ -216,9 +217,11 @@ export default function VideosClient({
                                 >
                                   <div className="flex items-start">
                                     <div className="group relative h-20 w-32 flex-shrink-0 overflow-hidden rounded bg-gray-900">
-                                      <img
+                                      <Image
                                         src={thumbnail}
                                         alt={video.title}
+                                        width={128}
+                                        height={80}
                                         className="h-full w-full object-cover"
                                         loading="lazy"
                                       />

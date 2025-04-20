@@ -1,4 +1,4 @@
-import QuizPortal from '@/components/QuizPortal';
+import QuizPortal from '@/components/quiz-portal';
 import { getCourse, Course } from '@/lib/actions';
 import { Metadata, ResolvingMetadata } from 'next';
 

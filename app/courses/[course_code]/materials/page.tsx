@@ -1,4 +1,5 @@
 import { Metadata, ResolvingMetadata } from 'next';
+import Link from 'next/link';
 import { getCourse } from '@/lib/actions';
 import StudyMaterialsClient from './materials-client';
 
@@ -99,13 +100,13 @@ export default async function MaterialsPage({
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800">
         <div className="rounded-lg bg-gray-800 bg-opacity-50 p-8 text-center backdrop-blur-md">
           <h1 className="mb-4 text-2xl font-bold text-indigo-300">Course Not Found</h1>
-          <p className="mb-6 text-gray-300">We couldn't find the materials for this course.</p>
-          <a
+          <p className="mb-6 text-gray-300">We couldn&apos;t find the materials for this course.</p>
+          <Link
             href="/courses"
             className="inline-block rounded-lg bg-indigo-600 px-6 py-2 text-white transition-colors hover:bg-indigo-700"
           >
             Return to Courses
-          </a>
+          </Link>
         </div>
       </div>
     );

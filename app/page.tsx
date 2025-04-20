@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 import { Book, FileText, HelpCircle } from 'lucide-react';
-import SearchComponent from '@/components/SearchComponent';
-import StatCard from '@/components/StatCard';
-import { Button } from '@/components/ui/Button';
+import SearchComponent from '@/components/search';
+import StatCard from '@/components/stat-card';
+import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { getAllCourses, getStats } from '@/lib/actions';
 import { Stats } from '@/lib/actions';

@@ -16,8 +16,8 @@ import {
   Settings,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/Button';
-import { Progress } from '@/components/ui/Progress';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import {
   Card,
   CardContent,
@@ -25,8 +25,8 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
-} from '@/components/ui/Card';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/Tooltip';
+} from '@/components/ui/card';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { QuizType } from '@/types/quiz';
@@ -455,6 +455,45 @@ const Quiz = ({
 
   const [powerUpUsage, setPowerUpUsage] = useState<Record<string, boolean>>({});
 
+  const endQuiz = useCallback(() => {
+    setTimeLeft(0);
+    setQuizEnded(true);
+
+    try {
+      const storedProgress = JSON.parse(localStorage.getItem('quizProgress') || '{}');
+      const incorrectQuestions = questions
+        .filter((_, idx) => !userAnswers[idx]?.correct)
+        .map(q => q.question);
+      storedProgress[courseCode] = {
+        incorrectQuestions,
+      };
+      localStorage.setItem('quizProgress', JSON.stringify(storedProgress));
+    } catch (err) {
+      console.error('Error updating quiz progress:', err);
+    }
+
+    try {
+      const totalQuestions = questions.length;
+      const correctAnswers = userAnswers.filter(ans => ans.correct).length;
+      const quizPerformance = Math.round((correctAnswers / totalQuestions) * 100);
+      const weightedQuizProgress = Math.round(quizPerformance * 0.6);
+
+      const weekProgress = JSON.parse(localStorage.getItem(`weekProgress_${courseCode}`) || '{}');
+      const courseData = JSON.parse(localStorage.getItem(`courseData_${courseCode}`) || '{}');
+      const totalWeeks = courseData.totalWeeks || 1;
+      const viewedWeeks = Object.keys(weekProgress).length;
+      const viewProgress = Math.round((viewedWeeks / totalWeeks) * 40);
+
+      const totalProgress = Math.min(100, Math.round(viewProgress + weightedQuizProgress));
+
+      const courseProgress = JSON.parse(localStorage.getItem('courseProgress') || '{}');
+      courseProgress[courseCode] = totalProgress;
+      localStorage.setItem('courseProgress', JSON.stringify(courseProgress));
+    } catch (err) {
+      console.error('Error updating course completion:', err);
+    }
+  }, [questions, userAnswers, courseCode]);
+
   useEffect(() => {
     if (quizSettings.enablePowerUps) {
       setPowerUps([
@@ -513,7 +552,7 @@ const Quiz = ({
     return () => {
       if (timer) clearInterval(timer);
     };
-  }, [quizType, quizEnded, timeLeft]);
+  }, [quizType, quizEnded, timeLeft, endQuiz]);
 
   const handleSettingsChange = (setting: keyof typeof quizSettings) => {
     setQuizSettings(prev => ({
@@ -521,45 +560,6 @@ const Quiz = ({
       [setting]: !prev[setting],
     }));
   };
-
-  const endQuiz = useCallback(() => {
-    setTimeLeft(0);
-    setQuizEnded(true);
-
-    try {
-      const storedProgress = JSON.parse(localStorage.getItem('quizProgress') || '{}');
-      const incorrectQuestions = questions
-        .filter((_, idx) => !userAnswers[idx]?.correct)
-        .map(q => q.question);
-      storedProgress[courseCode] = {
-        incorrectQuestions,
-      };
-      localStorage.setItem('quizProgress', JSON.stringify(storedProgress));
-    } catch (err) {
-      console.error('Error updating quiz progress:', err);
-    }
-
-    try {
-      const totalQuestions = questions.length;
-      const correctAnswers = userAnswers.filter(ans => ans.correct).length;
-      const quizPerformance = Math.round((correctAnswers / totalQuestions) * 100);
-      const weightedQuizProgress = Math.round(quizPerformance * 0.6);
-
-      const weekProgress = JSON.parse(localStorage.getItem(`weekProgress_${courseCode}`) || '{}');
-      const courseData = JSON.parse(localStorage.getItem(`courseData_${courseCode}`) || '{}');
-      const totalWeeks = courseData.totalWeeks || 1;
-      const viewedWeeks = Object.keys(weekProgress).length;
-      const viewProgress = Math.round((viewedWeeks / totalWeeks) * 40);
-
-      const totalProgress = Math.min(100, Math.round(viewProgress + weightedQuizProgress));
-
-      const courseProgress = JSON.parse(localStorage.getItem('courseProgress') || '{}');
-      courseProgress[courseCode] = totalProgress;
-      localStorage.setItem('courseProgress', JSON.stringify(courseProgress));
-    } catch (err) {
-      console.error('Error updating course completion:', err);
-    }
-  }, [questions, userAnswers, courseCode]);
 
   const goToNextQuestion = useCallback(() => {
     if (currentQuestionIndex < questions.length - 1) {
@@ -927,7 +927,7 @@ const ResultScreen = ({
       <CardHeader>
         <CardTitle className="mb-2 text-3xl font-bold text-blue-300">Quiz Results</CardTitle>
         <CardDescription className="text-gray-300">
-          You've completed the quiz! Here's how you did:
+          You&apos;ve completed the quiz! Here&apos;s how you did:
         </CardDescription>
       </CardHeader>
 

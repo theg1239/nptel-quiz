@@ -15,11 +15,11 @@ import {
   Music,
   MessageSquare,
 } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import SpaceLoader from '@/components/SpaceLoader';
+import SpaceLoader from '@/components/space-loader';
 import { getCourseMaterials, StudyMaterial } from '@/lib/actions';
 
 export default function MaterialViewClient({
@@ -167,7 +167,7 @@ export default function MaterialViewClient({
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800">
         <div className="rounded-lg bg-gray-800 bg-opacity-50 p-8 text-center backdrop-blur-md">
           <h1 className="mb-4 text-2xl font-bold text-indigo-300">Material Not Found</h1>
-          <p className="mb-6 text-gray-300">We couldn't find the requested study material.</p>
+          <p className="mb-6 text-gray-300">We couldn&apos;t find the requested study material.</p>
           <Button
             onClick={() => router.push(`/courses/${courseCode}/materials`)}
             className="bg-indigo-600 text-white hover:bg-indigo-700"

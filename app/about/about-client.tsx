@@ -2,9 +2,9 @@
 
 import { ArrowLeft, ExternalLink, Github, Info, Code, Globe } from 'lucide-react';
 import Link from 'next/link';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 
 export default function AboutClient() {
@@ -148,7 +148,7 @@ export default function AboutClient() {
                   <h2 className="text-lg font-bold text-blue-300 sm:text-xl">Contribute</h2>
                 </div>
                 <p className="mb-3 text-sm text-gray-200 sm:mb-4 sm:text-base">
-                  We welcome contributions from the community! Whether you're a developer, content
+                  We welcome contributions from the community! Whether you&apos;re a developer, content
                   creator, or NPTEL student, there are many ways to help improve NPTELPrep.
                 </p>
                 <p className="text-xs text-gray-300 sm:text-sm">

@@ -1,6 +1,6 @@
 {
   "name": "nptelprep",
-  "version": "0.9.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
@@ -43,6 +43,8 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "eslint": "^9.25.0",
+    "eslint-config-next": "^15.3.1",
     "eslint-config-prettier": "^10.1.2",
     "postcss": "^8",
     "prettier": "^3.5.3",

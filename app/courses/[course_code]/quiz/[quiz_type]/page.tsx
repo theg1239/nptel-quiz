@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import { getCourse } from '@/lib/actions';
-import InteractiveQuiz from '@/components/InteractiveQuiz';
+import InteractiveQuiz from '@/components/interactive-quiz';
 import { Question as QuizQuestion, QuizType } from '@/types/quiz';
 import { Question as UtilsQuestion, normalizeQuestion } from '@/lib/quizUtils';
 

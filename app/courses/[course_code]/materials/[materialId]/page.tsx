@@ -1,6 +1,7 @@
 import { Metadata, ResolvingMetadata } from 'next';
 import { getCourse, getCourseMaterials } from '@/lib/actions';
 import MaterialViewClient from './material-view-client';
+import Link from 'next/link';
 
 export async function generateMetadata(
   { params }: { params: Promise<{ course_code: string; materialId: string }> },
@@ -91,13 +92,13 @@ export default async function MaterialPage({
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800">
         <div className="rounded-lg bg-gray-800 bg-opacity-50 p-8 text-center backdrop-blur-md">
           <h1 className="mb-4 text-2xl font-bold text-indigo-300">Material Not Found</h1>
-          <p className="mb-6 text-gray-300">We couldn't find the requested study material.</p>
-          <a
+          <p className="mb-6 text-gray-300">We couldn&apos;t find the requested study material.</p>
+          <Link
             href={`/courses/${course_code}/materials`}
             className="inline-block rounded-lg bg-indigo-600 px-6 py-2 text-white transition-colors hover:bg-indigo-700"
           >
             Return to Materials
-          </a>
+          </Link>
         </div>
       </div>
     );

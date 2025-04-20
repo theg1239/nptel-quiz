@@ -16,8 +16,8 @@ import {
   Edit2,
   Trash2,
 } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -29,7 +29,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import SpaceLoader from '@/components/SpaceLoader';
+import SpaceLoader from '@/components/space-loader';
 import {
   createPost,
   createReply,
@@ -109,9 +109,9 @@ export default function DiscussionForumClient({
   const [editPostTitle, setEditPostTitle] = useState('');
   const [editPostContent, setEditPostContent] = useState('');
   const [editReplyContent, setEditReplyContent] = useState('');
-  const adminEmails = process.env.NEXT_PUBLIC_ADMIN_EMAILS?.split(',') || [];
 
   const isAdmin = useMemo(() => {
+    const adminEmails = process.env.NEXT_PUBLIC_ADMIN_EMAILS?.split(',') || [];
     return adminEmails.includes(session?.user?.email || '');
   }, [session?.user?.email]);
 

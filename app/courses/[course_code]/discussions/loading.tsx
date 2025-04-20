@@ -1,4 +1,4 @@
-import SpaceLoader from '@/components/SpaceLoader';
+import SpaceLoader from '@/components/space-loader';
 
 export default function Loading() {
   return (

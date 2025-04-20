@@ -15,9 +15,7 @@ export function stripOptionLabels(option: string): string {
 }
 
 export function cleanQuestionText(text: string): string {
-  // Remove any numbering at the start (e.g., "1.", "1)", "(1)", etc.)
   let cleaned = text.replace(/^\s*\d+[\).:-]\s*/, '');
-  // Remove any "Question:" or similar prefixes
   cleaned = cleaned.replace(/^\s*(Question|Q)[\s:.]-?\s*/i, '');
   return cleaned.trim();
 }
@@ -27,17 +25,14 @@ export function initializeQuestionsWithFixedOrder(questions: Question[]): Questi
     ...q,
     options: q.options || [],
     answer: q.answer || [],
-    // Explicitly preserve the week_name if it exists
     week_name: q.week_name || undefined,
   }));
 }
 
-// Utility function to clean option text - removes duplicate question content
 export function cleanOptionText(optionText: string, questionText: string): string {
   const cleanedQuestion = cleanQuestionText(questionText).toLowerCase();
   const cleanedOption = cleanQuestionText(optionText).toLowerCase();
 
-  // If the option starts with the question text, remove it
   if (cleanedOption.startsWith(cleanedQuestion)) {
     return optionText.substring(questionText.length).trim();
   }

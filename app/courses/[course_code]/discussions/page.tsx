@@ -3,7 +3,7 @@ import { getCourse } from '@/lib/actions';
 import DiscussionForumClient from './discussions-client';
 import { Suspense } from 'react';
 import { getPosts } from '@/lib/actions/discussions';
-import SpaceLoader from '@/components/SpaceLoader';
+import SpaceLoader from '@/components/space-loader';
 
 interface PageProps {
   params: Promise<{

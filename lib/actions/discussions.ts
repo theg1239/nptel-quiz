@@ -254,7 +254,6 @@ export async function deletePost(postId: string, courseCode: string) {
     throw new Error('Unauthorized');
   }
 
-  // Delete all associated likes and replies first
   await prisma.$transaction([
     prisma.postLike.deleteMany({
       where: { postId },
@@ -293,7 +292,6 @@ export async function deleteReply(replyId: string, courseCode: string) {
     throw new Error('Unauthorized');
   }
 
-  // Delete all associated likes first
   await prisma.$transaction([
     prisma.replyLike.deleteMany({
       where: { replyId },

@@ -5,7 +5,7 @@ import { Search, Book, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/Input';
-import UnderConstructionModal from '@/components/UnderConstructionModal';
+import UnderConstructionModal from '@/components/under-construction-modal';
 import { Course } from '@/types/index';
 
 interface SearchComponentProps {
