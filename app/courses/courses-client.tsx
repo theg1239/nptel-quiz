@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Course } from '@/lib/actions';
+import { Course } from '@/lib/actions/actions';
 import Logo from '@/components/gradient-logo';
 
 const ITEMS_PER_PAGE = 9;

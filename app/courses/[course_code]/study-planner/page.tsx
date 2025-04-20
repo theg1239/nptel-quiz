@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { getCourse } from '@/lib/actions';
+import { getCourse } from '@/lib/actions/actions';
 import StudyPlannerClient from './study-planner-client';
 
 export async function generateMetadata({

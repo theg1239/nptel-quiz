@@ -1,6 +1,6 @@
 import { Metadata, ResolvingMetadata } from 'next';
 import Link from 'next/link';
-import { getCourse } from '@/lib/actions';
+import { getCourse } from '@/lib/actions/actions';
 import StudyMaterialsClient from './materials-client';
 
 export async function generateMetadata(

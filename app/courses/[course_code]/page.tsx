@@ -1,5 +1,5 @@
 import QuizPortal from '@/components/quiz-portal';
-import { getCourse, Course } from '@/lib/actions';
+import { getCourse, Course } from '@/lib/actions/actions';
 import { Metadata, ResolvingMetadata } from 'next';
 
 export async function generateMetadata(

@@ -3,7 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { revalidatePath } from 'next/cache';
-import { authOptions } from '@/auth';
+import { authOptions } from '@/lib/auth';
 
 export async function getPosts(courseCode: string) {
   const posts = await prisma.post.findMany({

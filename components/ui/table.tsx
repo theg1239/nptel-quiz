@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils/utils';
 import React from 'react';
 
 export function Table({ children, className }: React.HTMLAttributes<HTMLTableElement>) {

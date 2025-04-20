@@ -30,7 +30,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { QuizType } from '@/types/quiz';
-import { initializeQuestionsWithFixedOrder, Question } from '@/lib/quizUtils';
+import { initializeQuestionsWithFixedOrder, Question } from '@/lib/utils/quizUtils';
 
 const cleanQuestionText = (question: string): string => question.replace(/^\s*\d+[\).:\-]\s*/, '');
 

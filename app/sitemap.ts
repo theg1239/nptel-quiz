@@ -1,5 +1,5 @@
 import { MetadataRoute } from 'next';
-import { getAllCourses } from '@/lib/actions';
+import { getAllCourses } from '@/lib/actions/actions';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://nptelprep.in';

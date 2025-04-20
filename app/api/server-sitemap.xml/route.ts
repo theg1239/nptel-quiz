@@ -1,5 +1,5 @@
 import { getServerSideSitemap } from 'next-sitemap';
-import { getAllCourses, getCourseMaterials } from '@/lib/actions';
+import { getAllCourses, getCourseMaterials } from '@/lib/actions/actions';
 
 type SitemapEntry = {
   loc: string;

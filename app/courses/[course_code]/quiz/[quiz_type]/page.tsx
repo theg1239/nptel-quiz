@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
-import { getCourse } from '@/lib/actions';
+import { getCourse } from '@/lib/actions/actions';
 import InteractiveQuiz from '@/components/interactive-quiz';
 import { Question as QuizQuestion, QuizType } from '@/types/quiz';
-import { Question as UtilsQuestion, normalizeQuestion } from '@/lib/quizUtils';
+import { Question as UtilsQuestion, normalizeQuestion } from '@/lib/utils/quizUtils';
 
 interface Assignment {
   questions: Array<{

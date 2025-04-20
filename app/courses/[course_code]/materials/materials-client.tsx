@@ -23,7 +23,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SpaceLoader from '@/components/space-loader';
 import ReactMarkdown, { Components } from 'react-markdown';
-import { getCourseMaterials, StudyMaterial } from '@/lib/actions';
+import { getCourseMaterials, StudyMaterial } from '@/lib/actions/actions';
 
 const MarkdownLink = ({
   href,

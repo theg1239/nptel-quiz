@@ -1,5 +1,5 @@
 import { Metadata, ResolvingMetadata } from 'next';
-import { getCourse, getCourseMaterials } from '@/lib/actions';
+import { getCourse, getCourseMaterials } from '@/lib/actions/actions';
 import MaterialViewClient from './material-view-client';
 import Link from 'next/link';
 

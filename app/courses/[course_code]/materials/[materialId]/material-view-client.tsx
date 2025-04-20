@@ -20,7 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import SpaceLoader from '@/components/space-loader';
-import { getCourseMaterials, StudyMaterial } from '@/lib/actions';
+import { getCourseMaterials, StudyMaterial } from '@/lib/actions/actions';
 
 export default function MaterialViewClient({
   courseCode,

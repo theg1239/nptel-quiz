@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { getCourse } from '@/lib/actions';
+import { getCourse } from '@/lib/actions/actions';
 import DiscussionForumClient from './discussions-client';
 import { Suspense } from 'react';
 import { getPosts } from '@/lib/actions/discussions';

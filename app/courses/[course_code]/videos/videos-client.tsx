@@ -6,7 +6,7 @@ import { Play, Calendar, ChevronLeft, ChevronRight, Clock, BookOpen } from 'luci
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { getCourseMaterials, StudyMaterial } from '@/lib/actions';
+import { getCourseMaterials, StudyMaterial } from '@/lib/actions/actions';
 
 const scrollbarHideStyles = `
 .scrollbar-hide {

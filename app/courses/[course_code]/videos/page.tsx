@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { getCourse } from '@/lib/actions';
+import { getCourse } from '@/lib/actions/actions';
 import VideosClient from './videos-client';
 
 export async function generateMetadata({

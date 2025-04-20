@@ -1,5 +1,5 @@
 import { Metadata, ResolvingMetadata } from 'next';
-import { getCourse } from '@/lib/actions';
+import { getCourse } from '@/lib/actions/actions';
 import PracticeClient from './practice-client';
 
 type Params = { params: Promise<{ course_code: string }> };

@@ -1,4 +1,4 @@
-import { getAllCourses } from '@/lib/actions';
+import { getAllCourses } from '@/lib/actions/actions';
 import CourseListClient from './courses-client';
 import { Metadata } from 'next';
 

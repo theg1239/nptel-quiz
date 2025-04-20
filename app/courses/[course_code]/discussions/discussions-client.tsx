@@ -40,7 +40,7 @@ import {
   updateReply,
 } from '@/lib/actions/discussions';
 import { useSession, signIn } from 'next-auth/react';
-import { getCourse } from '@/lib/actions';
+import { getCourse } from '@/lib/actions/actions';
 
 interface Course {
   course_code: string;

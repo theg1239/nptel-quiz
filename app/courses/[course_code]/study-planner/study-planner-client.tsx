@@ -20,7 +20,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import SpaceLoader from '@/components/space-loader';
-import { getCourseMaterials, saveStudyPlan, getStudyPlan } from '@/lib/actions';
+import { getCourseMaterials, saveStudyPlan, getStudyPlan } from '@/lib/actions/actions';
 
 type Material = {
   id: string;

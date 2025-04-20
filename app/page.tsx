@@ -4,8 +4,8 @@ import SearchComponent from '@/components/search';
 import StatCard from '@/components/stat-card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { getAllCourses, getStats } from '@/lib/actions';
-import { Stats } from '@/lib/actions';
+import { getAllCourses, getStats } from '@/lib/actions/actions';
+import { Stats } from '@/lib/actions/actions';
 
 interface SearchCourse {
   course_code: string;
