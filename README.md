@@ -1,83 +1,136 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/1ce4beee-55f9-4259-866d-972085985d79" alt="NPTELPrep Logo">
+</p>
+
+<p align="center">
+  Master your NPTEL courses with interactive quizzes, study materials, and a comprehensive learning experience
+</p>
+
+---
+
+## About NPTELPrep
+
+NPTELPrep ([nptelprep.in](https://nptelprep.in)) is a modern, feature-rich educational platform designed specifically for students taking NPTEL courses. Our mission is to provide learners with a comprehensive study environment that goes beyond traditional learning methods, offering interactive quizzes, organized study materials, video lectures, and community features.
+
+### Core Features
+
+- **Interactive Quiz Platform**: Practice with multiple quiz formats tailored to different learning needs
+- **Study Materials Repository**: Access lecture notes and supplementary resources
+- **Video Lecture Portal**: Watch and organize course video content
+- **Discussion Forums**: Engage with other learners and share knowledge
+- **Study Planner**: Create personalized study schedules
+- **Progress Tracking**: Monitor your learning journey with detailed analytics
+
+## Quiz Features
+
+Our quiz platform offers several specialized modes to enhance your learning experience:
+
+- **Practice Mode**: Unlimited time with all questions at your own pace
+- **Timed Quiz**: Set your preferred time limit and question count
+- **Quick Review**: 10-question quizzes with a 5-minute limit
+- **Weekly Quiz**: Focus on specific course weeks that you select
+- **Progress Test**: Focus on questions you've previously struggled with
+
+### Learning Tools
+
+NPTELPrep includes powerful learning tools to help you maximize your study sessions:
+
+- **Text-to-Speech**: Audio readout of questions for auditory learners
+- **Flashcard Mode**: Review key concepts in a flashcard format
+
+and so much more!
+
+## Technology Stack
+
+NPTELPrep is built using modern web technologies:
+
+- **Framework**: Next.js with TypeScript
+- **UI**: Tailwind CSS with a custom component library
+- **Authentication**: NextAuth.js
+- **Database**: Prisma ORM on Neon
+- **Deployment**: Vercel
 
 ## Getting Started
 
-### Environment Variables
+1. **Browse Courses**: Explore our catalog of NPTEL courses
+2. **Practice Questions**: Access 100,000+ practice questions
+3. **Track Progress**: Monitor your learning improvement
+4. **Join Discussions**: Engage with other learners
+5. **Prepare Effectively**: Get ready for your NPTEL certification exams
 
-Create a `.env.local` file in the root directory with the following variables:
+## Local Development
+
+### Prerequisites
+
+- Node.js (v18+)
+- npm
+
+### Installation
 
 ```bash
-NEXT_PUBLIC_API_URL=https://api.nptelprep.in
-SITE_URL=https://nptelprep.in
-```
+# Clone the repository
+git clone https://github.com/theg1239/nptel-quiz.git
 
-This defines the base URL for API requests and the site URL for sitemap generation.
+# Navigate to the project directory
+cd nptel-quiz
 
-### Running the Development Server
+# Install dependencies
+npm install
 
-First, run the development server:
+# Set up environment variables
+cp .env.example .env.local
 
-```bash
+# Run the development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Scripts
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `npm run dev` - Start the development server with Turbopack
+- `npm run build` - Build for production (includes Prisma generation)
+- `npm run start` - Start the production server
+- `npm run lint` - Run ESLint
+- `npm run format` - Format code with Prettier
+- `npm run format:check` - Check code formatting
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project Structure
 
-## SEO Features
+```
+├── app/                  
+│   ├── api/              # API routes
+│   ├── about/            # About page
+│   ├── courses/          # Course pages and features
+│   │   └── [course_code]/# Dynamic course routes
+│   │       ├── discussions/  # Course discussions
+│   │       ├── materials/    # Study materials
+│   │       ├── practice/     # Practice sessions
+│   │       ├── quiz/         # Quiz features
+│   │       ├── study-planner/# Study planning tools
+│   │       └── videos/       # Video lectures
+├── components/           # React components
+│   └── ui/               # UI components
+├── lib/                  # Utility functions and actions
+├── prisma/               # Prisma schema and migrations
+├── public/               # Static assets
+└── types/                # TypeScript type definitions
+```
 
-### Dynamic Sitemap Generation
+## Contributing
 
-This project includes a dynamic sitemap generator that indexes:
+We welcome contributions from the community! Whether it's adding new features, fixing bugs, or improving documentation, your help makes NPTELPrep better for everyone.
 
-- Main site pages
-- Individual course pages
-- Course practice pages
-- Various quiz types for each course
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/new-feature`)
+3. Commit your changes (`git commit -m 'Add a cool new feature'`)
+4. Push to the branch (`git push origin feature/newfeature`)
+5. Open a Pull Request
 
-The sitemap is automatically generated based on the courses in your database and is accessible at `/sitemap.xml`.
+## Issues
 
-The sitemap generation logic prioritizes:
+If you notice any bugs or would like to suggest feature improvements, open an issue.
 
-1. Main site pages
-2. Individual course pages
-3. Quiz pages sorted by popularity
+---
 
-If you have many courses, the sitemap will automatically prioritize the most important routes to stay within the protocol limits.
-
-### Robots.txt
-
-A robots.txt file is included at `/robots.txt` that points search engines to the sitemap and allows crawling of all pages.
-
-## Deploying to Vercel
-
-When deploying to Vercel, make sure to:
-
-1. Set the environment variables in the Vercel dashboard:
-
-   - `SITE_URL`: Your production URL (e.g., https://nptelprep.in)
-   - `NEXT_PUBLIC_API_URL`: Your API URL
-
-2. The included `vercel.json` file ensures proper content types and cache headers for the sitemap and robots.txt files.
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+<p align="center">
+  Made with ❤️ for NPTEL learners
+</p>
