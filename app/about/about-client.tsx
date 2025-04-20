@@ -43,7 +43,7 @@ export default function AboutClient() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-5 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 md:gap-5 lg:grid-cols-3">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -110,13 +110,13 @@ export default function AboutClient() {
                 </div>
                 <div className="flex flex-wrap gap-1 sm:gap-2">
                   <Badge className="bg-blue-600 text-xs sm:text-sm">Free to Use</Badge>
-                  <Badge className="bg-blue-600 text-xs sm:text-sm">No API Key Required</Badge>
+                  <Badge className="bg-blue-600 text-xs sm:text-sm">Non-commercial use only</Badge>
                 </div>
               </Card>
             </motion.div>
           </div>
 
-          <div className="mt-3 grid grid-cols-1 gap-3 sm:mt-5 sm:grid-cols-2 sm:gap-5">
+          <div className="mt-3 grid grid-cols-1 gap-3 sm:mt-5 sm:grid-cols-3 sm:gap-5">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -156,14 +156,29 @@ export default function AboutClient() {
                 </p>
               </Card>
             </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+            >
+              <Card className="h-full border-red-800 bg-blue-950/50 p-4 shadow-xl sm:p-6">
+                <div className="mb-3 flex items-center sm:mb-4">
+                  <Info className="mr-2 h-5 w-5 text-red-400 sm:h-6 sm:w-6" />
+                  <h2 className="text-lg font-bold text-blue-300 sm:text-xl">Disclaimer</h2>
+                </div>
+                <p className="text-sm text-gray-200 sm:text-base">
+                  This platform is <strong>not</strong> affiliated with or endorsed by NPTEL or IIT
+                  Madras. All course content remains the property of NPTEL. Use this tool solely for
+                  personal, non-commercial learning.
+                </p>
+              </Card>
+            </motion.div>
           </div>
 
-          <div className="mt-4 text-center text-xs text-gray-400 sm:mt-6 sm:text-sm">
-            <p>
-              © {new Date().getFullYear()} NPTELPrep. This is not affiliated with or endorsed by
-              NPTEL or IIT.
-            </p>
-          </div>
+          {/* <div className="mt-4 text-center text-xs text-gray-400 sm:mt-6 sm:text-sm">
+            <p>© {new Date().getFullYear()} NPTELPrep</p>
+          </div> */}
         </motion.div>
       </div>
     </div>
