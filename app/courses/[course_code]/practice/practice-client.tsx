@@ -22,7 +22,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import SpaceLoader from '@/components/space-loader';
-import { initializeQuestionsWithFixedOrder, normalizeQuestion, Question } from '@/lib/utils/quizUtils';
+import {
+  initializeQuestionsWithFixedOrder,
+  normalizeQuestion,
+  Question,
+} from '@/lib/utils/quizUtils';
 import { getCourse } from '@/lib/actions/actions';
 
 interface Week {
