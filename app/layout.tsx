@@ -5,12 +5,13 @@ import { Providers } from './providers';
 import Script from 'next/script';
 
 const inter = Inter({ subsets: ['latin'] });
-const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID || 'GTM-PHGX4N2R';
+const GA_ID = process.env.NEXT_PUBLIC_GTAG_ID || 'G-D072DH0Q9Q';
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.SITE_URL || 'https://nptelprep.in'),
   title: {
-    default: 'NPTELPrep - Free NPTEL & Swayam Course Practice | Interactive Learning Platform',
+    default:
+      'NPTELPrep - Free NPTEL & Swayam Course Practice | Interactive Learning Platform',
     template: '%s | NPTELPrep',
   },
   description:
@@ -147,24 +148,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     },
   ];
 
-
   return (
     <html lang="en">
       <head>
-        {/* Google Tag Manager */}
         <Script
-          id="gtm-head"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':` +
-                   `new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],` +
-                   `j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=` +
-                   `'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);` +
-                   `})(window,document,'script','dataLayer','${GTM_ID}');`,
-          }}
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+          strategy="afterInteractive"
         />
+        <Script id="gtag-init" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${GA_ID}', {
+              page_path: window.location.pathname,
+            });
+          `}
+        </Script>
 
-        {/* Structured Data JSON-LD */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -172,22 +173,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
 
-        {/* Additional Meta Tags */}
-        {additionalMetaTags.map((meta: MetaTag, index: number) => (
-          <meta key={index} name={meta.name} content={meta.content} />
+        {additionalMetaTags.map((meta: MetaTag, idx: number) => (
+          <meta key={idx} name={meta.name} content={meta.content} />
         ))}
       </head>
       <body className={inter.className}>
-        {/* Google Tag Manager (noscript) */}
-        <noscript>
-          <iframe
-            src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
-            height="0"
-            width="0"
-            style={{ display: 'none', visibility: 'hidden' }}
-          ></iframe>
-        </noscript>
-
         <Providers>{children}</Providers>
       </body>
     </html>
