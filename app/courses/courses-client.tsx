@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Book, Search, Star, ArrowLeft, ArrowRight, Zap, Users, Award } from 'lucide-react';
+import { Book, Search, Star, ChevronLeft, ArrowRight, Zap, Users, Award } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -87,14 +88,14 @@ export default function CourseListClient({ initialCourses }: { initialCourses: C
       });
   }, [searchTerm, courses, selectedSort]);
 
-  const totalPages = useMemo(() => {
-    return Math.ceil(filteredCourses.length / ITEMS_PER_PAGE);
-  }, [filteredCourses.length]);
+  const totalPages = useMemo(
+    () => Math.ceil(filteredCourses.length / ITEMS_PER_PAGE),
+    [filteredCourses.length]
+  );
 
   const currentCourses = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-    return filteredCourses.slice(startIndex, endIndex);
+    return filteredCourses.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   }, [filteredCourses, currentPage]);
 
   const handleCourseSelection = useCallback(
@@ -115,12 +116,9 @@ export default function CourseListClient({ initialCourses }: { initialCourses: C
   const handlePageChange = useCallback(
     (newPage: number) => {
       if (newPage === currentPage || isTransitioning) return;
-
       setIsTransitioning(true);
       setCurrentPage(newPage);
-      setTimeout(() => {
-        setIsTransitioning(false);
-      }, 200);
+      setTimeout(() => setIsTransitioning(false), 200);
     },
     [currentPage, isTransitioning]
   );
@@ -159,7 +157,21 @@ export default function CourseListClient({ initialCourses }: { initialCourses: C
   };
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-gray-100">
+    <div className="relative flex h-screen flex-col overflow-hidden bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-gray-100">
+      {/* Home button */}
+      <div className="absolute left-3 top-3">
+        <Link href="/" passHref>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="flex items-center text-gray-400 hover:text-white"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            <span className="ml-1 hidden md:inline">Home</span>
+          </Button>
+        </Link>
+      </div>
+
       <div className="w-full flex-none space-y-4 px-4 pt-3 sm:px-6 lg:px-8">
         <div className="flex justify-center">
           <Logo />
@@ -249,7 +261,7 @@ export default function CourseListClient({ initialCourses }: { initialCourses: C
                   size="sm"
                   className="text-gray-400 hover:text-white disabled:opacity-50"
                 >
-                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  <ChevronLeft className="mr-2 h-4 w-4" />
                   Previous
                 </Button>
                 <span className="text-gray-400">

@@ -392,7 +392,7 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
           <Button
             variant="ghost"
             className="flex items-center text-indigo-300 transition-colors hover:bg-indigo-900 hover:text-indigo-100"
-            onClick={() => router.back()}
+            onClick={() => router.push(`/courses/${courseCode}`)}
           >
             <ChevronLeft className="mr-2 h-4 w-4" />
             Back to Course
