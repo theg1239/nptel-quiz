@@ -88,6 +88,12 @@ export default function Component(
     }
   }, [course]);
 
+  useEffect(() => {
+    if (course?.weeks?.length > 0) {
+      console.log(`Course has ${course.weeks.length} weeks available for selection`);
+    }
+  }, [course]);
+
   const handleStartQuiz = () => {
     if (totalQuestions === 0) {
       alert('No questions available for this course.');
@@ -424,25 +430,31 @@ export default function Component(
 
                 <div className="custom-scrollbar max-h-[60vh] overflow-y-auto p-4">
                   <div className="mb-4 grid grid-cols-1 gap-2">
-                    {course?.weeks.map(week => (
-                      <div
-                        key={week.name}
-                        className="flex items-center space-x-3 rounded-lg bg-violet-800/50 p-3 transition-colors hover:bg-violet-800/70"
-                      >
-                        <Checkbox
-                          id={`week-${week.name}`}
-                          checked={weekSelections[week.name] || false}
-                          onCheckedChange={() => toggleWeekSelection(week.name)}
-                          className="data-[state=checked]:bg-violet-500"
-                        />
-                        <label
-                          htmlFor={`week-${week.name}`}
-                          className="flex-1 cursor-pointer text-sm font-medium text-violet-200"
+                    {course?.weeks && course.weeks.length > 0 ? (
+                      course.weeks.map(week => (
+                        <div
+                          key={week.name}
+                          className="flex items-center space-x-3 rounded-lg bg-violet-800/50 p-3 transition-colors hover:bg-violet-800/70"
                         >
-                          {week.name} ({week.questions.length} questions)
-                        </label>
+                          <Checkbox
+                            id={`week-${week.name}`}
+                            checked={weekSelections[week.name] || false}
+                            onCheckedChange={() => toggleWeekSelection(week.name)}
+                            className="data-[state=checked]:bg-violet-500"
+                          />
+                          <label
+                            htmlFor={`week-${week.name}`}
+                            className="flex-1 cursor-pointer text-sm font-medium text-violet-200"
+                          >
+                            {week.name} ({week.questions?.length || 0} questions)
+                          </label>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-4 text-violet-300">
+                        No weeks available for this course.
                       </div>
-                    ))}
+                    )}
                   </div>
                 </div>
 
