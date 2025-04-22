@@ -451,7 +451,7 @@ export default function Component(
                         </div>
                       ))
                     ) : (
-                      <div className="text-center py-4 text-violet-300">
+                      <div className="py-4 text-center text-violet-300">
                         No weeks available for this course.
                       </div>
                     )}
