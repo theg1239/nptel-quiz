@@ -1,5 +1,18 @@
 'use server';
 
+const getApiHeaders = () => {
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+  
+  const apiKey = process.env.NPTELPREP_API_KEY;
+  if (apiKey) {
+    headers['X-API-Key'] = apiKey;
+  }
+  
+  return headers;
+};
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.nptelprep.in';
 
 const FALLBACK_COURSES = [
@@ -132,7 +145,10 @@ export interface StudyMaterial {
 
 export async function getCourse(courseId: string) {
   try {
-    const response = await fetch(`${API_BASE_URL}/courses/${courseId}`, { cache: 'no-store' });
+    const response = await fetch(`${API_BASE_URL}/courses/${courseId}`, { 
+      cache: 'no-store',
+      headers: getApiHeaders()
+    });
     if (!response.ok) {
       throw new Error('Failed to fetch course');
     }
@@ -200,6 +216,7 @@ export async function getAllCourses(): Promise<Course[]> {
   try {
     const res = await fetch(`${API_BASE_URL}/courses`, {
       next: { revalidate: 60 },
+      headers: getApiHeaders()
     });
 
     if (!res.ok) {
@@ -237,6 +254,7 @@ export async function getCourseMaterials(courseCode: string): Promise<StudyMater
   try {
     const res = await fetch(`${API_BASE_URL}/courses/${courseCode}`, {
       next: { revalidate: 3600 },
+      headers: getApiHeaders()
     });
 
     if (!res.ok) {
