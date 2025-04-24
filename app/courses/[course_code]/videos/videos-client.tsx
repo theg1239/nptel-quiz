@@ -19,7 +19,7 @@ const scrollbarHideStyles = `
 }
 `;
 
-const placeholderThumbnail = 'https://nptelprep.in/assets/thumbnail.png';
+const placeholderThumbnail = '/assets/thumbnail.png';
 
 export default function VideosClient({
   courseCode,
