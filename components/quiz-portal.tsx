@@ -307,7 +307,7 @@ export default function Component(
             </CardHeader>
             <CardContent>
               <p className="mb-3 text-sm text-violet-200">
-                All questions with answers, flashcards and TTS.
+                All questions with answers, flashcards.
               </p>
               <Button
                 className="flex w-full items-center justify-center bg-emerald-600 text-sm hover:bg-emerald-700"

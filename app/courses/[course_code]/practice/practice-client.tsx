@@ -28,6 +28,7 @@ import {
   Question,
 } from '@/lib/utils/quizUtils';
 import { getCourse } from '@/lib/actions/actions';
+import ReportQuestion from '@/components/report-question';
 
 interface Week {
   name: string;
@@ -738,6 +739,7 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
                                   <>
                                     <h3 className="mb-2 break-words text-lg font-semibold text-gray-100 md:text-xl">
                                       {index + 1}. {question.question}
+                                      <ReportQuestion questionText={question.question} variant="practice" />
                                     </h3>
                                     <div className="rounded-md border border-gray-700 bg-gray-800 bg-opacity-30 p-4 text-gray-300">
                                       <p className="whitespace-pre-line break-words">
@@ -749,6 +751,7 @@ export default function PracticeClient({ courseCode }: { courseCode: string }) {
                                   <>
                                     <h3 className="mb-3 break-words text-lg font-semibold text-gray-100 md:text-xl">
                                       {index + 1}. {question.question}
+                                      <ReportQuestion questionText={question.question} variant="practice" />
                                     </h3>
                                     <ul className="space-y-3">
                                       {question.options.map((option, optionIndex: number) => {

@@ -31,6 +31,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { QuizType } from '@/types/quiz';
 import { initializeQuestionsWithFixedOrder, Question } from '@/lib/utils/quizUtils';
+import ReportQuestion from '@/components/report-question';
 
 const cleanQuestionText = (question: string): string => question.replace(/^\s*\d+[\).:\-]\s*/, '');
 
@@ -262,9 +263,10 @@ const QuizContent = ({
 
             <div className="mb-2 flex items-center justify-between gap-2">
               <CardTitle
-                className={`${questionTextClass} flex-1 break-words font-bold text-blue-300`}
+                className={`${questionTextClass} relative flex-1 break-words font-bold text-blue-300`}
               >
                 {currentQuestionIndex + 1}. {cleanedQuestion}
+                <ReportQuestion questionText={cleanedQuestion} variant="quiz" />
               </CardTitle>
             </div>
 
