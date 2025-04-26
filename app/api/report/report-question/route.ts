@@ -70,7 +70,7 @@ export async function POST(request: Request) {
 
   let externalResponse: Response;
   try {
-    externalResponse = await fetch('http://localhost:4000/report-question', {
+    externalResponse = await fetch('https://api.nptelprep.in/report-question', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
