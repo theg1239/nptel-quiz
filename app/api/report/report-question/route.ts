@@ -81,14 +81,14 @@ export async function POST(request: Request) {
   } catch (err) {
     console.error('Network error calling external API:', err);
     return NextResponse.json(
-      { message: 'Failed to connect to reporting service.' },
+      { message: 'Failed to connect to reporting service.', success: false },
       { status: 502 }
     );
   }
 
   if (externalResponse.status === 409) {
     return NextResponse.json(
-      { message: 'You have already reported this question for this course.' },
+      { message: 'You have already reported this question for this course.', success: false },
       { status: 409 }
     );
   }
@@ -97,7 +97,7 @@ export async function POST(request: Request) {
       `External API error: ${externalResponse.status} ${externalResponse.statusText}`
     );
     return NextResponse.json(
-      { message: 'Reporting service returned an error.' },
+      { message: 'Reporting service returned an error.', success: false },
       { status: 502 }
     );
   }
@@ -112,6 +112,7 @@ export async function POST(request: Request) {
   return NextResponse.json(
     externalData ?? {
       message: 'Report submitted successfully.',
+      success: true,
       report: {
         question_text,
         reason,

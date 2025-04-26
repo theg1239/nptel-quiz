@@ -52,6 +52,12 @@ export default function ReportQuestion({
   const [customReason, setCustomReason] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [extractedCourseCode, setExtractedCourseCode] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<{
+    show: boolean;
+    title: string;
+    description: string;
+    variant?: "default" | "destructive";
+  } | null>(null);
 
   const pathname = usePathname();
 
@@ -64,15 +70,26 @@ export default function ReportQuestion({
     setExtractedCourseCode(match ? match[1] : null);
   }, [pathname, propsCourseCode]);
 
+  useEffect(() => {
+    if (toastMessage && toastMessage.show) {
+      toast({
+        title: toastMessage.title,
+        description: toastMessage.description,
+        variant: toastMessage.variant,
+      });
+      setToastMessage(prev => prev ? { ...prev, show: false } : null);
+    }
+  }, [toastMessage, toast]);
+
   const handleSignIn = async (e: React.MouseEvent) => {
     e.preventDefault();
     await signIn('google', { callbackUrl: window.location.href });
   };
 
   const handleReport = async () => {
-    // only block if we really require auth
     if (shouldRequireAuth && !session) {
-      toast({
+      setToastMessage({
+        show: true,
         title: 'Authentication required',
         description: 'Please sign in with Google to report a question.',
         variant: 'destructive',
@@ -82,7 +99,8 @@ export default function ReportQuestion({
 
     const finalReason = reason === 'other' ? customReason : reason;
     if (reason === 'other' && !customReason.trim()) {
-      toast({
+      setToastMessage({
+        show: true,
         title: 'Error',
         description: 'Please provide a reason for your report.',
         variant: 'destructive',
@@ -105,25 +123,34 @@ export default function ReportQuestion({
         }),
       });
 
+      const data = await res.json();
+
       if (res.ok) {
-        toast({
-          title: 'Report submitted',
-          description: 'Thank you for your feedback. We will review this question.',
-        });
         setOpen(false);
+        
+        setTimeout(() => {
+          setToastMessage({
+            show: true,
+            title: 'Report submitted',
+            description: 'Thank you for your feedback. We will review this question.',
+          });
+        }, 200);
       } else if (res.status === 409) {
-        toast({
+        setToastMessage({
+          show: true,
           title: 'Already reported',
-          description: 'You have already reported this question.',
+          description: data?.message || 'You have already reported this question.',
           variant: 'destructive',
         });
       } else {
-        throw new Error('Failed to submit report');
+        throw new Error(data?.message || 'Failed to submit report');
       }
-    } catch {
-      toast({
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to submit report. Please try again later.';
+      setToastMessage({
+        show: true,
         title: 'Error',
-        description: 'Failed to submit report. Please try again later.',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {
